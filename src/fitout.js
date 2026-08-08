@@ -43,7 +43,6 @@ export const FURN = {
 
   // trampolíny v běžném komerčním rastru: lože 2,10 × 3,05 m, rám s výplní 0,35 m
   tramp:      { w: 2.10, d: 3.05, h: 0.95, color: 0x2a6fb0, shape: 'tramp',   label: 'Trampolína 2,1 × 3,05' },
-  walltramp:  { w: 0.30, d: 2.10, h: 3.00, color: 0x2a6fb0, shape: 'box',     label: 'Stěnová trampolína' },
   foampit:    { w: 4.55, d: 3.20, h: 1.10, color: 0xe8a33d, shape: 'pit',     label: 'Molitanová jáma' },
   firstaid:   { w: 0.80, d: 0.40, h: 1.80, color: 0xe23b3b, shape: 'box',     label: 'Ošetřovna / lékárnička' },
   hoop:       { w: 1.20, d: 0.30, h: 3.05, color: 0xe0554b, shape: 'hoop',    label: 'Basketbalový koš' },
@@ -87,7 +86,11 @@ export const FURN = {
   barstore:   { w: 1.60, d: 0.60, h: 2.00, color: 0x8c6234, shape: 'rack',    label: 'Sklad baru' },
   floordrain: { w: 0.30, d: 0.30, h: 0.04, color: 0x6a7078, shape: 'box',     label: 'Podlahová vpust' },
   railing:    { w: 3.00, d: 0.06, h: 1.10, color: 0xb9b0a2, shape: 'net',     label: 'Zábradlí' },
-  door:       { w: 0.90, d: 0.10, h: 2.05, color: 0xa89c88, shape: 'box',     label: 'Dveře' },
+  door:       { w: 0.90, d: 0.12, h: 2.05, color: 0xa89c88, shape: 'door',    label: 'Dveře' },
+  double:     { w: 1.60, d: 0.12, h: 2.05, color: 0xa89c88, shape: 'door',    label: 'Dvoukřídlé dveře' },
+  glazed:     { w: 1.60, d: 0.12, h: 2.20, color: 0x9fd4e8, shape: 'door',    label: 'Prosklené dveře' },
+  service:    { w: 0.90, d: 0.12, h: 2.05, color: 0x8a8f98, shape: 'door',    label: 'Servisní dveře' },
+  escape:     { w: 0.90, d: 0.12, h: 2.05, color: 0x2fbf5f, shape: 'door',    label: 'Požární dveře s panikovým kováním' },
   light:      { w: 1.20, d: 0.14, h: 0.10, color: 0xfff2d0, shape: 'box',     label: 'Svítidlo' },
   emlight:    { w: 0.30, d: 0.12, h: 0.12, color: 0x4bc46a, shape: 'box',     label: 'Nouzové svítidlo' },
   exitsign:   { w: 0.35, d: 0.06, h: 0.16, color: 0x2fbf5f, shape: 'box',     label: 'Značka únikové cesty' },
@@ -286,16 +289,15 @@ const LAYOUTS = {
   // -------------------------------------------------------------- lobby
   lobby: (S, b, P) => {
     const { items, put, row, seat, around } = maker(S, b)
-    put('entrymat', 3.5, 1.0)
+    put('entrymat', 4.6, 1.0)
     put('glass', 3.5, 2.1, { note: 'zádveří' })
-    put('binstore', 1.3, 0.7, { note: 'u zásobovacích dveří, ne přes hlavní vchod' })
     put('reception', 2.4, 3.7)
     put('bar', 4.5, 3.7)
     row('backbar', 1.4, 4.8, 3, 1.05)
     put('fridge', 4.8, 4.8)
     put('barstore', 6.0, 4.8, { note: 'zásoba baru — bez ní se doplňuje z auta' })
     // zouvací kout: do arény jen v protiskluzových ponožkách
-    put('pram', 5.5, 1.3, { note: 'rodinný provoz bez odstavení kočárků nefunguje' })
+    put('pram', 1.8, 1.3, { note: 'rodinný provoz bez odstavení kočárků nefunguje' })
     put('bench', 5.6, 3.0)
     put('shoerack', 6.6, 4.6, { rot: 90 })
     // 3 patra po 10 sloupcích; rodiny sdílejí, na 40 lidí ve špičce to stačí
@@ -326,7 +328,7 @@ const LAYOUTS = {
     const lk = Math.ceil(P.gym.users * 1.5)
     // unisex šatna fitness s uzamykatelnými kabinkami — méně fixtur než 2× M/F
     row('locker', 0.45, 0.6, Math.ceil(lk / 2), 0.32, { along: 'v', rot: 90 })
-    put('bench', 1.9, 1.6, { rot: 90 })
+    put('bench', 1.9, 2.4, { rot: 90 })
     row('changing', 3.2, 0.7, 3, 1.1, { along: 'v' })
     row('shower', 0.9, 5.3, 2, 1.0)
     row('basin', 3.3, 5.6, 2, 0.7)
@@ -342,27 +344,24 @@ const LAYOUTS = {
   // -------------------------------------------------------------- aréna
   arena: (S, b, P) => {
     const { items, put, row } = maker(S, b)
-    // rastr: lože 2,10 × 3,05 + výplň 0,35 → rozteč 2,45 × 3,40
-    // u = 0 je stěna do lobby (prosklená), u = 7 stěna k dílně
-    const COLS = [1.55, 4.00]
-    put('tramp', COLS[0], 1.90, { note: 'odrazová dráha do jámy' })
-    put('tramp', COLS[1], 1.90, { note: 'odrazová dráha do jámy' })
-    put('foampit', 2.78, 5.40)
+    // u = 0 je stěna do lobby, odkud se vchází → 1,2 m vstupní ulička,
+    // pole trampolín začíná až za ní. Bez toho se dveře otevřou na lóže.
+    const COLS = [2.25, 4.70]                 // lože 2,10 → u 1,2–3,3 a 3,65–5,75
+    put('coatrack', 3.0, 0.5)
+    put('hoop', COLS[0], 0.9, { rot: 180 })
+    for (const u of COLS) put('tramp', u, 2.9, { note: 'odrazová dráha do jámy' })
+    put('foampit', 3.475, 6.4)
     for (let r = 0; r < Math.ceil((P.arena.beds - 2) / 2); r++) {
-      for (const u of COLS) put('tramp', u, 8.90 + r * 3.40)
+      for (const u of COLS) put('tramp', u, 9.9 + r * 3.4)
     }
-    row('walltramp', 6.75, 9.0, 2, 3.0, { along: 'v', rot: 180 })
-    put('hoop', COLS[0], 0.45, { rot: 180, note: 'koš nad odrazovou dráhou' })
-    put('firstaid', 6.4, 2.2, { rot: 270 })
-    put('coatrack', 3.5, 14.4, { rot: 180, note: 'odkládání pro školní skupiny' })
-    put('net', 3.5, 0.35)                                    // k prosklení do lobby
-    put('net', 0.35, 7.0, { rot: 90 })
-    put('net', 5.35, 7.0, { rot: 90 })
-    // hřeben je 7,6 m — bez destratifikace se teplo drží nahoře a topí se stropu
+    // sítě po obou stranách pole; jižní konec má měkké obklady, ne síť —
+    // tudy se do arény vchází
+    for (const u of [1.15, 5.85]) row('net', u, 4.4, 2, 6.0, { along: 'v', rot: 90 })
+    put('firstaid', 6.4, 3.0, { rot: 270 })
     row('destrat', 3.5, 4.5, 2, 7.0, { along: 'v' })
-    put('co2', 6.85, 6.0, { rot: 270, note: 'VZT na plný výkon jen když jsou tam lidi' })
+    put('co2', 6.85, 8.0, { rot: 270, note: 'VZT na plný výkon jen když jsou tam lidi' })
     row('softplay', 2.2, 16.4, 2, 2.6, { note: 'batolecí zóna pod galerií' })
-    put('stairs', 6.2, 15.2, { note: 'na galerii' })
+    put('stairs', 6.25, 15.2, { note: 'na galerii' })
     return items
   },
   play: (S, b) => {
@@ -377,7 +376,7 @@ const LAYOUTS = {
   gym: (S, b, P) => {
     const { items, put, row } = maker(S, b)
     for (let i = 0; i < P.gym.cages; i++) {
-      const u = 1.4 + i * 2.4
+      const u = 2.0 + i * 2.4
       put('cage', u, 8.2)
       put('gymbench', u, 8.2)                                  // lavička v kleci
     }
@@ -415,9 +414,9 @@ const LAYOUTS = {
     row('workbench', 1.3, 7.6, P.workshop.benches, 2.1, { along: 'v', rot: 90 })
     row('toolchest', 0.6, 2.2, 2, 1.45, { along: 'v', rot: 90 })
     row('toolcart', 2.6, 5.2, 2, 2.6)
-    row('partshelf', 2.6, 12.5, 2, 2.6)
-    put('tyrerack', 0.9, 12.5)
-    put('oildrum', 6.6, 12.4)
+    row('partshelf', 2.6, 11.6, 2, 2.6)
+    put('tyrerack', 0.9, 11.6)
+    put('oildrum', 6.6, 8.0)
     put('compressor', 6.6, 6.2)
     put('airreel', 6.6, 3.4, { rot: 270 })
     put('aircurtain', 4.2, 0.5, { note: 'nad vraty — jinak se při každém vjezdu vytopí ven' })
@@ -438,7 +437,7 @@ const LAYOUTS = {
   plant: (S, b) => {
     const { items, put, row } = maker(S, b)
     row('ahu', 2.0, 1.1, 2, 1.9, { along: 'v' })
-    put('hpmodule', 5.0, 1.0)
+    put('hpmodule', 4.4, 1.0)
     row('tank', 4.8, 2.6, 2, 0.95)
     row('board', 6.4, 0.6, 3, 1.1, { along: 'v', rot: 90 })
     // provoz je odpolední a večerní → vlastní spotřeba FVE je slabá; baterie
@@ -547,10 +546,53 @@ function derivedFor(S, b) {
   return out
 }
 
+/** Společná hrana dvou bloků, nebo null když spolu nesousedí. */
+export function sharedEdge(a, b) {
+  const near = (p, q) => Math.abs(p - q) < 0.05
+  if (near(a.z1, b.z0) || near(a.z0, b.z1)) {
+    const z = near(a.z1, b.z0) ? a.z1 : a.z0
+    const p = Math.max(a.x0, b.x0)
+    const q = Math.min(a.x1, b.x1)
+    return q - p > 1.0 ? { axis: 'x', at: z, from: p, to: q } : null
+  }
+  if (near(a.x1, b.x0) || near(a.x0, b.x1)) {
+    const x = near(a.x1, b.x0) ? a.x1 : a.x0
+    const p = Math.max(a.z0, b.z0)
+    const q = Math.min(a.z1, b.z1)
+    return q - p > 1.0 ? { axis: 'z', at: x, from: p, to: q } : null
+  }
+  return null
+}
+
+/** Vnitřní dveře ze seznamu propojení ve spec. */
+export function doorsFor(S) {
+  const out = []
+  for (const l of S.links ?? []) {
+    const a = S.blocks.find((b) => b.id === l.a)
+    const b = S.blocks.find((b) => b.id === l.b)
+    if (!a || !b) continue
+    const e = sharedEdge(a, b)
+    if (!e) continue
+    const kind = l.type ?? 'door'
+    const half = FURN[kind].w / 2
+    const pos = Math.min(Math.max(l.at ?? (e.from + e.to) / 2, e.from + half), e.to - half)
+    const lvl = a.level === 'full' ? 0 : a.level
+    out.push({
+      kind, block: a.id, link: `${l.a}–${l.b}`, note: l.note,
+      y: levelBase(S, lvl),
+      x: e.axis === 'x' ? pos : e.at,
+      z: e.axis === 'x' ? e.at : pos,
+      rot: e.axis === 'x' ? 0 : 90,
+    })
+  }
+  return out
+}
+
 /** Vybavení celé budovy + soupis počtů. */
 export function fitoutAll(S) {
   const items = []
   for (const b of S.blocks) items.push(...fitoutFor(S, b), ...derivedFor(S, b))
+  items.push(...doorsFor(S))
   const counts = {}
   for (const it of items) counts[it.kind] = (counts[it.kind] || 0) + 1
   // kde přesně se co nevešlo — jinak se hlásí jen číslo a nikdo neví kam sáhnout

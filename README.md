@@ -86,6 +86,12 @@ Sklad nad dílnou         x 21–28  z 6–13    49 m²   nad vjezdovou dráhou 
 - **FVE**: jižní střešní rovina celá, fasáda jen do volných polí mezi otvory
   (doplněk otvorů, takže se panely nikdy nepotkají s oknem). Přepínače
   `roofSouth` / `roofNorth` / `facadeSouth` v `spec.pv`.
+- **Vnitřní dveře** ze seznamu `spec.links`. Co tam není, není propojené —
+  dílna, strojovna a sklad tvoří samostatnou technickou zónu přístupnou jen
+  vlastními dveřmi a vraty z jihu; jediné propojení dovnitř zóny jsou servisní
+  dveře dílna–strojovna. Test ověřuje, že se z každé místnosti dá dojít ven,
+  že před dveřmi nestojí nábytek a že z dílny nikam neuniknou dveře do
+  veřejné části.
 - **Prostupy ve stropě** nad každým schodištěm — bez nich schodiště končí
   u stropu, což se v jedné verzi stalo a nikdo si toho nevšiml. Kolem prostupu
   i po všech volných hranách mezipater jde zábradlí; volné hrany se počítají

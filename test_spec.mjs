@@ -3,7 +3,7 @@
 import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
 import { openingsFor, pvLayout, stairOpening, openEdges } from './src/building.js'
-import { fitoutAll, fitoutFor, sanitaryFor, SVC, FURN } from './src/fitout.js'
+import { fitoutAll, fitoutFor, sanitaryFor, SVC, FURN, doorsFor, sharedEdge } from './src/fitout.js'
 
 let fail = 0
 const ok = (cond, msg, extra = '') => {
@@ -246,6 +246,67 @@ ok(doors.filter((h) => h.x0 >= lobbyB.x0 - 0.1 && h.x1 <= lobbyB.x1 + 0.1).lengt
   'lobby má hlavní vchod i zásobovací dveře')
 ok(fit.items.some((it) => it.kind === 'cleansink' && it.block === 'gym'),
   'úklidová výlevka je i v patře')
+
+console.log('\nVNITŘNÍ DVEŘE A PROSTUPNOST')
+const doorsIn = doorsFor(SPEC)
+ok(doorsIn.length === SPEC.links.length, 'každé propojení ve spec má dveře',
+  `${doorsIn.length}/${SPEC.links.length}`)
+ok(SPEC.links.every((l) => sharedEdge(
+  SPEC.blocks.find((b) => b.id === l.a), SPEC.blocks.find((b) => b.id === l.b))),
+  'propojené bloky spolu opravdu sousedí')
+
+// dveře nesmí ústit do nábytku
+const blocked = []
+for (const d of doorsIn) {
+  const clear = 0.85                       // reálné minimum před vnitřními dveřmi
+  for (const it of fit.items) {
+    if (it.link || !FURN[it.kind] || it.y !== d.y) continue   // dveře navzájem neblokují
+    const f = FURN[it.kind]
+    if (f.h < 0.35) continue               // rohože, vpusti, vyznačená stání nepřekáží
+    if (f.d <= 0.3 && f.w <= 1.1) continue // nástěnné drobnosti vedle dveří jsou v pořádku
+    const turned = it.rot === 90 || it.rot === 270
+    const rx = (turned ? f.d : f.w) / 2
+    const rz = (turned ? f.w : f.d) / 2
+    const dx = Math.max(0, Math.abs(it.x - d.x) - rx)
+    const dz = Math.max(0, Math.abs(it.z - d.z) - rz)
+    if (Math.hypot(dx, dz) < clear) { blocked.push(`${d.link}: ${it.kind}`); break }
+  }
+}
+ok(blocked.length === 0, 'před žádnými dveřmi nestojí nábytek',
+  blocked.length ? blocked.slice(0, 4).join(', ') : `${doorsIn.length} dveří`)
+
+// z každé místnosti se musí dát dojít ven
+const entrances = new Set()
+for (const side of ['south', 'north']) {
+  for (const h of openingsFor(SPEC, side)) {
+    if (h.v0 > 0.01) continue
+    const z = side === 'south' ? 0.2 : SPEC.depth - 0.2
+    const b = SPEC.blocks.find((x) => (x.level === 0 || x.level === 'full')
+      && (h.x0 + h.x1) / 2 > x.x0 && (h.x0 + h.x1) / 2 < x.x1 && z > x.z0 && z < x.z1)
+    if (b) entrances.add(b.id)
+  }
+}
+const edges = new Map(SPEC.blocks.map((b) => [b.id, new Set()]))
+for (const l of SPEC.links) { edges.get(l.a).add(l.b); edges.get(l.b).add(l.a) }
+for (const st of stairs) {                       // schodiště spojuje podlaží
+  const to = SPEC.blocks.find((b) => b.level === 1
+    && st.x > b.x0 - 1 && st.x < b.x1 + 1 && st.z > b.z0 - 3 && st.z < b.z1 + 3)
+  if (to) { edges.get(st.block).add(to.id); edges.get(to.id).add(st.block) }
+}
+const seen = new Set(entrances)
+const queue = [...entrances]
+while (queue.length) for (const n of edges.get(queue.pop()) ?? []) if (!seen.has(n)) { seen.add(n); queue.push(n) }
+const cutOff = SPEC.blocks.filter((b) => !seen.has(b.id))
+ok(cutOff.length === 0, 'z každé místnosti se dá dojít ven',
+  cutOff.length ? cutOff.map((b) => b.id).join(', ') : `${seen.size} místností, vchody: ${[...entrances].join(', ')}`)
+
+// dílna zůstává oddělená od veřejné části
+const tech = new Set(['workshop', 'plant', 'storage'])
+const leaks = SPEC.links.filter((l) => tech.has(l.a) !== tech.has(l.b))
+ok(leaks.length === 0, 'z dílny nevede do veřejné části žádné dveře',
+  leaks.length ? leaks.map((l) => `${l.a}–${l.b}`).join(', ') : 'technická zóna je samostatná')
+ok(SPEC.links.some((l) => tech.has(l.a) && tech.has(l.b) && l.type === 'service'),
+  'dílna a strojovna propojené jen servisními dveřmi')
 
 console.log('\nROZVODY KE KONCOVKÁM')
 const terms = mep.routes.filter((r) => r.kind === 'terminal')

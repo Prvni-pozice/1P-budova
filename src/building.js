@@ -358,6 +358,20 @@ function furnitureMesh(item, FURN) {
       }
       break
     }
+    case 'door': {
+      const jamb = new THREE.MeshStandardMaterial({ color: 0x6b6257, roughness: 0.7 })
+      const t = 0.09
+      g.add(box(t, h + t, d, jamb, -(w / 2 + t / 2), (h + t) / 2, 0))
+      g.add(box(t, h + t, d, jamb, w / 2 + t / 2, (h + t) / 2, 0))
+      g.add(box(w + 2 * t, t, d, jamb, 0, h + t / 2, 0))
+      const leaf = new THREE.MeshStandardMaterial({
+        color: f.color, roughness: 0.6,
+        transparent: f.color === 0x9fd4e8, opacity: f.color === 0x9fd4e8 ? 0.45 : 1,
+      })
+      g.add(box(w - 0.02, h - 0.02, d * 0.5, leaf, 0, h / 2, 0))
+      g.add(box(0.05, 0.12, 0.05, jamb, w / 2 - 0.12, 1.05, d * 0.4))   // klika
+      break
+    }
     case 'net':
       g.add(box(w, h, Math.max(d, 0.04), glassy, 0, h / 2, 0))
       for (const sx of [-1, 1]) g.add(box(0.07, h, 0.07, dark, sx * (w / 2 - 0.04), h / 2, 0))
@@ -650,6 +664,11 @@ export function buildAll(spec, mep) {
     u.castShadow = true
     groups.site.add(u)
   }
+  const bins = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.25, 1.1), siteMat(0x5a6169))
+  bins.position.set(8.2, 0.63, -2.4)
+  bins.castShadow = true
+  groups.site.add(bins)                                // odpad u zásobovacích dveří, ne v lobby
+
   const retention = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.1, 3.0), siteMat(0x3f6f8f, 0.5))
   retention.position.set(34, 0.05, -5.0)
   groups.site.add(retention)                           // retence dešťovky na celých 1 008 m²
