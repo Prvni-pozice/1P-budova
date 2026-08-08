@@ -87,7 +87,8 @@ function labelSprite(title, sub) {
  */
 export function openingsFor(S, side) {
   if ((S.blindWalls ?? []).includes(side)) return []
-  const touches = (b) => (side === 'north' ? b.z0 <= 0.01 : b.z1 >= S.depth - 0.01)
+  // z = 0 je JIH (vstupy), z = depth je SEVER (soused)
+  const touches = (b) => (side === 'north' ? b.z1 >= S.depth - 0.01 : b.z0 <= 0.01)
   const out = []
 
   for (const b of S.blocks) {
@@ -130,12 +131,65 @@ export function openingsFor(S, side) {
     j < i && o.x1 > h.x0 + 1e-6 && o.x0 < h.x1 - 1e-6 && o.v1 > h.v0 + 1e-6 && o.v0 < h.v1 - 1e-6))
 }
 
+/**
+ * Volná pole jižní fasády — doplněk otvorů. Sem se vejde fasádní FVE.
+ * Vrací intervaly x širší než 1,2 m mimo dosah jakéhokoli otvoru v pásu v0..v1.
+ */
+function freeBands(S, holes, v0, v1) {
+  const busy = holes
+    .filter((h) => h.v1 > v0 && h.v0 < v1)
+    .map((h) => [h.x0 - 0.3, h.x1 + 0.3])
+    .sort((a, b) => a[0] - b[0])
+  const out = []
+  let cursor = 0.3
+  for (const [a, b] of busy) {
+    if (a > cursor) out.push([cursor, Math.min(a, S.stage1 - 0.3)])
+    cursor = Math.max(cursor, b)
+  }
+  if (cursor < S.stage1 - 0.3) out.push([cursor, S.stage1 - 0.3])
+  return out.filter(([a, b]) => b - a > 1.2)
+}
+
+/** Plocha a výkon FVE — počítá se ze střechy a z volných polí fasády. */
+export function pvLayout(S, southHoles) {
+  const p = S.pv ?? {}
+  const slope = Math.sqrt((S.depth / 2) ** 2 + (ridgeY(S) - S.eaves) ** 2)
+  const panels = []
+  let roofArea = 0
+  let facadeArea = 0
+
+  for (const [on, side] of [[p.roofSouth, -1], [p.roofNorth, 1]]) {
+    if (!on) continue
+    const w = S.stage1 - 1.2
+    const l = slope - 1.0
+    panels.push({ kind: 'roof', w, l, side })
+    roofArea += w * l
+  }
+
+  const bandV0 = 1.0
+  const bandV1 = S.eaves - 0.35
+  const bands = p.facadeSouth ? freeBands(S, southHoles, bandV0, bandV1) : []
+  for (const [a, b] of bands) {
+    panels.push({ kind: 'facade', x0: a, x1: b, v0: bandV0, v1: bandV1 })
+    facadeArea += (b - a) * (bandV1 - bandV0)
+  }
+
+  const cov = p.coverage ?? 0.85
+  const wp = p.wp ?? 210
+  return {
+    panels,
+    roofArea, facadeArea,
+    roofKwp: (roofArea * cov * wp) / 1000,
+    facadeKwp: (facadeArea * cov * wp) / 1000,
+  }
+}
+
 // ---------------------------------------------------------------- generátor
 
 export function buildAll(spec, mep) {
   const root = new THREE.Group()
   const groups = {}
-  for (const k of ['ground', 'shell', 'glass', 'roof', 'structure', 'slabs', 'blocks', 'labels', 'mep', 'stage2', 'dims']) {
+  for (const k of ['ground', 'shell', 'glass', 'roof', 'pv', 'structure', 'slabs', 'blocks', 'labels', 'mep', 'stage2']) {
     groups[k] = new THREE.Group()
     groups[k].name = k
     root.add(groups[k])
@@ -177,16 +231,16 @@ export function buildAll(spec, mep) {
     return m
   }
 
-  // Severní stěna: běží od x=stage1 k x=0 → u = stage1 - x
-  addWall('sever',
-    wallGeom([[0, 0], [S.stage1, 0], [S.stage1, S.eaves], [0, S.eaves]],
-      northHoles.map((h) => ({ u0: S.stage1 - h.x1, u1: S.stage1 - h.x0, v0: h.v0, v1: h.v1 })), t),
-    S.stage1, t / 2, -1, 0, [0, 0, -1])
-
-  // Jižní stěna: od x=0 k x=stage1 → u = x
+  // JIŽNÍ stěna leží na z = 0 a běží od x=stage1 k x=0 → u = stage1 - x
   addWall('jih',
     wallGeom([[0, 0], [S.stage1, 0], [S.stage1, S.eaves], [0, S.eaves]],
-      southHoles.map((h) => ({ u0: h.x0, u1: h.x1, v0: h.v0, v1: h.v1 })), t),
+      southHoles.map((h) => ({ u0: S.stage1 - h.x1, u1: S.stage1 - h.x0, v0: h.v0, v1: h.v1 })), t),
+    S.stage1, t / 2, -1, 0, [0, 0, -1])
+
+  // SEVERNÍ stěna leží na z = depth a běží od x=0 k x=stage1 → u = x
+  addWall('sever (hranice pozemku)',
+    wallGeom([[0, 0], [S.stage1, 0], [S.stage1, S.eaves], [0, S.eaves]],
+      northHoles.map((h) => ({ u0: h.x0, u1: h.x1, v0: h.v0, v1: h.v1 })), t),
     0, S.depth - t / 2, 1, 0, [0, 0, 1])
 
   // Západní štít etapy 1 — DOČASNÝ, demontovatelný (jiný odstín)
@@ -235,6 +289,32 @@ export function buildAll(spec, mep) {
     m.receiveShadow = true
     m.userData.baseOpacity = 1
     groups.roof.add(m)
+  }
+
+  // --- fotovoltaika ---
+  const pv = pvLayout(S, southHoles)
+  const pvMat = new THREE.MeshStandardMaterial({ color: 0x16213d, roughness: 0.22, metalness: 0.75 })
+  for (const p of pv.panels) {
+    let m
+    if (p.kind === 'roof') {
+      const th = p.side * deg(S.pitch)
+      m = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.07, p.l), pvMat.clone())
+      m.position.set(
+        S.stage1 / 2,
+        (S.eaves + ridge) / 2 + 0.14 * Math.cos(th),
+        (p.side < 0 ? S.depth / 4 : (S.depth * 3) / 4) + 0.14 * Math.sin(th),
+      )
+      m.rotation.x = th
+      m.userData.outward = null            // s cutaway mizí zároveň se střechou
+    } else {
+      m = new THREE.Mesh(new THREE.BoxGeometry(p.x1 - p.x0, p.v1 - p.v0, 0.06), pvMat.clone())
+      m.position.set((p.x0 + p.x1) / 2, (p.v0 + p.v1) / 2, -0.05)
+      m.userData.outward = new THREE.Vector3(0, 0, -1)   // mizí s jižní stěnou
+    }
+    m.castShadow = true
+    m.userData.baseOpacity = 1
+    groups.pv.add(m)
+    walls.push(m)
   }
 
   // --- nosná konstrukce (rámy po rastru) ---
@@ -326,5 +406,5 @@ export function buildAll(spec, mep) {
   s2label.position.set(S.stage1 + s2w / 2, S.eaves * 0.7, S.depth / 2)
   groups.stage2.add(s2label)
 
-  return { root, groups, walls, blockMeshes, mepByService }
+  return { root, groups, walls, blockMeshes, mepByService, pv }
 }

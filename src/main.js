@@ -26,7 +26,7 @@ const scene = new THREE.Scene()
 scene.fog = new THREE.Fog(0xffa877, 70, 300)
 
 const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 900)
-camera.position.set(-27, 19, 50)   // jihovýchod — vstupní průčelí proti slunci
+camera.position.set(-27, 19, -50)  // jihovýchod (východ = −x, jih = −z)
 
 const env = new Env(scene, 420)
 env.applyEnvMap(renderer, scene)
@@ -73,13 +73,14 @@ function rebuild() {
   cut.mode = cutMode
   applyLayers()
   applyMepToggles()
-  document.getElementById('summary').textContent = summaryText(spec, mep)
+  document.getElementById('summary').textContent = summaryText(spec, mep, built.pv)
   refreshSelection()
 }
 
 // -------------------------------------------------------------------- vrstvy
 const $ = (id) => document.getElementById(id)
-const chk = { blocks: $('ly-blocks'), labels: $('ly-labels'), structure: $('ly-structure'), stage2: $('ly-stage2') }
+const chk = { blocks: $('ly-blocks'), labels: $('ly-labels'), structure: $('ly-structure'),
+  pv: $('ly-pv'), stage2: $('ly-stage2') }
 
 function levelVisible(b) {
   if (levelFilter === 'all') return true
@@ -92,6 +93,7 @@ function applyLayers() {
   g.blocks.visible = chk.blocks.checked
   g.labels.visible = chk.labels.checked
   g.structure.visible = chk.structure.checked
+  g.pv.visible = chk.pv.checked
   g.stage2.visible = chk.stage2.checked
   for (const grp of [g.blocks, g.labels, g.slabs]) {
     for (const c of grp.children) {

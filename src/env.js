@@ -3,9 +3,9 @@
 // zapnuté jsou — na budově dělají čitelnost hmoty.
 import * as THREE from 'three'
 
-// x+ = západ, z+ = jih → zapadající slunce nad jihozápadem, nízko.
-// Osvětluje jižní průčelí, kde jsou vstupy.
-export const SUN_DIR = new THREE.Vector3(0.62, 0.30, 0.32).normalize()
+// x+ = západ, z+ = sever → zapadající slunce nad jihozápadem je (+x, +y, −z).
+// Osvětluje jižní průčelí, kde jsou vstupy i fasádní FVE.
+export const SUN_DIR = new THREE.Vector3(0.62, 0.30, -0.32).normalize()
 
 const SKY_VERT = /* glsl */`
   varying vec3 vDir;

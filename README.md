@@ -20,10 +20,14 @@ plochy. Model je teď na **840 m²** (koeficient 1,67).
 ## Souřadnice
 
 ```
-x = 0 na VÝCHODNÍM průčelí, roste na západ   (etapa 1 = 0–28, etapa 2 = 28–56)
-z = 0 na SEVERNÍ stěně, roste na jih         (rozpon 18 m)
+x = 0 na VÝCHODNÍM průčelí, roste na ZÁPAD   (etapa 1 = 0–28, etapa 2 = 28–56)
+z = 0 na JIŽNÍ stěně (vstupy), roste na SEVER (rozpon 18 m)
 y = výška nad podlahou přízemí
 ```
+
+Znaménka nejsou libovolná: východ = −x, sever = +z, takže **východ × sever = +y**.
+Kdyby platilo z+ = jih, byl by celý model zrcadlově převrácený — hlídá to test
+v sekci KOMPAS.
 
 ## Řídicí princip dispozice
 
@@ -35,24 +39,24 @@ pro kanceláře, lobby a fitness. Východní štít je celoprosklený.
 ### Přízemí — 504 m²
 
 ```
-Kuchyňka + WC            x 0–7    z 0–6     42 m²
-Kanceláře 1P             x 0–7    z 6–18    84 m²
-Šatny + sprchy + WC      x 7–14   z 0–6     42 m²
-Lobby / recepce / bar    x 7–14   z 6–18    84 m²
-Jump aréna (plná výška)  x 14–21  z 0–18   126 m²
-Strojovna                x 21–28  z 0–5     35 m²
-Sdílená dílna            x 21–28  z 5–18    91 m²
+Kanceláře 1P             x 0–7    z 0–12    84 m²   jih + prosklený východní štít
+Kuchyňka + WC            x 0–7    z 12–18   42 m²   servisní pruh
+Lobby / recepce / bar    x 7–14   z 0–12    84 m²   hlavní vstup z jihu
+Šatny + sprchy + WC      x 7–14   z 12–18   42 m²   servisní pruh
+Jump aréna (plná výška)  x 14–21  z 0–18   126 m²   přes celou hloubku
+Sdílená dílna            x 21–28  z 0–13    91 m²   vrata z jihu
+Strojovna                x 21–28  z 13–18   35 m²   u hranice etapy 2
 ```
 
 ### Patro — 336 m²
 
 ```
-Zasedačka / školicí      x 0–7    z 0–6     42 m²
-Kanceláře 1P             x 0–7    z 6–18    84 m²
-Sim racing               x 7–14   z 0–6     42 m²
-Fitness                  x 7–14   z 6–18    84 m²
-Dětské atrakce (galerie) x 14–21  z 0–3     21 m²
-Sklad nad dílnou         x 21–28  z 5–14    63 m²
+Kanceláře 1P             x 0–7    z 0–12    84 m²
+Zasedačka / školicí      x 0–7    z 12–18   42 m²   sever = bez oslnění projekce
+Fitness                  x 7–14   z 0–12    84 m²   jih = světlo
+Sim racing               x 7–14   z 12–18   42 m²   sever = tma, bez oslnění
+Dětské atrakce (galerie) x 14–21  z 15–18   21 m²   vykonzolovaná ze severní stěny
+Sklad nad dílnou         x 21–28  z 4–13    63 m²
 ```
 
 ## Co se dopočítává samo
@@ -65,6 +69,9 @@ Sklad nad dílnou         x 21–28  z 5–14    63 m²
   Páteř vždycky dojede zaslepená až na hranici etapy 2.
 - **Dimenze**: průměr VZT z průtoku (5 m/s), tepelná ztráta, chlazení,
   hlavní jistič ze soudobého příkonu. Sazby na m² jsou v `TYPES` ve `spec.js`.
+- **FVE**: jižní střešní rovina celá, fasáda jen do volných polí mezi otvory
+  (doplněk otvorů, takže se panely nikdy nepotkají s oknem). Přepínače
+  `roofSouth` / `roofNorth` / `facadeSouth` v `spec.pv`.
 
 ## Soubory
 
@@ -81,9 +88,10 @@ src/main.js      scéna, ovládání, editace
 
 ## Otevřené otázky
 
-- Okap 6,0 m dává v patře 2,70 m světlé výšky. Legální, ale těsné —
-  zvážit 6,5 m (u montované haly levné, dodatečně nemožné).
 - Přípojku elektro dimenzovat na celých 56 m, ne jen na etapu 1.
-- Fotovoltaika ano/ne — mění přitížení střechy a nároky na strojovnu.
-- Venkovní jednotky TČ na severu míří k sousedovi (hluk, noční limity).
+- Zapnout i severní střešní rovinu FVE? Při sklonu 10° je skoro vodorovná a
+  přidala by dalších ~39 kWp při zhruba 80 % měrného výnosu.
 - Retenci dešťové vody počítat na celých 1 008 m² střechy.
+
+Rozhodnuto: okap zůstává 6,0 m (v patře 2,70 m světlé výšky). Hluk venkovních
+jednotek TČ se neřeší — průmyslová zóna.

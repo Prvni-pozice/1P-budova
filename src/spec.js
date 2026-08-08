@@ -3,10 +3,12 @@
 // Geometrie, plochy i trasy rozvodů se generují odtud. Když se tady změní
 // číslo, přegeneruje se všechno včetně dimenzí VZT, topení a elektra.
 //
-// Souřadnice:
-//   x = 0 na VÝCHODNÍM průčelí, roste na západ (etapa 1 = 0..28, etapa 2 = 28..56)
-//   z = 0 na SEVERNÍ stěně, roste na jih (rozpon 18 m)
+// Souřadnice — POZOR na znaménka, kompas musí být pravotočivý:
+//   x = 0 na VÝCHODNÍM průčelí, roste na ZÁPAD (etapa 1 = 0..28, etapa 2 = 28..56)
+//   z = 0 na JIŽNÍ stěně (vstupy), roste na SEVER (rozpon 18 m)
 //   y = výška nad podlahou přízemí
+// Kontrola: východ = −x, sever = +z → východ × sever = +y (nahoru). Sedí.
+// Kdyby platilo z+ = jih, byl by celý model zrcadlově převrácený.
 
 export const SPEC = {
   grid: 7,          // rastr rámů montované haly (28 = 4×7, 56 = 8×7)
@@ -18,33 +20,36 @@ export const SPEC = {
   wall: 0.25,       // tloušťka obvodového pláště
   slab: 0.3,        // tloušťka vestavěného stropu
   clearGF: 3.0,     // světlá výška přízemí
-  spineZ: 0.9,      // osa SEVERNÍ servisní páteře
+  spineZ: 17.1,     // osa SEVERNÍ servisní páteře (u slepé stěny)
 
-  // Severní stěna je na hranici pozemku (soused) — slepá, bez otvorů.
+  // Severní stěna je na hranici pozemku (soused, průmyslová zóna) — slepá.
   // Proto tam sedí provozy, které okna nechtějí, a všechny rozvody.
   blindWalls: ['north'],
 
   // Vrata dílny — v JIŽNÍ stěně, kde jsou všechny vstupy a vjezdy
   gate: { width: 4.0, height: 4.0 },
 
+  // Fotovoltaika. Jižní střešní rovina + jižní fasáda mezi otvory.
+  pv: { roofSouth: true, roofNorth: false, facadeSouth: true, wp: 210, coverage: 0.85 },
+
   blocks: [
     // ---- přízemí (504 m²) ----
-    // sever (z 0–6) = servisní pruh bez oken, jih (z 6–18) = vstupy a světlo
-    { id: 'kitchen',   name: 'Kuchyňka + WC',       type: 'wet',      level: 0, x0: 0,  x1: 7,  z0: 0, z1: 6 },
-    { id: 'office-gf', name: 'Kanceláře 1P',        type: 'office',   level: 0, x0: 0,  x1: 7,  z0: 6, z1: 18 },
-    { id: 'wetcore',   name: 'Šatny + sprchy + WC', type: 'wet',      level: 0, x0: 7,  x1: 14, z0: 0, z1: 6 },
-    { id: 'lobby',     name: 'Lobby / recepce / bar', type: 'lobby',  level: 0, x0: 7,  x1: 14, z0: 6, z1: 18 },
+    // sever (z 12–18) = servisní pruh bez oken, jih (z 0–12) = vstupy a světlo
+    { id: 'kitchen',   name: 'Kuchyňka + WC',       type: 'wet',      level: 0, x0: 0,  x1: 7,  z0: 12, z1: 18 },
+    { id: 'office-gf', name: 'Kanceláře 1P',        type: 'office',   level: 0, x0: 0,  x1: 7,  z0: 0,  z1: 12 },
+    { id: 'wetcore',   name: 'Šatny + sprchy + WC', type: 'wet',      level: 0, x0: 7,  x1: 14, z0: 12, z1: 18 },
+    { id: 'lobby',     name: 'Lobby / recepce / bar', type: 'lobby',  level: 0, x0: 7,  x1: 14, z0: 0,  z1: 12 },
     { id: 'arena',     name: 'Jump aréna',          type: 'arena',    level: 'full', x0: 14, x1: 21, z0: 0, z1: 18 },
-    { id: 'plant',     name: 'Strojovna',           type: 'plant',    level: 0, x0: 21, x1: 28, z0: 0, z1: 5 },
-    { id: 'workshop',  name: 'Sdílená dílna',       type: 'workshop', level: 'full', x0: 21, x1: 28, z0: 5, z1: 18 },
+    { id: 'plant',     name: 'Strojovna',           type: 'plant',    level: 0, x0: 21, x1: 28, z0: 13, z1: 18 },
+    { id: 'workshop',  name: 'Sdílená dílna',       type: 'workshop', level: 'full', x0: 21, x1: 28, z0: 0, z1: 13 },
 
     // ---- patro (336 m²) ----
-    { id: 'meeting',   name: 'Zasedačka / školicí', type: 'meeting',  level: 1, x0: 0,  x1: 7,  z0: 0, z1: 6 },
-    { id: 'office-1f', name: 'Kanceláře 1P',        type: 'office',   level: 1, x0: 0,  x1: 7,  z0: 6, z1: 18 },
-    { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 7,  x1: 14, z0: 0, z1: 6 },
-    { id: 'gym',       name: 'Fitness',             type: 'gym',      level: 1, x0: 7,  x1: 14, z0: 6, z1: 18 },
-    { id: 'play',      name: 'Dětské atrakce',      type: 'play',     level: 1, x0: 14, x1: 21, z0: 0, z1: 3 },
-    { id: 'storage',   name: 'Sklad nad dílnou',    type: 'storage',  level: 1, x0: 21, x1: 28, z0: 5, z1: 14 },
+    { id: 'meeting',   name: 'Zasedačka / školicí', type: 'meeting',  level: 1, x0: 0,  x1: 7,  z0: 12, z1: 18 },
+    { id: 'office-1f', name: 'Kanceláře 1P',        type: 'office',   level: 1, x0: 0,  x1: 7,  z0: 0,  z1: 12 },
+    { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 7,  x1: 14, z0: 12, z1: 18 },
+    { id: 'gym',       name: 'Fitness',             type: 'gym',      level: 1, x0: 7,  x1: 14, z0: 0,  z1: 12 },
+    { id: 'play',      name: 'Dětské atrakce',      type: 'play',     level: 1, x0: 14, x1: 21, z0: 15, z1: 18 },
+    { id: 'storage',   name: 'Sklad nad dílnou',    type: 'storage',  level: 1, x0: 21, x1: 28, z0: 4,  z1: 13 },
   ],
 }
 

@@ -2,7 +2,7 @@
 // Spouštět: node test_spec.mjs
 import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
-import { openingsFor } from './src/building.js'
+import { openingsFor, pvLayout } from './src/building.js'
 
 let fail = 0
 const ok = (cond, msg, extra = '') => {
@@ -48,6 +48,17 @@ ok(ridgeY(SPEC) > SPEC.eaves, 'hřeben je nad okapem', `${ridgeY(SPEC).toFixed(2
 const upperClear = SPEC.eaves - (SPEC.clearGF + SPEC.slab)
 ok(upperClear >= 2.5, 'světlá výška patra ≥ 2,5 m', `${upperClear.toFixed(2)} m`)
 
+console.log('\nKOMPAS')
+// východ = −x, sever = +z; v pravotočivém prostoru musí být východ × sever = nahoru.
+// Když tohle selže, je celý model zrcadlově převrácený.
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+const up = cross([-1, 0, 0], [0, 0, 1])
+ok(up[1] === 1, 'východ × sever = nahoru (kompas je pravotočivý)', `(${up})`)
+ok(SPEC.blocks.find((b) => b.id === 'office-gf').x0 === 0, 'kanceláře na východním průčelí (x = 0)')
+ok(SPEC.blocks.filter((b) => b.z1 >= SPEC.depth).every((b) => ['wet', 'plant', 'arena', 'sim', 'meeting', 'play'].includes(b.type)),
+  'u severní (slepé) stěny jsou jen provozy bez nároku na okna')
+ok(SPEC.blocks.some((b) => b.type === 'workshop' && b.z0 === 0), 'dílna se dotýká jižní stěny → vrata z jihu')
+
 console.log('\nOTVORY V PLÁŠTI')
 const north = openingsFor(SPEC, 'north')
 const south = openingsFor(SPEC, 'south')
@@ -91,6 +102,17 @@ for (const key of ['vzt', 'elec']) {
   const need = SPEC.blocks.filter((b) => blockDemand(b)[key === 'vzt' ? 'vzt' : 'elec'] > 0)
   ok(need.every((b) => tapped.has(b.id)), `${key}: každý blok má odbočku`, `${tapped.size}/${need.length}`)
 }
+
+console.log('\nFOTOVOLTAIKA')
+const pv = pvLayout(SPEC, south)
+ok(pv.roofKwp > 30 && pv.roofKwp < 70, 'střešní FVE 30–70 kWp', `${pv.roofKwp.toFixed(1)} kWp z ${Math.round(pv.roofArea)} m²`)
+ok(pv.facadeKwp > 0, 'fasádní FVE se vejde mezi otvory', `${pv.facadeKwp.toFixed(1)} kWp z ${Math.round(pv.facadeArea)} m²`)
+ok(pv.panels.filter((p) => p.kind === 'facade').every((p) =>
+  !south.some((h) => h.x1 > p.x0 && h.x0 < p.x1 && h.v1 > p.v0 && h.v0 < p.v1)),
+  'fasádní panely nepřekrývají žádný otvor')
+const noPv = structuredClone(SPEC)
+noPv.pv = { roofSouth: false, roofNorth: false, facadeSouth: false }
+ok(pvLayout(noPv, south).panels.length === 0, 'FVE jde ve spec vypnout')
 
 console.log('\nPŘEPOČET PO ZMĚNĚ')
 const bigger = structuredClone(SPEC)

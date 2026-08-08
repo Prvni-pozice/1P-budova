@@ -9,7 +9,10 @@ const n2 = (v) => v.toFixed(2).replace('.', ',')
 const pad = (s, w) => String(s).padEnd(w)
 const rpad = (s, w) => String(s).padStart(w)
 
-export function summaryText(spec, mep) {
+// Měrné výnosy pro ČR [kWh/kWp/rok] — střecha ve sklonu 10°, fasáda svisle
+const YIELD = { roof: 1020, facade: 700 }
+
+export function summaryText(spec, mep, pv) {
   const a = areaTotals(spec)
   const t = mep.totals
   const breaker = BREAKERS.find((b) => b >= t.breaker * 1.15) ?? '>400'
@@ -44,5 +47,15 @@ export function summaryText(spec, mep) {
   L.push('VODA')
   L.push(`  ${pad('Mokré provozy', 16)}${rpad(n0(t.wetArea), 7)} m²`)
   L.push(`  ${pad('Špička TUV', 16)}${rpad(n0(t.tuv), 7)} l/h`)
+
+  if (pv && (pv.roofKwp > 0 || pv.facadeKwp > 0)) {
+    const kwh = pv.roofKwp * YIELD.roof + pv.facadeKwp * YIELD.facade
+    L.push('')
+    L.push('FOTOVOLTAIKA')
+    L.push(`  ${pad('Střecha', 16)}${rpad(n1(pv.roofKwp), 7)} kWp  (${n0(pv.roofArea)} m²)`)
+    L.push(`  ${pad('Jižní fasáda', 16)}${rpad(n1(pv.facadeKwp), 7)} kWp  (${n0(pv.facadeArea)} m²)`)
+    L.push(`  ${pad('Celkem', 16)}${rpad(n1(pv.roofKwp + pv.facadeKwp), 7)} kWp`)
+    L.push(`  ${pad('Odhad výroby', 16)}${rpad(n0(kwh / 1000), 7)} MWh/rok`)
+  }
   return L.join('\n')
 }
