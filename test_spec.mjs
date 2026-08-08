@@ -2,7 +2,7 @@
 // Spouštět: node test_spec.mjs
 import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
-import { openingsFor, pvLayout, stairOpening, openEdges } from './src/building.js'
+import { openingsFor, pvLayout, stairOpening, openEdges, roofSlope } from './src/building.js'
 import { fitoutAll, fitoutFor, sanitaryFor, SVC, FURN, doorsFor, sharedEdge } from './src/fitout.js'
 
 let fail = 0
@@ -48,6 +48,13 @@ ok(Math.abs(roofY(SPEC, 0) - SPEC.eaves) < 1e-9, 'u severní stěny je výška =
 ok(ridgeY(SPEC) > SPEC.eaves, 'hřeben je nad okapem', `${ridgeY(SPEC).toFixed(2)} m`)
 const upperClear = SPEC.eaves - (SPEC.clearGF + SPEC.slab)
 ok(upperClear >= 2.5, 'světlá výška patra ≥ 2,5 m', `${upperClear.toFixed(2)} m`)
+
+// dvě střešní roviny se u hřebene nesmí překrývat, jinak z-fighting a problikávání
+const sSlope = roofSlope(SPEC, -1)
+const nSlope = roofSlope(SPEC, 1)
+ok(Math.abs(nSlope.zFrom - sSlope.zTo) < 0.01, 'střešní roviny na sebe u hřebene přesně navazují',
+  `přesah ${(sSlope.zTo - nSlope.zFrom).toFixed(3)} m`)
+ok(Math.abs(sSlope.zTo - SPEC.depth / 2) < 1e-9, 'styk rovin je v ose hřebene', `z = ${sSlope.zTo}`)
 
 console.log('\nKOMPAS')
 // východ = −x, sever = +z; v pravotočivém prostoru musí být východ × sever = nahoru.

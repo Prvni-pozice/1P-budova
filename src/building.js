@@ -250,6 +250,27 @@ export function openEdges(S, b) {
   return out
 }
 
+/**
+ * Geometrie jedné střešní roviny. side = −1 jižní, +1 severní.
+ * Roviny se u hřebene musí DOTÝKAT, ne překrývat — překryv dělá z-fighting
+ * a střecha při pohybu kamery probliká.
+ */
+export function roofSlope(S, side, over = 0.5) {
+  const ridge = ridgeY(S)
+  const rise = ridge - S.eaves
+  const halfD = S.depth / 2
+  const diag = Math.hypot(halfD, rise)
+  const eaveZ = side < 0 ? -over * (halfD / diag) : S.depth + over * (halfD / diag)
+  const eaveY = S.eaves - over * (rise / diag)
+  return {
+    y: (eaveY + ridge) / 2,
+    z: (eaveZ + halfD) / 2,
+    len: diag + over,
+    zFrom: Math.min(eaveZ, halfD),
+    zTo: Math.max(eaveZ, halfD),
+  }
+}
+
 // ------------------------------------------------------------- vybavení
 
 const box = (w, h, d, mat, x = 0, y = 0, z = 0) => {
@@ -485,17 +506,27 @@ export function buildAll(spec, mep) {
   }
 
   // --- střecha ---
-  const slope = Math.sqrt((S.depth / 2) ** 2 + (ridge - S.eaves) ** 2)
+  // Roviny musí u hřebene KONČIT, ne se překrývat — půlmetrový přesah dvou
+  // ploch přes sebe dělal z-fighting a střecha problikávala.
+  const halfD = S.depth / 2
+  const slopeCenter = (side) => roofSlope(S, side)
+  const slope = roofSlope(S, -1).len
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x7d8590, roughness: 0.7, metalness: 0.3, side: THREE.DoubleSide })
   for (const side of [-1, 1]) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(S.stage1 + 0.8, 0.18, slope + 0.5), roofMat.clone())
-    m.position.set(S.stage1 / 2, (S.eaves + ridge) / 2, side < 0 ? S.depth / 4 : (S.depth * 3) / 4)
+    const c = slopeCenter(side)
+    const m = new THREE.Mesh(new THREE.BoxGeometry(S.stage1 + 0.8, 0.18, slope), roofMat.clone())
+    m.position.set(S.stage1 / 2, c.y, c.z)
     m.rotation.x = side * deg(S.pitch)
     m.castShadow = true
     m.receiveShadow = true
     m.userData.baseOpacity = 1
     groups.roof.add(m)
   }
+  const cap = new THREE.Mesh(new THREE.BoxGeometry(S.stage1 + 0.8, 0.16, 0.5), roofMat.clone())
+  cap.position.set(S.stage1 / 2, ridge + 0.09, halfD)   // hřebenáč přes styk rovin
+  cap.castShadow = true
+  cap.userData.baseOpacity = 1
+  groups.roof.add(cap)
 
   // --- fotovoltaika ---
   const pv = pvLayout(S, southHoles)
@@ -504,18 +535,19 @@ export function buildAll(spec, mep) {
     let m
     if (p.kind === 'roof') {
       const th = p.side * deg(S.pitch)
+      const c = slopeCenter(p.side)
       m = new THREE.Mesh(new THREE.BoxGeometry(p.w, 0.07, p.l), pvMat.clone())
-      m.position.set(
-        S.stage1 / 2,
-        (S.eaves + ridge) / 2 + 0.14 * Math.cos(th),
-        (p.side < 0 ? S.depth / 4 : (S.depth * 3) / 4) + 0.14 * Math.sin(th),
-      )
+      m.position.set(S.stage1 / 2, c.y + 0.14 * Math.cos(th), c.z + 0.14 * Math.sin(th))
       m.rotation.x = th
       m.userData.outward = null            // s cutaway mizí zároveň se střechou
+      // panel je skoro černý — poloprůhledný by dělal tmavý závoj přes půdorys,
+      // takže se přepíná natvrdo
+      m.userData.binary = true
     } else {
       m = new THREE.Mesh(new THREE.BoxGeometry(p.x1 - p.x0, p.v1 - p.v0, 0.06), pvMat.clone())
       m.position.set((p.x0 + p.x1) / 2, (p.v0 + p.v1) / 2, -0.05)
       m.userData.outward = new THREE.Vector3(0, 0, -1)   // mizí s jižní stěnou
+      m.userData.binary = true
     }
     m.castShadow = true
     m.userData.baseOpacity = 1

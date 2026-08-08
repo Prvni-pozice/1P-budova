@@ -26,12 +26,13 @@ export class Cutaway {
         mesh: w,
         center: box.getCenter(new THREE.Vector3()),
         outward: w.userData.outward,
+        binary: !!w.userData.binary,
         base: w.userData.baseOpacity ?? 1,
         cur: w.userData.baseOpacity ?? 1,
       })
     }
     for (const r of roofGroup.children) {
-      this.items.push({ mesh: r, center: null, outward: null, base: 1, cur: 1 })
+      this.items.push({ mesh: r, center: null, outward: null, binary: false, base: 1, cur: 1 })
     }
     this._v = new THREE.Vector3()
   }
@@ -50,6 +51,12 @@ export class Cutaway {
     if (this.mode === 'open') t = 0
     else if (this.mode === 'solid') t = 1
 
+    // Když se díváš shora dolů, střecha nemá co clonit — jinak vznikne pás
+    // vzdáleností, kde nad půdorysem visí poloprůhledná plocha.
+    const elev = (Math.atan2(camera.position.y - S.eaves * 0.5, Math.max(d, 0.001)) * 180) / Math.PI
+    const looksDown = smoothstep(35, 62, elev)
+    const roofT = this.mode === 'solid' ? 1 : t * (1 - looksDown)
+
     const k = 1 - Math.exp(-dt * 8)
 
     for (const it of this.items) {
@@ -57,7 +64,7 @@ export class Cutaway {
       if (it.outward === null) {                                  // střecha
         if (this.mode === 'solid') target = 1
         else if (this.mode === 'open') target = 0
-        else target = inside ? 1 : t   // shora je vzdálenost malá → střecha zmizí sama
+        else target = inside ? 1 : roofT
       } else if (inside && this.mode !== 'open') {
         target = it.base
       } else {
@@ -66,11 +73,21 @@ export class Cutaway {
         target = facing ? it.base * (0.09 + 0.91 * t) : it.base
       }
       it.cur += (target - it.cur) * k
+      if (Math.abs(target - it.cur) < 0.004) it.cur = target   // ať nezůstane viset mezi
       const m = it.mesh.material
-      m.opacity = it.cur
-      m.transparent = it.cur < 0.995
-      m.depthWrite = it.cur > 0.9
-      it.mesh.visible = it.cur > 0.012
+      if (it.binary) {
+        // fotovoltaika se nestmívá, jen se zapíná — poloprůhledný černý panel
+        // by dělal závoj přes celý půdorys
+        m.opacity = it.base
+        m.transparent = false
+        m.depthWrite = true
+        it.mesh.visible = it.cur > 0.5
+      } else {
+        m.opacity = it.cur
+        m.transparent = it.cur < 0.995
+        m.depthWrite = it.cur > 0.9
+        it.mesh.visible = it.cur > 0.012
+      }
     }
   }
 }
