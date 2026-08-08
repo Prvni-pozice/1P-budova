@@ -45,6 +45,21 @@
     background: rgba(22,19,28,.92); backdrop-filter: blur(10px); }
   #panel-toggle.on { background: #e8834b; }
 
+  /* Dotykové ovládání (Minecraft styl): levý palec joystick, pravý rozhlížení */
+  #touch-ui { display: none; }
+  body.touch-move #touch-ui { display: block; }
+  #joy { position: fixed; left: 22px; bottom: 26px; width: 124px; height: 124px; border-radius: 50%;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.28); z-index: 12;
+    touch-action: none; }
+  #joy-knob { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px;
+    border-radius: 50%; background: rgba(255,255,255,.38); pointer-events: none; }
+  .tbtn { position: fixed; right: 22px; width: 64px; height: 64px; border-radius: 50%;
+    font-size: 24px; z-index: 12; touch-action: none; display: none; flex: none; min-width: 0;
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); }
+  body.touch-gta #btn-jump { display: block; bottom: 44px; }
+  body.touch-walk #btn-up { display: block; bottom: 112px; }
+  body.touch-walk #btn-down { display: block; bottom: 36px; }
+
   @media (max-width: 640px) {
     #panel-toggle { display: flex; }
     #panel { width: calc(100vw - 20px); max-height: calc(100vh - 76px); top: 66px; }
@@ -121,6 +136,13 @@
   <fieldset><legend>Souhrn</legend>
     <pre id="summary"></pre>
   </fieldset>
+</div>
+
+<div id="touch-ui">
+  <div id="joy"><div id="joy-knob"></div></div>
+  <button id="btn-jump" class="tbtn" type="button">↑</button>
+  <button id="btn-up" class="tbtn" type="button">▲</button>
+  <button id="btn-down" class="tbtn" type="button">▼</button>
 </div>
 
 <div id="hint">Orbit: táhni myší · kolečko = zoom · pravé tlačítko = posun</div>

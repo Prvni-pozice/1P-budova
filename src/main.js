@@ -213,21 +213,28 @@ function setMode(mode) {
   gta.on = mode === 'gta'
   orbit.enabled = mode === 'orbit'
   char.group.visible = gta.on
+  document.body.classList.toggle('touch-move', TOUCH && mode !== 'orbit')
+  document.body.classList.toggle('touch-walk', TOUCH && mode === 'walk')
+  document.body.classList.toggle('touch-gta', TOUCH && mode === 'gta')
   if (mode === 'walk') {
     const e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ')
     walk.yaw = e.y
     walk.pitch = e.x
     if (camera.position.y > 6) camera.position.y = 1.7
-    lockPointer()
-    hint.textContent = 'Procházka: WASD · Space/Shift výška · myš rozhlížení · Esc konec'
+    if (!TOUCH) lockPointer()
+    hint.textContent = TOUCH
+      ? 'Procházka: levý palec pohyb · pravý rozhlížení · ▲▼ výška'
+      : 'Procházka: WASD · Space/Shift výška · myš rozhlížení · Esc konec'
   } else if (mode === 'gta') {
     char.group.position.set(10.5, 0, -5)   // před hlavním vstupem
     char.group.rotation.y = 0
     gta.yaw = Math.PI
     gta.pitch = 0.35
     gta.vy = 0
-    lockPointer()
-    hint.textContent = 'Postava: WASD · Shift sprint · Space skok · myš kamera · Esc konec'
+    if (!TOUCH) lockPointer()
+    hint.textContent = TOUCH
+      ? 'Postava: levý palec pohyb (naplno = sprint) · pravý kamera · ↑ skok'
+      : 'Postava: WASD · Shift sprint · Space skok · myš kamera · Esc konec'
   } else {
     if (document.pointerLockElement) document.exitPointerLock()
     orbit.target.set(spec.stage1 / 2, spec.eaves * 0.45, spec.depth / 2)
@@ -235,10 +242,11 @@ function setMode(mode) {
   }
 }
 renderer.domElement.addEventListener('click', () => {
-  if ((walk.on || gta.on) && !document.pointerLockElement) lockPointer()
+  if (!TOUCH && (walk.on || gta.on) && !document.pointerLockElement) lockPointer()
 })
 document.addEventListener('pointerlockchange', () => {
-  if ((walk.on || gta.on) && !document.pointerLockElement) {
+  // na dotyku pointer lock neexistuje — režim se ukončuje tlačítkem, ne Escapem
+  if (!TOUCH && (walk.on || gta.on) && !document.pointerLockElement) {
     $('cam-orbit').click()
   }
 })
@@ -252,6 +260,88 @@ addEventListener('mousemove', (e) => {
     gta.pitch = Math.max(0.02, Math.min(1.25, gta.pitch + e.movementY * 0.0025))
   }
 })
+
+// ----------------------------------------------- dotykový joystick a kamera
+const joy = { id: null, x: 0, y: 0 }         // výchylka −1..1
+const lookT = { id: null, px: 0, py: 0 }
+const joyEl = $('joy')
+const knobEl = $('joy-knob')
+
+function joyApply(t) {
+  const r = joyEl.getBoundingClientRect()
+  const dx = t.clientX - (r.left + r.width / 2)
+  const dy = t.clientY - (r.top + r.height / 2)
+  const max = r.width / 2 - 10
+  const len = Math.hypot(dx, dy)
+  const k = len > max ? max / len : 1
+  joy.x = (dx * k) / max
+  joy.y = (dy * k) / max
+  knobEl.style.transform = `translate(${dx * k}px, ${dy * k}px)`
+}
+function joyReset() {
+  joy.id = null
+  joy.x = 0
+  joy.y = 0
+  knobEl.style.transform = ''
+}
+
+joyEl.addEventListener('touchstart', (e) => {
+  e.preventDefault()
+  const t = e.changedTouches[0]
+  joy.id = t.identifier
+  joyApply(t)
+}, { passive: false })
+
+renderer.domElement.addEventListener('touchstart', (e) => {
+  if (!walk.on && !gta.on) return
+  e.preventDefault()
+  for (const t of e.changedTouches) {
+    if (t.identifier !== joy.id && lookT.id === null) {
+      lookT.id = t.identifier
+      lookT.px = t.clientX
+      lookT.py = t.clientY
+    }
+  }
+}, { passive: false })
+
+addEventListener('touchmove', (e) => {
+  if (!walk.on && !gta.on) return
+  for (const t of e.changedTouches) {
+    if (t.identifier === joy.id) {
+      e.preventDefault()
+      joyApply(t)
+    } else if (t.identifier === lookT.id) {
+      e.preventDefault()
+      const dx = t.clientX - lookT.px
+      const dy = t.clientY - lookT.py
+      lookT.px = t.clientX
+      lookT.py = t.clientY
+      if (walk.on) {
+        walk.yaw -= dx * 0.006
+        walk.pitch = Math.max(-1.5, Math.min(1.5, walk.pitch - dy * 0.006))
+      } else {
+        gta.yaw -= dx * 0.006
+        gta.pitch = Math.max(0.02, Math.min(1.25, gta.pitch + dy * 0.006))
+      }
+    }
+  }
+}, { passive: false })
+
+addEventListener('touchend', (e) => {
+  for (const t of e.changedTouches) {
+    if (t.identifier === joy.id) joyReset()
+    if (t.identifier === lookT.id) lookT.id = null
+  }
+})
+addEventListener('touchcancel', () => { joyReset(); lookT.id = null })
+
+// tlačítka drží klávesu po dobu dotyku — zbytek jede přes stejnou logiku
+for (const [id, code] of [['btn-jump', 'Space'], ['btn-up', 'Space'], ['btn-down', 'ControlLeft']]) {
+  const el = $(id)
+  el.addEventListener('touchstart', (e) => { e.preventDefault(); walk.keys.add(code) }, { passive: false })
+  el.addEventListener('touchend', () => walk.keys.delete(code))
+  el.addEventListener('touchcancel', () => walk.keys.delete(code))
+}
 
 // --------------------------------------------------------------- GTA smyčka
 const downRay = new THREE.Raycaster()
@@ -269,9 +359,12 @@ function gtaTick(dt) {
   if (walk.keys.has('KeyS')) iz -= 1
   if (walk.keys.has('KeyD')) ix += 1
   if (walk.keys.has('KeyA')) ix -= 1
+  ix += joy.x
+  iz -= joy.y
   const move = f.multiplyScalar(iz).addScaledVector(r, ix)
-  const moving = move.lengthSq() > 0
-  const speed = walk.keys.has('ShiftLeft') ? GTA_RUN : GTA_WALK
+  const moving = move.lengthSq() > 0.01
+  // joystick naplno = sprint (Minecraft styl)
+  const speed = walk.keys.has('ShiftLeft') || Math.hypot(joy.x, joy.y) > 0.92 ? GTA_RUN : GTA_WALK
   if (moving) {
     move.normalize()
     pos.addScaledVector(move, speed * dt)
@@ -441,7 +534,7 @@ addEventListener('resize', () => {
 rebuild()
 
 // ladicí přístup pro skriptované screenshoty (a rychlé zkoušení v konzoli)
-window.__view = { camera, orbit, scene, spec, get mep() { return mep }, get built() { return built }, rebuild }
+window.__view = { camera, orbit, scene, spec, gta, walk, joy, lookT, get mep() { return mep }, get built() { return built }, rebuild }
 
 const clock = new THREE.Clock()
 renderer.setAnimationLoop(() => {
@@ -458,6 +551,10 @@ renderer.setAnimationLoop(() => {
     if (walk.keys.has('KeyS')) camera.position.addScaledVector(fwd, -sp)
     if (walk.keys.has('KeyA')) camera.position.addScaledVector(right, -sp)
     if (walk.keys.has('KeyD')) camera.position.addScaledVector(right, sp)
+    if (joy.id !== null) {
+      camera.position.addScaledVector(fwd, -joy.y * sp)
+      camera.position.addScaledVector(right, joy.x * sp)
+    }
     if (walk.keys.has('Space')) camera.position.y += sp
     if (walk.keys.has('ControlLeft')) camera.position.y -= sp
   } else if (gta.on) {
