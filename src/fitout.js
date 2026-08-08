@@ -70,7 +70,7 @@ export const FURN = {
   tyrerack:   { w: 1.60, d: 0.60, h: 2.00, color: 0x3f4a52, shape: 'rack',    label: 'Regál na pneu' },
   oildrum:    { w: 0.62, d: 0.62, h: 0.90, color: 0x4a5a3a, shape: 'cyl',     label: 'Sud na olej' },
   airreel:    { w: 0.45, d: 0.30, h: 0.45, color: 0x6a7078, shape: 'box',     label: 'Naviják na vzduch' },
-  hoist:      { w: 1.60, d: 2.00, h: 0.30, color: 0xc9a227, shape: 'box',     label: 'Nakládací otvor s kladkostrojem' },
+  hoist:      { w: 1.00, d: 1.80, h: 0.30, color: 0xc9a227, shape: 'box',     label: 'Nakládací otvor s kladkostrojem' },
   palrack:    { w: 2.70, d: 1.10, h: 2.40, color: 0x9c7b4f, shape: 'rack',    label: 'Paletový regál' },
 
   ahu:        { w: 3.00, d: 1.60, h: 2.00, color: 0x7fd4ff, shape: 'box',     label: 'VZT jednotka' },
@@ -190,7 +190,8 @@ function maker(S, b) {
   const items = []
   const y = levelBase(S, b.level === 'full' ? 0 : b.level)
   const put = (kind, u, v, o = {}) => {
-    items.push({ kind, block: b.id, x: b.x0 + u, z: b.z0 + v, y, rot: o.rot ?? 0, note: o.note,
+    items.push({ kind, block: b.id, x: b.x0 + u, z: b.z0 + v, y: y + (o.dy ?? 0),
+      rot: o.rot ?? 0, note: o.note,
       ...(o.img && { img: o.img, pw: o.pw, ph: o.ph, py: o.py }) })
   }
   /** řada n kusů s roztečí step; rot=90 znamená, že řada běží podél v */
@@ -262,7 +263,7 @@ const LAYOUTS = {
     }
     around(2.9, 2.8, [[-1.9, 0], [1.9, 0]])
     put('screen', 2.9, 5.85, { note: `projekce pro ${P.office.staffTarget + 2}` })
-    put('co2', 0.15, 3.0, { rot: 90 })
+    put('co2', 0.15, 3.0, { rot: 90, dy: 1.6 })
     row('sideboard', 5.3, 1.0, 2, 0.9, { along: 'v', rot: 90 })
     // galerie: jižní stěna tři rámy, západní dva (dveře jsou až u v 4,6)
     put('picture', 1.2, 0.15, { img: '/art/zasedacka1.jpg', pw: 0.8,  ph: 1.05, py: 1.6, note: 'portrét' })
@@ -281,7 +282,7 @@ const LAYOUTS = {
     for (const u of [1.0, 2.2]) { seat(u, 2.7, u, 3.4); seat(u, 4.1, u, 3.4) }
     put('cleaning', 3.2, 0.8)
     put('rack19', 5.4, 0.8, { note: 'serverovna' })
-    put('cabinet', 6.4, 0.8)
+    put('cabinet', 4.3, 0.8)
     row('wc', 5.0, 5.1, s.wcW + s.wcM, 0.95)                   // kabiny u severní stěny
     row('urinal', 4.9, 3.6, s.urinals, 0.5)
     row('basin', 6.5, 3.4, s.basins, 0.7, { along: 'v', rot: 90 })
@@ -304,8 +305,8 @@ const LAYOUTS = {
     put('reception', 2.4, 3.7)
     put('bar', 4.5, 3.7)
     row('backbar', 1.4, 4.8, 3, 1.05)
-    put('fridge', 4.8, 4.8)
-    put('barstore', 6.0, 4.8, { note: 'zásoba baru — bez ní se doplňuje z auta' })
+    put('fridge', 4.35, 4.8)
+    put('barstore', 5.5, 4.8, { note: 'zásoba baru — bez ní se doplňuje z auta' })
     // zouvací kout: do arény jen v protiskluzových ponožkách
     put('pram', 1.8, 1.3, { note: 'rodinný provoz bez odstavení kočárků nefunguje' })
     put('bench', 5.6, 3.0)
@@ -314,10 +315,13 @@ const LAYOUTS = {
     row('valuebox', 6.6, 6.0, 10, 0.32, { along: 'v', rot: 90, note: 'cennosti, 3 patra' })
     // schodiště podél západní stěny — přes severní konec se to nemačká
     put('stairs', 0.75, 8.2, { note: 'do fitness a sim racingu' })
-    // dva sloupce, ne tři: při rozteči 1,5 m by si sousední stoly sdílely židli
-    for (const v of [6.8, 8.6]) for (const u of [2.7, 5.1]) {
-      put('rtable', u, v)
-      around(u, v, [[-0.75, 0], [0.75, 0], [0, -0.75], [0, 0.75]])
+    // dva sloupce; řady 2,4 m od sebe, jinak židle zády k sobě kolidují.
+    // U řady u příčky se severní židle vynechává.
+    for (const u of [2.7, 5.1]) {
+      put('rtable', u, 6.6)
+      around(u, 6.6, [[-0.75, 0], [0.75, 0], [0, -0.75], [0, 0.75]])
+      put('rtable', u, 9.0)
+      around(u, 9.0, [[-0.75, 0], [0.75, 0], [0, -0.75]])
     }
     put('partyTable', 4.0, 11.0, { note: 'vyhrazený stůl pro oslavy' })
     put('partition', 4.0, 9.9, { note: 'oddělí párty kout, jinak splyne s barem' })
@@ -327,27 +331,27 @@ const LAYOUTS = {
       seat(u, 11.65, u, 11.0)
     }
     put('glass', 6.95, 8.5, { rot: 90, note: 'výhled do arény' })
-    put('hydrant', 0.4, 2.6, { rot: 90 })
+    put('hydrant', 0.4, 2.6, { rot: 90, dy: 0.6 })
     return items
   },
 
   // ------------------------------------------------------- šatny a WC
   wetcore: (S, b, P) => {
     const { items, put, row } = maker(S, b)
-    const s = sanitaryFor(P.arena.peak, { publicUse: true })
-    const lk = Math.ceil(P.gym.users * 1.5)
-    // unisex šatna fitness s uzamykatelnými kabinkami — méně fixtur než 2× M/F
-    row('locker', 0.45, 0.6, Math.ceil(lk / 2), 0.32, { along: 'v', rot: 90 })
-    put('bench', 1.9, 2.4, { rot: 90 })
-    row('changing', 3.2, 0.7, 3, 1.1, { along: 'v' })
-    row('shower', 0.9, 5.3, 2, 1.0)
-    row('basin', 3.3, 5.6, 2, 0.7)
-    // veřejné WC z lobby
-    row('wc', 4.9, 1.0, s.wcW + s.wcM, 0.95, { along: 'v' })
-    row('urinal', 6.6, 1.0, s.urinals, 0.5, { along: 'v', rot: 90 })
-    put('wcBF', 5.7, 4.7)
-    put('babychange', 4.6, 5.6, { note: 'v rodinném provozu povinná výbava' })
-    row('basin', 4.6, 3.2, s.basins, 0.7)
+    const sPub = sanitaryFor(P.arena.peak, { publicUse: true })
+    // Šatna fitness: západní pás (skříňky, lavice) + severní pás (sprchy,
+    // umyvadla, kabinky). Veřejné WC: kabiny podél východní stěny, rozteč
+    // 1,0 m — kabina je hluboká 1,5, takže jde na východ hloubkou, ne šířkou.
+    row('locker', 0.4, 0.9, Math.ceil(Math.ceil(P.gym.users * 1.5) / 2), 0.32, { along: 'v', rot: 90 })
+    put('bench', 1.6, 2.6, { rot: 90 })
+    row('shower', 0.65, 5.5, 2, 0.95)
+    row('basin', 2.45, 5.55, 2, 0.65)
+    row('changing', 3.85, 5.45, 2, 1.05)
+    row('wc', 6.25, 0.8, sPub.wcW + sPub.wcM, 1.0, { along: 'v', rot: 90 })
+    row('urinal', 0.35, 3.3, sPub.urinals, 0.5, { along: 'v', rot: 90 })
+    row('basin', 2.9, 0.55, sPub.basins, 0.7)
+    put('wcBF', 3.4, 3.6)
+    put('babychange', 5.0, 3.5, { note: 'v rodinném provozu povinná výbava' })
     return items
   },
 
@@ -357,7 +361,7 @@ const LAYOUTS = {
     // u = 0 je stěna do lobby, odkud se vchází → 1,2 m vstupní ulička,
     // pole trampolín začíná až za ní. Bez toho se dveře otevřou na lóže.
     const COLS = [2.25, 4.70]                 // lože 2,10 → u 1,2–3,3 a 3,65–5,75
-    put('coatrack', 3.0, 0.5)
+    put('coatrack', 0.35, 4.6, { rot: 90, note: 'odkládání u vstupu' })
     put('escape', 0.9, 0.14, { note: 'únikový východ' })
     put('hoop', COLS[0], 0.9, { rot: 180 })
     for (const u of COLS) put('tramp', u, 2.9, { note: 'odrazová dráha do jámy' })
@@ -369,8 +373,8 @@ const LAYOUTS = {
     // tudy se do arény vchází
     for (const u of [1.15, 5.85]) row('net', u, 4.4, 2, 6.0, { along: 'v', rot: 90 })
     put('firstaid', 6.4, 3.0, { rot: 270 })
-    row('destrat', 3.5, 4.5, 2, 7.0, { along: 'v' })
-    put('co2', 6.85, 8.0, { rot: 270, note: 'VZT na plný výkon jen když jsou tam lidi' })
+    row('destrat', 3.5, 4.5, 2, 7.0, { along: 'v', dy: 5.2 })
+    put('co2', 6.85, 8.0, { rot: 270, dy: 1.6, note: 'VZT na plný výkon jen když jsou tam lidi' })
     row('softplay', 2.2, 16.4, 2, 2.6, { note: 'batolecí zóna pod galerií' })
     put('stairs', 6.25, 15.2, { note: 'na galerii' })
     return items
@@ -399,9 +403,9 @@ const LAYOUTS = {
     put('picture', 0.15, 2.6, { rot: 270, img: '/art/posilka1.jpg', pw: 1.5, ph: 0.85, py: 1.6 })
     put('picture', 0.15, 4.6, { rot: 270, img: '/art/posilka2.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
     put('picture', 0.15, 6.6, { rot: 270, img: '/art/posilka3.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
-    put('cleansink', 6.6, 11.5, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
+    put('cleansink', 6.6, 11.3, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
     put('glass', 6.95, 9.0, { rot: 90, note: 'výhled do arény' })
-    put('co2', 0.15, 6.0, { rot: 90 })
+    put('co2', 0.15, 6.0, { rot: 90, dy: 1.6 })
     return items
   },
   sim: (S, b, P) => {
@@ -426,18 +430,19 @@ const LAYOUTS = {
       put('car', 4.2, 3.0, { note: 'vozidlo na zvedáku' })
     }
     put('car', 4.4, 9.2, { note: 'odstavené vozidlo pod mezipatrem' })
-    put('workbench', 1.4, 5.4, { rot: 90 })                  // pracoviště 3D tisku
-    row('printer3d', 1.4, 4.6, P.workshop.printers, 0.8, { along: 'v' })
-    row('workbench', 1.3, 7.6, P.workshop.benches, 2.1, { along: 'v', rot: 90 })
+    put('workbench', 1.8, 4.4, { rot: 90 })                  // pracoviště 3D tisku
+    row('printer3d', 1.8, 3.95, P.workshop.printers, 0.8, { along: 'v', dy: 0.92,
+      note: 'tiskárny stojí na ponku' })
+    row('workbench', 1.3, 6.6, P.workshop.benches, 2.1, { along: 'v', rot: 90 })
     row('toolchest', 0.6, 2.2, 2, 1.45, { along: 'v', rot: 90 })
-    row('toolcart', 2.6, 5.2, 2, 2.6)
-    row('partshelf', 2.6, 11.6, 2, 2.6)
-    put('tyrerack', 0.9, 11.6)
-    put('oildrum', 6.6, 8.0)
+    row('toolcart', 0.55, 5.9, 2, 1.1, { along: 'v' })
+    row('partshelf', 1.8, 12.3, 2, 2.2)
+    put('tyrerack', 0.65, 10.9, { rot: 90 })
+    put('oildrum', 6.6, 5.3)
     put('compressor', 6.6, 6.2)
-    put('airreel', 6.6, 3.4, { rot: 270 })
-    put('aircurtain', 4.2, 0.5, { note: 'nad vraty — jinak se při každém vjezdu vytopí ven' })
-    put('cleansink', 6.6, 11.2, { rot: 270 })
+    put('airreel', 6.6, 3.4, { rot: 270, dy: 1.2 })
+    put('aircurtain', 4.2, 0.5, { dy: 4.15, note: 'nad vraty — jinak se při každém vjezdu vytopí ven' })
+    put('cleansink', 0.4, 12.6, { rot: 270 })
     put('stairs', 6.3, 9.4, { note: 'na sklad' })
     return items
   },
@@ -446,20 +451,21 @@ const LAYOUTS = {
     row('palrack', 1.6, 1.6, 3, 2.4, { along: 'v' })
     row('palrack', 5.4, 1.6, 3, 2.4, { along: 'v' })
     // bez nakládacího otvoru se paleta do patra nedostane — po schodech ji nikdo nevynese
-    put('hoist', 3.5, 6.0, { note: 'kladkostroj nad otvorem' })
+    put('hoist', 3.5, 5.6, { note: 'kladkostroj nad otvorem v uličce mezi regály' })
     return items
   },
 
   // ----------------------------------------------------------- strojovna
   plant: (S, b) => {
     const { items, put, row } = maker(S, b)
-    row('ahu', 2.0, 1.1, 2, 1.9, { along: 'v' })
-    put('hpmodule', 4.4, 1.0)
-    row('tank', 4.8, 2.6, 2, 0.95)
-    row('board', 6.4, 0.6, 3, 1.1, { along: 'v', rot: 90 })
-    // provoz je odpolední a večerní → vlastní spotřeba FVE je slabá; baterie
-    // vydělá víc než zdvojnásobení panelů, jehož přebytek by jen odtekl do sítě
-    put('battery', 6.4, 4.2, { rot: 90 })
+    // VZT jednotky u severní stěny vedle sebe, hydraulika TČ a nádrže
+    // uprostřed, rozvaděče u jižní stěny, baterie u východní. Před vším
+    // zůstává manipulační prostor — servis se dělá zepředu.
+    row('ahu', 2.1, 3.9, 2, 3.25)
+    put('hpmodule', 1.5, 1.6)
+    row('tank', 3.2, 1.6, 2, 1.0)
+    row('board', 1.6, 0.35, 3, 1.1)
+    put('battery', 6.5, 1.5, { rot: 90 })
     return items
   },
 }
@@ -518,13 +524,49 @@ function derivedFor(S, b) {
       y: ceil, rot: 0, flow: flow / n })
   }
 
-  // hasicí přístroje: 1 na 150 m², vždy aspoň jeden v místnosti nad 15 m²
+  // podružný rozvaděč na zónu — kvůli podružnému měření po provozech
+  if (ZONE_BOARDS[b.id]) {
+    out.push({ kind: 'subboard', block: b.id, x: b.x1 - 0.45, z: b.z0 + 0.6, y: base, rot: 90,
+      note: `podružné měření: ${ZONE_BOARDS[b.id]}` })
+  }
+
+  // hasicí přístroje: 1 na 150 m². Roh si vybírají podle toho, kde je volno
+  // a kde nestojí ve vnějším vstupu — pevný roh kolidoval se skříňkami
+  // i s únikovými dveřmi.
   if (a > 15) {
+    const roomItems = [...fitoutFor(S, b), ...out]
+    const free = (x, z) => !roomItems.some((it) => {
+      const f = FURN[it.kind]
+      if (!f || it.y > base + 0.5) return false
+      const turned = it.rot === 90 || it.rot === 270
+      return Math.abs(it.x - x) < (turned ? f.d : f.w) / 2 + 0.35
+          && Math.abs(it.z - z) < (turned ? f.w : f.d) / 2 + 0.35
+    })
+    const cand = [
+      [b.x1 - 0.45, b.z0 + 0.45], [b.x0 + 0.45, b.z1 - 0.45],
+      [b.x0 + 0.45, b.z0 + 0.45], [b.x1 - 0.45, b.z1 - 0.45],
+      [b.x0 + w / 2, b.z1 - 0.4],
+    ]
     const ne = Math.max(1, Math.ceil(a / 150))
-    for (let i = 0; i < ne; i++) {
-      out.push({ kind: 'extinguisher', block: b.id, y: base, rot: 0,
-        x: b.x0 + 0.5 + i * 1.0, z: b.z0 + 0.45 })
+    let placed = 0
+    for (const [cx, cz] of cand) {
+      if (placed >= ne) break
+      if (!free(cx, cz)) continue
+      out.push({ kind: 'extinguisher', block: b.id, y: base, rot: 0, x: cx, z: cz })
+      placed++
     }
+  }
+
+  // Stropní prvky sdílejí jednu rovinu — nový kus si uhne v z, když je jeho
+  // buňka mřížky už obsazená (vyústka, svítidlo a čidlo jinak sedí na sobě).
+  const ceilTaken = (x, z) => out.some((o) =>
+    ['diffuser', 'light', 'smoke'].includes(o.kind)
+    && Math.abs(o.x - x) < 0.65 && Math.abs(o.z - z) < 0.48)
+  const dodgeZ = (x, z) => {
+    for (let k = 0; k < 4 && ceilTaken(x, z); k++) {
+      z = z + 0.6 > b.z1 - 0.4 ? z - 0.6 : z + 0.6
+    }
+    return z
   }
 
   // svítidla podle požadované osvětlenosti
@@ -534,8 +576,9 @@ function derivedFor(S, b) {
     const lc = Math.max(1, Math.round(Math.sqrt((nl * w) / d)))
     const lr = Math.ceil(nl / lc)
     for (let i = 0; i < nl; i++) {
-      out.push({ kind: 'light', block: b.id, rot: 0, y: ceil + 0.08,
-        x: b.x0 + (((i % lc) + 0.5) / lc) * w, z: b.z0 + ((Math.floor(i / lc) + 0.5) / lr) * d })
+      const lx = b.x0 + (((i % lc) + 0.5) / lc) * w
+      const lz = b.z0 + ((Math.floor(i / lc) + 0.5) / lr) * d
+      out.push({ kind: 'light', block: b.id, rot: 0, y: ceil + 0.08, x: lx, z: dodgeZ(lx, lz) })
     }
   }
 
@@ -544,8 +587,9 @@ function derivedFor(S, b) {
     out.push({ kind: 'emlight', block: b.id, x: b.x0 + w / 2, z: b.z0 + 0.35, y: base + 2.4, rot: 0 })
     const ns = Math.max(1, Math.ceil(a / 60))
     for (let i = 0; i < ns; i++) {
-      out.push({ kind: 'smoke', block: b.id, rot: 0, y: ceil,
-        x: b.x0 + ((i + 0.5) / ns) * w, z: b.z0 + d / 2 })
+      const sx = b.x0 + ((i + 0.5) / ns) * w
+      const sz = b.z0 + Math.min(d - 0.5, d / 2 + 0.85)
+      out.push({ kind: 'smoke', block: b.id, rot: 0, y: ceil, x: sx, z: dodgeZ(sx, sz) })
     }
   }
 
@@ -555,11 +599,6 @@ function derivedFor(S, b) {
       x: b.x0 + ((i + 0.5) / (DRAINED[b.type] ?? 1)) * w, z: b.z0 + d * 0.55 })
   }
 
-  // podružný rozvaděč na zónu — kvůli podružnému měření po provozech
-  if (ZONE_BOARDS[b.id]) {
-    out.push({ kind: 'subboard', block: b.id, x: b.x1 - 0.45, z: b.z0 + 0.6, y: base, rot: 90,
-      note: `podružné měření: ${ZONE_BOARDS[b.id]}` })
-  }
   return out
 }
 

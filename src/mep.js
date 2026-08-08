@@ -111,7 +111,9 @@ function terminals(s, svcKey, spineZ, items) {
       continue
     }
     const runY = svcKey === 'drain' ? base + 0.12 : spineY(s, lvl, svcKey) - 0.15
-    const connY = base + (map.conn ?? 0.4)
+    // vysoko umístěné předměty (svítidla, čidla, clony) se napojují ve své
+    // výšce — pevná kóta od podlahy by ke stropnímu svítidlu svěsila kabel dolů
+    const connY = it.y > base + 0.3 ? it.y : base + (map.conn ?? 0.4)
     out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: TERMINAL_R[svcKey],
       points: [
         { x: it.x, y: runY, z: spineZ },

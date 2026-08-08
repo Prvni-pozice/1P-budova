@@ -701,31 +701,22 @@ export function buildAll(spec, mep) {
     color: c, roughness: 0.9, transparent: o < 1, opacity: o, depthWrite: o > 0.9,
   })
   const asphalt = siteMat(0x4a4a4a)
-  for (let i = 0; i < 14; i++) {                       // stání 2,5 × 5 m jižně od budovy
-    const bay = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.04, 5.0), asphalt)
-    bay.position.set(1.6 + i * 2.6, 0.02, -6.5)
-    bay.receiveShadow = true
-    groups.site.add(bay)
+  // Řada stání z −6,5 m: tři běžná, dvě bezbariérová (3,5 m) nejblíž vstupu,
+  // dvě běžná — a pak MEZERA: pruh x 21–28,5 zůstává volný jako vjezd
+  // k vratům dílny. Zbylá stání jsou na ploše etapy 2 (do její stavby).
+  const bay = (x, w2, disabled) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w2, disabled ? 0.05 : 0.04, 5.0),
+      disabled ? siteMat(0x2f6fa8) : asphalt)
+    m.position.set(x, disabled ? 0.03 : 0.02, -6.5)
+    m.receiveShadow = true
+    groups.site.add(m)
   }
-  for (let i = 0; i < 2; i++) {                        // bezbariérová stání 3,5 m u vstupu
-    const bay = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.05, 5.0), siteMat(0x2f6fa8))
-    bay.position.set(8.0 + i * 3.6, 0.03, -1.2)
-    groups.site.add(bay)
-  }
-  const shelter = new THREE.Mesh(new THREE.BoxGeometry(5.0, 0.12, 2.2), siteMat(0x8a8f98))
-  shelter.position.set(3.0, 2.3, -1.6)
-  groups.site.add(shelter)                             // přístřešek na kola
-  for (const p of [-0.6, 0.6]) {
-    const c = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.3, 0.12), siteMat(0x8a8f98))
-    c.position.set(3.0 + p * 3.6, 1.15, -1.6)
-    groups.site.add(c)
-  }
-  for (let i = 0; i < 3; i++) {                        // venkovní jednotky TČ u slepé severní stěny
-    const u = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.55), siteMat(0xd0d5da))
-    u.position.set(23.0 + i * 1.4, 0.75, S.depth + 1.0)
-    u.castShadow = true
-    groups.site.add(u)
-  }
+  for (let i = 0; i < 3; i++) bay(1.7 + i * 2.6, 2.4, false)
+  bay(9.55, 3.4, true)
+  bay(13.15, 3.4, true)
+  for (let i = 0; i < 2; i++) bay(16.4 + i * 2.6, 2.4, false)
+  for (let i = 0; i < 4; i++) bay(29.7 + i * 2.6, 2.4, false)
+
   const lobbyB = S.blocks.find((b) => b.type === 'lobby')
   if (lobbyB) {
     const cx = (lobbyB.x0 + lobbyB.x1) / 2
@@ -744,15 +735,16 @@ export function buildAll(spec, mep) {
   }
 
   const bins = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.25, 1.1), siteMat(0x5a6169))
-  bins.position.set(8.2, 0.63, -2.4)
+  bins.position.set(6.6, 0.63, -1.6)
   bins.castShadow = true
-  groups.site.add(bins)                                // odpad u zásobovacích dveří, ne v lobby
+  groups.site.add(bins)                                // odpad u zásobovacích dveří, mimo stání
 
   const retention = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.1, 3.0), siteMat(0x3f6f8f, 0.5))
   retention.position.set(34, 0.05, -5.0)
   groups.site.add(retention)                           // retence dešťovky na celých 1 008 m²
-  const lapol = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.2, 16), siteMat(0x6a6a55))
-  lapol.position.set(25.0, 0.05, -3.0)
+  // lapol je podzemní — ve vjezdu je jen pojezdový poklop
+  const lapol = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.05, 16), siteMat(0x6a6a55))
+  lapol.position.set(25.0, 0.03, -3.0)
   groups.site.add(lapol)                               // odlučovač ropných látek od dílny
 
   // --- etapa 2 jako obrys ---

@@ -7,7 +7,9 @@ ve spec, přepočítá se všechno ostatní.
 ```bash
 npm install
 npm run dev          # http://116.203.103.27:5186/
-node test_spec.mjs   # kontrola ploch, otvorů a rozvodů
+node test_spec.mjs   # kontrola ploch, otvorů a rozvodů (79 testů)
+node audit.mjs       # projektantský audit: kolize předmětů, přesahy přes
+                     # stěny, věci ve vstupech, rozvody v prostupech (0 nálezů)
 ```
 
 ## Zadání
