@@ -115,6 +115,25 @@ function applyLayers() {
 
 for (const c of Object.values(chk)) c.addEventListener('change', applyLayers)
 
+// ------------------------------------------------- sbalení panelu na mobilu
+const TOUCH = matchMedia('(pointer: coarse)').matches
+const HINT_ORBIT = TOUCH
+  ? 'Otáčení: táhni prstem · dvěma prsty zoom a posun'
+  : 'Orbit: táhni myší · kolečko = zoom · pravé tlačítko = posun'
+
+const panelToggle = $('panel-toggle')
+function setPanelCollapsed(v) {
+  document.body.classList.toggle('panel-collapsed', v)
+  panelToggle.classList.toggle('on', !v)
+  panelToggle.textContent = v ? '☰' : '✕'
+  panelToggle.setAttribute('aria-expanded', String(!v))
+  panelToggle.setAttribute('aria-label', v ? 'Zobrazit ovládání' : 'Skrýt ovládání')
+}
+panelToggle.addEventListener('click', () =>
+  setPanelCollapsed(!document.body.classList.contains('panel-collapsed')))
+// na úzkém displeji začni sbalený, ať je vidět model a ne panel
+setPanelCollapsed(innerWidth <= 640)
+
 // ------------------------------------------------------------------ rozvody
 const mepOn = { vzt: true, heat: false, water: false, drain: false, elec: false }
 const togglesEl = $('mep-toggles')
@@ -157,6 +176,7 @@ group(['cam-orbit', 'cam-walk'], (i) => setWalk(i === 1))
 // ------------------------------------------------------------------ procházka
 const walk = { on: false, yaw: 0, pitch: 0, keys: new Set() }
 const hint = $('hint')
+hint.textContent = HINT_ORBIT
 
 function setWalk(on) {
   walk.on = on
@@ -171,7 +191,7 @@ function setWalk(on) {
   } else {
     if (document.pointerLockElement) document.exitPointerLock()
     orbit.target.set(spec.stage1 / 2, spec.eaves * 0.45, spec.depth / 2)
-    hint.textContent = 'Orbit: táhni myší · kolečko = zoom · pravé tlačítko = posun'
+    hint.textContent = HINT_ORBIT
   }
 }
 renderer.domElement.addEventListener('click', () => {
@@ -199,7 +219,7 @@ editBtn.addEventListener('click', () => {
   editBtn.textContent = editMode ? 'Editace zapnuta' : 'Editace vypnuta'
   hint.textContent = editMode
     ? 'Editace: klikni na blok a táhni · krok 0,5 m · rozvody se přepočtou po puštění'
-    : 'Orbit: táhni myší · kolečko = zoom · pravé tlačítko = posun'
+    : HINT_ORBIT
 })
 
 const ray = new THREE.Raycaster()
