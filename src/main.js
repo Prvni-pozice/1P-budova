@@ -264,7 +264,7 @@ function setMode(mode) {
     if (camera.position.y > 6) camera.position.y = 1.7
     if (!TOUCH) lockPointer()
     hint.textContent = TOUCH
-      ? 'Procházka: levý palec pohyb · pravý rozhlížení · ▲▼ výška'
+      ? 'Procházka: kříž pohyb · pravý prst rozhlížení · ▲▼ výška'
       : 'Procházka: WASD · Space/Shift výška · myš rozhlížení · Esc konec'
   } else if (mode === 'gta') {
     char.group.position.set(10.5, 0, -5)   // před hlavním vstupem
@@ -277,7 +277,7 @@ function setMode(mode) {
     $('cut-solid').click()
     if (!TOUCH) lockPointer()
     hint.textContent = TOUCH
-      ? 'Postava: levý palec pohyb (naplno = sprint) · pravý kamera · ↑ skok'
+      ? 'Postava: kříž pohyb · 2× ▲ sprint · pravý prst kamera · ↑ skok'
       : 'Postava: WASD · Shift sprint · Space skok · myš kamera · Esc konec'
   } else {
     if (document.pointerLockElement) document.exitPointerLock()
@@ -309,35 +309,47 @@ addEventListener('mousemove', (e) => {
   }
 })
 
-// ----------------------------------------------- dotykový joystick a kamera
-const joy = { id: null, x: 0, y: 0 }         // výchylka −1..1
+// ---------------------------------------- směrový kříž (Minecraft) a kamera
+// Žádná analogová výchylka: tlačítko drží plný směr, sprint = dvojklep na ▲.
+// Prstem jde po kříži klouzat, směry se přepínají podle polohy.
+const joy = { id: null, x: 0, y: 0 }         // −1 / 0 / 1
 const lookT = { id: null, px: 0, py: 0 }
-const joyEl = $('joy')
-const knobEl = $('joy-knob')
+const dpadEl = $('dpad')
+const dpBtns = { f: $('dp-f'), b: $('dp-b'), l: $('dp-l'), r: $('dp-r') }
+let touchSprint = false
+let lastFwdTap = 0
 
-function joyApply(t) {
-  const r = joyEl.getBoundingClientRect()
-  const dx = t.clientX - (r.left + r.width / 2)
-  const dy = t.clientY - (r.top + r.height / 2)
-  const max = r.width / 2 - 10
-  const len = Math.hypot(dx, dy)
-  const k = len > max ? max / len : 1
-  joy.x = (dx * k) / max
-  joy.y = (dy * k) / max
-  knobEl.style.transform = `translate(${dx * k}px, ${dy * k}px)`
+function dpadApply(t) {
+  const r = dpadEl.getBoundingClientRect()
+  const u = (t.clientX - r.left) / r.width
+  const v = (t.clientY - r.top) / r.height
+  joy.x = u < 0.37 ? -1 : u > 0.63 ? 1 : 0
+  joy.y = v < 0.37 ? -1 : v > 0.63 ? 1 : 0
+  dpBtns.f.classList.toggle('on', joy.y === -1)
+  dpBtns.b.classList.toggle('on', joy.y === 1)
+  dpBtns.l.classList.toggle('on', joy.x === -1)
+  dpBtns.r.classList.toggle('on', joy.x === 1)
+  dpBtns.f.classList.toggle('sprint', touchSprint && joy.y === -1)
 }
-function joyReset() {
+function dpadReset() {
   joy.id = null
   joy.x = 0
   joy.y = 0
-  knobEl.style.transform = ''
+  touchSprint = false
+  for (const b of Object.values(dpBtns)) b.classList.remove('on', 'sprint')
 }
 
-joyEl.addEventListener('touchstart', (e) => {
+dpadEl.addEventListener('touchstart', (e) => {
   e.preventDefault()
   const t = e.changedTouches[0]
   joy.id = t.identifier
-  joyApply(t)
+  dpadApply(t)
+  if (joy.y === -1) {                        // dvojklep na vpřed = sprint
+    const now = performance.now()
+    if (now - lastFwdTap < 350) touchSprint = true
+    lastFwdTap = now
+    dpadApply(t)
+  }
 }, { passive: false })
 
 renderer.domElement.addEventListener('touchstart', (e) => {
@@ -357,7 +369,7 @@ addEventListener('touchmove', (e) => {
   for (const t of e.changedTouches) {
     if (t.identifier === joy.id) {
       e.preventDefault()
-      joyApply(t)
+      dpadApply(t)
     } else if (t.identifier === lookT.id) {
       e.preventDefault()
       const dx = t.clientX - lookT.px
@@ -377,11 +389,11 @@ addEventListener('touchmove', (e) => {
 
 addEventListener('touchend', (e) => {
   for (const t of e.changedTouches) {
-    if (t.identifier === joy.id) joyReset()
+    if (t.identifier === joy.id) dpadReset()
     if (t.identifier === lookT.id) lookT.id = null
   }
 })
-addEventListener('touchcancel', () => { joyReset(); lookT.id = null })
+addEventListener('touchcancel', () => { dpadReset(); lookT.id = null })
 
 // tlačítka drží klávesu po dobu dotyku — zbytek jede přes stejnou logiku
 for (const [id, code] of [['btn-jump', 'Space'], ['btn-up', 'Space'], ['btn-down', 'ControlLeft']]) {
@@ -412,8 +424,7 @@ function gtaTick(dt) {
   iz -= joy.y
   const move = f.multiplyScalar(iz).addScaledVector(r, ix)
   const moving = move.lengthSq() > 0.01
-  // joystick naplno = sprint (Minecraft styl)
-  const speed = walk.keys.has('ShiftLeft') || Math.hypot(joy.x, joy.y) > 0.92 ? GTA_RUN : GTA_WALK
+  const speed = walk.keys.has('ShiftLeft') || touchSprint ? GTA_RUN : GTA_WALK
   if (moving) {
     move.normalize()
     pos.addScaledVector(move, speed * dt)

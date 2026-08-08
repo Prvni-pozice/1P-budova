@@ -48,11 +48,19 @@
   /* Dotykové ovládání (Minecraft styl): levý palec joystick, pravý rozhlížení */
   #touch-ui { display: none; }
   body.touch-move #touch-ui { display: block; }
-  #joy { position: fixed; left: 22px; bottom: 26px; width: 124px; height: 124px; border-radius: 50%;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.28); z-index: 12;
+  /* Směrový kříž jako v Minecraftu — 4 tlačítka, žádná analogová výchylka */
+  #dpad { position: fixed; left: 18px; bottom: 22px; width: 168px; height: 168px; z-index: 12;
     touch-action: none; }
-  #joy-knob { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px;
-    border-radius: 50%; background: rgba(255,255,255,.38); pointer-events: none; }
+  .dp { position: absolute; width: 54px; height: 54px; border-radius: 10px;
+    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.3);
+    display: flex; align-items: center; justify-content: center; font-size: 21px;
+    color: #f2eee9; pointer-events: none; }
+  .dp.on { background: rgba(232,131,75,.6); }
+  .dp.sprint { background: rgba(232,131,75,.95); }
+  #dp-f { left: 57px; top: 0; }
+  #dp-b { left: 57px; bottom: 0; }
+  #dp-l { left: 0; top: 57px; }
+  #dp-r { right: 0; top: 57px; }
   .tbtn { position: fixed; right: 22px; width: 64px; height: 64px; border-radius: 50%;
     font-size: 24px; z-index: 12; touch-action: none; display: none; flex: none; min-width: 0;
     background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); }
@@ -139,7 +147,12 @@
 </div>
 
 <div id="touch-ui">
-  <div id="joy"><div id="joy-knob"></div></div>
+  <div id="dpad">
+    <div class="dp" id="dp-f">▲</div>
+    <div class="dp" id="dp-l">◀</div>
+    <div class="dp" id="dp-r">▶</div>
+    <div class="dp" id="dp-b">▼</div>
+  </div>
   <button id="btn-jump" class="tbtn" type="button">↑</button>
   <button id="btn-up" class="tbtn" type="button">▲</button>
   <button id="btn-down" class="tbtn" type="button">▼</button>
