@@ -198,6 +198,58 @@ export function pvLayout(S, southHoles) {
   }
 }
 
+/**
+ * Prostup ve stropě nad schodištěm. Bez něj schodiště končí u stropu — což
+ * v modelu chvíli bylo. Otvor kryje horní část ramene, kde je podchodná
+ * výška pod 2,1 m, plus 0,4 m výběhu.
+ */
+export function stairOpening(it, FURN) {
+  const f = FURN.stairs
+  const run = f.d
+  const half = 0.7                       // 1,4 m široký otvor
+  const from = 0.05 * run                // od místa, kde už podchodná výška nestačí
+  const to = run / 2 + 0.4
+  switch (it.rot ?? 0) {
+    case 90:  return { x0: it.x - to, x1: it.x - from, z0: it.z - half, z1: it.z + half }
+    case 270: return { x0: it.x + from, x1: it.x + to, z0: it.z - half, z1: it.z + half }
+    case 180: return { x0: it.x - half, x1: it.x + half, z0: it.z - to, z1: it.z - from }
+    default:  return { x0: it.x - half, x1: it.x + half, z0: it.z + from, z1: it.z + to }
+  }
+}
+
+/** Volné hrany mezipatra — sem patří zábradlí, jinak se z něj dá spadnout. */
+export function openEdges(S, b) {
+  const upper = S.blocks.filter((o) => o.level === 1 && o.id !== b.id)
+  const out = []
+  const covered = (a0, a1, fixed, axis) => {
+    // úsek hrany je krytý, když na něj navazuje jiný blok v patře nebo obvodová stěna
+    const segs = []
+    for (const o of upper) {
+      if (axis === 'x' ? Math.abs(o.z0 - fixed) < 0.05 || Math.abs(o.z1 - fixed) < 0.05
+                       : Math.abs(o.x0 - fixed) < 0.05 || Math.abs(o.x1 - fixed) < 0.05) {
+        segs.push(axis === 'x' ? [o.x0, o.x1] : [o.z0, o.z1])
+      }
+    }
+    const gaps = []
+    let cur = a0
+    for (const [g0, g1] of segs.sort((p, q) => p[0] - q[0])) {
+      if (g0 > cur) gaps.push([cur, Math.min(g0, a1)])
+      cur = Math.max(cur, g1)
+    }
+    if (cur < a1) gaps.push([cur, a1])
+    return gaps.filter(([p, q]) => q - p > 0.4)
+  }
+  for (const [fixed, axis] of [[b.z0, 'x'], [b.z1, 'x']]) {
+    if (fixed <= 0.3 || fixed >= S.depth - 0.3) continue          // obvodová stěna
+    for (const [p, q] of covered(b.x0, b.x1, fixed, axis)) out.push({ x0: p, x1: q, z0: fixed, z1: fixed })
+  }
+  for (const [fixed, axis] of [[b.x0, 'z'], [b.x1, 'z']]) {
+    if (fixed <= 0.3 || fixed >= S.stage1 - 0.3) continue
+    for (const [p, q] of covered(b.z0, b.z1, fixed, axis)) out.push({ x0: fixed, x1: fixed, z0: p, z1: q })
+  }
+  return out
+}
+
 // ------------------------------------------------------------- vybavení
 
 const box = (w, h, d, mat, x = 0, y = 0, z = 0) => {
@@ -326,7 +378,7 @@ function furnitureMesh(item, FURN) {
 export function buildAll(spec, mep) {
   const root = new THREE.Group()
   const groups = {}
-  for (const k of ['ground', 'shell', 'glass', 'roof', 'pv', 'structure', 'slabs', 'furniture', 'blocks', 'labels', 'mep', 'stage2']) {
+  for (const k of ['ground', 'site', 'shell', 'glass', 'roof', 'pv', 'structure', 'slabs', 'furniture', 'blocks', 'labels', 'mep', 'stage2']) {
     groups[k] = new THREE.Group()
     groups[k].name = k
     root.add(groups[k])
@@ -348,6 +400,9 @@ export function buildAll(spec, mep) {
   ground.position.set(S.length / 2, -0.02, S.depth / 2)
   ground.receiveShadow = true
   groups.ground.add(ground)
+
+  // musí vzniknout dřív než stropy — prostupy nad schodišti se berou odsud
+  const fit = fitoutAll(S)
 
   const bays = Math.round(S.stage1 / S.grid)
   const northHoles = openingsFor(S, 'north')
@@ -473,20 +528,49 @@ export function buildAll(spec, mep) {
   floor.receiveShadow = true
   groups.ground.add(floor)
 
-  // --- vestavěné stropy pod bloky v patře ---
+  // --- vestavěné stropy pod bloky v patře, s prostupy nad schodišti ---
+  const stairItems = fit.items.filter((it) => it.kind === 'stairs')
   for (const b of S.blocks.filter((x) => x.level === 1)) {
-    const m = new THREE.Mesh(
-      new THREE.BoxGeometry(b.x1 - b.x0, S.slab, b.z1 - b.z0), slabMat,
+    const holes = stairItems
+      .map((it) => stairOpening(it, FURN))
+      .filter((o) => o.x1 > b.x0 && o.x0 < b.x1 && o.z1 > b.z0 && o.z0 < b.z1)
+      .map((o) => ({
+        u0: Math.max(o.x0, b.x0) - b.x0, u1: Math.min(o.x1, b.x1) - b.x0,
+        v0: Math.max(o.z0, b.z0) - b.z0, v1: Math.min(o.z1, b.z1) - b.z0,
+      }))
+    const g = wallGeom(
+      [[0, 0], [b.x1 - b.x0, 0], [b.x1 - b.x0, b.z1 - b.z0], [0, b.z1 - b.z0]], holes, S.slab,
     )
-    m.position.set((b.x0 + b.x1) / 2, S.clearGF + S.slab / 2, (b.z0 + b.z1) / 2)
+    g.rotateX(-Math.PI / 2)
+    const m = new THREE.Mesh(g, slabMat)
+    m.position.set(b.x0, S.clearGF + S.slab / 2, b.z0 + (b.z1 - b.z0))
     m.castShadow = true
     m.receiveShadow = true
     m.userData.block = b
     groups.slabs.add(m)
+
+    // zábradlí po volných hranách a kolem prostupu
+    const railMat = new THREE.MeshStandardMaterial({
+      color: 0xb9b0a2, roughness: 0.5, transparent: true, opacity: 0.55, depthWrite: false,
+    })
+    const rails = openEdges(S, b)
+    for (const h of holes) {
+      rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u1, z0: b.z0 + h.v0, z1: b.z0 + h.v0 })
+      rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u1, z0: b.z0 + h.v1, z1: b.z0 + h.v1 })
+      rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u0, z0: b.z0 + h.v0, z1: b.z0 + h.v1 })
+    }
+    for (const r of rails) {
+      const len = Math.hypot(r.x1 - r.x0, r.z1 - r.z0)
+      if (len < 0.4) continue
+      const rm = new THREE.Mesh(new THREE.BoxGeometry(len, 1.1, 0.06), railMat)
+      rm.position.set((r.x0 + r.x1) / 2, S.clearGF + S.slab + 0.55, (r.z0 + r.z1) / 2)
+      if (Math.abs(r.z1 - r.z0) > Math.abs(r.x1 - r.x0)) rm.rotation.y = Math.PI / 2
+      rm.userData.block = b
+      groups.slabs.add(rm)
+    }
   }
 
   // --- vybavení ---
-  const fit = fitoutAll(S)
   for (const it of fit.items) {
     const m = furnitureMesh(it, FURN)
     m.userData.block = S.blocks.find((b) => b.id === it.block)
@@ -533,6 +617,45 @@ export function buildAll(spec, mep) {
     }
     mepByService[r.service].add(g)
   }
+
+  // --- venkovní část stavby ---
+  // Bez nich projekt není projekt: parkování včetně bezbariérového stání,
+  // venkovní jednotky TČ, retence dešťovky a lapol z dílny.
+  const siteMat = (c, o = 1) => new THREE.MeshStandardMaterial({
+    color: c, roughness: 0.9, transparent: o < 1, opacity: o, depthWrite: o > 0.9,
+  })
+  const asphalt = siteMat(0x4a4a4a)
+  for (let i = 0; i < 14; i++) {                       // stání 2,5 × 5 m jižně od budovy
+    const bay = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.04, 5.0), asphalt)
+    bay.position.set(1.6 + i * 2.6, 0.02, -6.5)
+    bay.receiveShadow = true
+    groups.site.add(bay)
+  }
+  for (let i = 0; i < 2; i++) {                        // bezbariérová stání 3,5 m u vstupu
+    const bay = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.05, 5.0), siteMat(0x2f6fa8))
+    bay.position.set(8.0 + i * 3.6, 0.03, -1.2)
+    groups.site.add(bay)
+  }
+  const shelter = new THREE.Mesh(new THREE.BoxGeometry(5.0, 0.12, 2.2), siteMat(0x8a8f98))
+  shelter.position.set(3.0, 2.3, -1.6)
+  groups.site.add(shelter)                             // přístřešek na kola
+  for (const p of [-0.6, 0.6]) {
+    const c = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.3, 0.12), siteMat(0x8a8f98))
+    c.position.set(3.0 + p * 3.6, 1.15, -1.6)
+    groups.site.add(c)
+  }
+  for (let i = 0; i < 3; i++) {                        // venkovní jednotky TČ u slepé severní stěny
+    const u = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 0.55), siteMat(0xd0d5da))
+    u.position.set(23.0 + i * 1.4, 0.75, S.depth + 1.0)
+    u.castShadow = true
+    groups.site.add(u)
+  }
+  const retention = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.1, 3.0), siteMat(0x3f6f8f, 0.5))
+  retention.position.set(34, 0.05, -5.0)
+  groups.site.add(retention)                           // retence dešťovky na celých 1 008 m²
+  const lapol = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.2, 16), siteMat(0x6a6a55))
+  lapol.position.set(25.0, 0.05, -3.0)
+  groups.site.add(lapol)                               // odlučovač ropných látek od dílny
 
   // --- etapa 2 jako obrys ---
   const s2w = S.length - S.stage1

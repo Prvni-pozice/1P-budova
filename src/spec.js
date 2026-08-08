@@ -39,7 +39,7 @@ export const SPEC = {
   program: {
     office:   { staff: 8, staffTarget: 10, desks: 10 },
     arena:    { peak: 40, beds: 6 },   // 2 odrazové + 4 volné, k tomu molitanová jáma
-    bar:      { level: 'light', seats: 32 },   // nápoje + jednoduchá příprava
+    bar:      { level: 'light', seats: 24 },   // nápoje + jednoduchá příprava; víc se do lobby nevejde
     gym:      { cages: 2, users: 8 },
     sim:      { rigs: 2 },
     workshop: { carLift: true, benches: 3, printers: 2 },

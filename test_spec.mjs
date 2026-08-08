@@ -2,8 +2,8 @@
 // Spouštět: node test_spec.mjs
 import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
-import { openingsFor, pvLayout } from './src/building.js'
-import { fitoutAll, fitoutFor, sanitaryFor, SVC } from './src/fitout.js'
+import { openingsFor, pvLayout, stairOpening, openEdges } from './src/building.js'
+import { fitoutAll, fitoutFor, sanitaryFor, SVC, FURN } from './src/fitout.js'
 
 let fail = 0
 const ok = (cond, msg, extra = '') => {
@@ -171,6 +171,24 @@ const f2 = fitoutAll(bigger2)
 ok(f2.counts.desk === 6, 'méně míst → méně stolů', `${f2.counts.desk}`)
 ok(sanitaryFor(30).wcW > sOff.wcW, 'víc lidí → víc WC', `${sOff.wcW} → ${sanitaryFor(30).wcW}`)
 
+console.log('\nERGONOMIE')
+// geometrie židle má opěradlo na +z → při rot 0 člověk kouká na −z.
+// Ruční rotace se tu opakovaně pletly, tohle to hlídá.
+const TABLES = ['desk', 'table', 'rtable', 'mtable', 'partyTable']
+const facingOf = (r) => ({ x: Math.sin(((r ?? 0) * Math.PI) / 180), z: -Math.cos(((r ?? 0) * Math.PI) / 180) })
+const backwards = []
+for (const c of fit.items.filter((it) => it.kind === 'chair')) {
+  const near = fit.items
+    .filter((t) => TABLES.includes(t.kind) && t.block === c.block)
+    .map((t) => ({ t, d: Math.hypot(t.x - c.x, t.z - c.z) }))
+    .sort((a, b) => a.d - b.d)[0]
+  if (!near || near.d > 1.4) continue
+  const f = facingOf(c.rot)
+  if (f.x * (near.t.x - c.x) + f.z * (near.t.z - c.z) <= 0) backwards.push(c)
+}
+ok(backwards.length === 0, 'žádná židle nesedí zády ke svému stolu',
+  backwards.length ? `${backwards.length} ks` : `${fit.counts.chair} židlí`)
+
 console.log('\nPŘÍSTUPNOST A ÚNIK')
 // každý blok v patře musí mít pod sebou nebo vedle sebe schodiště —
 // 126 m² kanceláří bylo v jedné verzi bez přístupu
@@ -192,6 +210,26 @@ for (let pass = 0; pass < upper.length; pass++) {
 const unreachable = upper.filter((b) => !servedUp.has(b.id))
 ok(unreachable.length === 0, 'každý blok v patře je dostupný ze schodiště',
   unreachable.length ? unreachable.map((b) => b.id).join(', ') : `${upper.length} bloků, ${stairs.length} schodišť`)
+
+// KAŽDÉ schodiště musí mít nad sebou prostup, jinak končí u stropu
+const noHole = []
+for (const st of stairs) {
+  const o = stairOpening(st, FURN)
+  const above = SPEC.blocks.filter((b) => b.level === 1
+    && o.x1 > b.x0 && o.x0 < b.x1 && o.z1 > b.z0 && o.z0 < b.z1)
+  // prostup musí ležet celý v blocích patra, které nad schodištěm jsou
+  const area = (o.x1 - o.x0) * (o.z1 - o.z0)
+  const covered = above.reduce((a, b) => a
+    + (Math.min(o.x1, b.x1) - Math.max(o.x0, b.x0)) * (Math.min(o.z1, b.z1) - Math.max(o.z0, b.z0)), 0)
+  if (above.length === 0 || covered < area - 0.01) noHole.push(`${st.block} (kryto ${(covered / area * 100).toFixed(0)} %)`)
+}
+ok(noHole.length === 0, 'nad každým schodištěm je prostup ve stropě',
+  noHole.length ? noHole.join(', ') : `${stairs.length} schodišť`)
+
+// volné hrany mezipater musí mít zábradlí
+const railed = SPEC.blocks.filter((b) => b.level === 1).flatMap((b) => openEdges(SPEC, b))
+ok(railed.length > 0, 'volné hrany mezipater jsou zjištěné a dostanou zábradlí',
+  `${railed.length} úseků`)
 
 // do zasedačky se nesmí chodit skrz pronajatou jednotku
 const corr = SPEC.blocks.find((b) => b.id === 'corridor')

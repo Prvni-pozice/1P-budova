@@ -86,6 +86,13 @@ Sklad nad dílnou         x 21–28  z 6–13    49 m²   nad vjezdovou dráhou 
 - **FVE**: jižní střešní rovina celá, fasáda jen do volných polí mezi otvory
   (doplněk otvorů, takže se panely nikdy nepotkají s oknem). Přepínače
   `roofSouth` / `roofNorth` / `facadeSouth` v `spec.pv`.
+- **Prostupy ve stropě** nad každým schodištěm — bez nich schodiště končí
+  u stropu, což se v jedné verzi stalo a nikdo si toho nevšiml. Kolem prostupu
+  i po všech volných hranách mezipater jde zábradlí; volné hrany se počítají
+  jako doplněk sousedních bloků a obvodových stěn (`openEdges`).
+- **Osvětlení a bezpečnost**: svítidla podle ČSN EN 12464-1 (500 lx kanceláře
+  a dílna, 300 lx sport, 150 lx sklad), nouzová svítidla, detektory kouře
+  1 na 60 m², hasicí přístroje, hydrant, podlahové vpusti.
 - **Rozvody ke koncovkám**: každý zařizovací předmět má v `SVC` napsáno, co
   potřebuje, a `mep.js` k němu vede větev. O tom, jestli do místnosti jde voda,
   rozhoduje předmět, ne typ provozu — bar a strojovna nejsou „mokré provozy",
@@ -106,6 +113,7 @@ src/cutaway.js   otevírání obálky podle kamery
 src/env.js       Miami sunset (převzato z flightsim)
 src/quality.js   adaptivní kvalita (kopie z flightsim)
 src/fitout.js    vybavení místností + normové počty (taky bez Three)
+                 židle se umísťují přes seat(), rotaci nikdy nepiš ručně
 src/ui.js        textový souhrn
 src/main.js      scéna, ovládání, editace
 ```

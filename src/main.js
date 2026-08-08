@@ -81,7 +81,7 @@ function rebuild() {
 // -------------------------------------------------------------------- vrstvy
 const $ = (id) => document.getElementById(id)
 const chk = { blocks: $('ly-blocks'), labels: $('ly-labels'), structure: $('ly-structure'),
-  furniture: $('ly-furniture'), pv: $('ly-pv'), stage2: $('ly-stage2') }
+  furniture: $('ly-furniture'), pv: $('ly-pv'), site: $('ly-site'), stage2: $('ly-stage2') }
 
 function levelVisible(b) {
   if (levelFilter === 'all') return true
@@ -103,6 +103,7 @@ function applyLayers() {
   g.structure.visible = chk.structure.checked
   g.pv.visible = chk.pv.checked
   g.furniture.visible = chk.furniture.checked
+  g.site.visible = chk.site.checked
   g.stage2.visible = chk.stage2.checked
   for (const grp of [g.blocks, g.labels, g.slabs, g.furniture]) {
     for (const c of grp.children) {
