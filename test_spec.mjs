@@ -2,7 +2,7 @@
 // Spouštět: node test_spec.mjs
 import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
-import { openingsFor, pvLayout, stairOpening, openEdges, roofSlope } from './src/building.js'
+import { openingsFor, pvLayout, stairOpening, openEdges, roofSlope, partitionsFor } from './src/building.js'
 import { fitoutAll, fitoutFor, sanitaryFor, SVC, FURN, doorsFor, sharedEdge } from './src/fitout.js'
 
 let fail = 0
@@ -339,6 +339,36 @@ ok(leaks.length === 0, 'z dílny nevede do veřejné části žádné dveře',
   leaks.length ? leaks.map((l) => `${l.a}–${l.b}`).join(', ') : 'technická zóna je samostatná')
 ok(SPEC.links.some((l) => tech.has(l.a) && tech.has(l.b) && l.type === 'service'),
   'dílna a strojovna propojené jen servisními dveřmi')
+
+console.log('\nPŘÍČKY A POŽÁRNÍ ÚSEKY')
+const parts = partitionsFor(SPEC)
+ok(parts.length >= 18, 'příčky se generují mezi všemi sousedy', `${parts.length} segmentů`)
+const compOf = {}
+for (const [n, ids] of Object.entries(SPEC.compartments)) for (const id of ids) compOf[id] = n
+ok(parts.filter((p2) => p2.fire).every((p2) => compOf[p2.blocks[0]] !== compOf[p2.blocks[1]]),
+  'požární stěny jsou přesně na hranicích úseků', `${parts.filter((p2) => p2.fire).length} požárních`)
+// každé dveře z links mají otvor v příslušné příčce
+const doorless = SPEC.links.filter((l) => !parts.some((p2) =>
+  p2.blocks.includes(l.a) && p2.blocks.includes(l.b) && p2.gaps.length > 0))
+ok(doorless.length === 0, 'každé dveře mají otvor v příčce',
+  doorless.map((l) => `${l.a}–${l.b}`).join(', ') || `${SPEC.links.length} dveří`)
+// výtah má otvor ve stěně office–lobby
+ok(parts.some((p2) => p2.blocks.includes('office-gf') && p2.blocks.includes('lobby')
+  && p2.gaps.some(([g0, g1]) => g0 <= 8.2 && g1 >= 9.8)), 'výtahová šachta má průchod stěnou do lobby')
+
+console.log('\nSTATIKA A TZB')
+// páteř rozvodů v patře musí projít pod spodní pásnicí vazníků (5,75 m)
+const upperSpines = mep.routes.filter((r) => r.kind === 'spine' && r.points[0].y > 4)
+ok(upperSpines.every((r) => r.points[0].y + r.radius < 5.72),
+  'páteře v patře vedou pod pásnicí vazníků',
+  upperSpines.map((r) => (r.points[0].y + r.radius).toFixed(2)).join(', '))
+// denní světlo: pracovní místnosti se dotýkají fasády s okny (jih/východ)
+const daylight = SPEC.blocks.filter((b) => ['office', 'meeting'].includes(b.type))
+ok(daylight.every((b) => b.z0 <= 0.01 || b.x0 <= 0.01),
+  'kanceláře a zasedačka mají denní světlo (jih nebo prosklený východ)')
+// dílna: nadsvětlík nad vraty
+ok(openingsFor(SPEC, 'south').some((h) => h.x0 >= 23 && h.v0 > SPEC.gate.height),
+  'dílna má nadsvětlík nad vraty')
 
 console.log('\nROZVODY KE KONCOVKÁM')
 const terms = mep.routes.filter((r) => r.kind === 'terminal')

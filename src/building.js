@@ -113,7 +113,10 @@ export function openingsFor(S, side) {
       out.push({ x0: b.x0 + 0.4, x1: b.x0 + 1.6, v0: 0, v1: 2.2 })              // dveře pro personál
       const gs = b.x0 + 2.2
       const ge = Math.min(gs + S.gate.width, b.x1 - 0.5)
-      if (ge > gs + 1.5) out.push({ x0: gs, x1: ge, v0: 0, v1: S.gate.height })  // vrata
+      if (ge > gs + 1.5) {
+        out.push({ x0: gs, x1: ge, v0: 0, v1: S.gate.height })                     // vrata
+        out.push({ x0: gs, x1: ge, v0: S.gate.height + 0.35, v1: S.eaves - 0.55 }) // nadsvětlík
+      }
     } else if (b.type === 'lobby') {
       out.push({ x0: cx - 1.5, x1: cx + 1.5, v0: 0, v1: 2.6 })                   // hlavní vstup
       if (span > 5) {
@@ -127,7 +130,8 @@ export function openingsFor(S, side) {
       const w = Math.min(4, span - 3)
       out.push({ x0: cx - w / 2, x1: cx + w / 2, v0: 1.0, v1: 4.4 })             // prosklení do arény
     } else if (b.type === 'plant') {
-      out.push({ x0: cx - 1.0, x1: cx + 1.0, v0: 2.2, v1: 3.7 })                 // žaluzie VZT
+      out.push({ x0: cx - 1.9, x1: cx - 0.4, v0: 2.2, v1: 3.7 })                 // žaluzie sání
+      out.push({ x0: cx + 0.4, x1: cx + 1.9, v0: 2.2, v1: 3.7 })                 // žaluzie výfuk
     } else if (b.type === 'wet' || b.type === 'storage' || b.type === 'circ') {
       continue                                                                    // bez oken
     } else {
@@ -272,6 +276,70 @@ export function roofSlope(S, side, over = 0.5) {
   }
 }
 
+/**
+ * Vnitřní příčky mezi sousedními místnostmi na stejném podlaží. Kde je
+ * v spec.links dveřní propojení, nechává se otvor; spec.wallGaps přidává
+ * další otvory (výtah). Stěna mezi různými požárními úseky je „fire" —
+ * tlustší, s odolností (v modelu tónovaná).
+ * Vrací segmenty i pro kolize postavy: { axis, at, from, to, base, top,
+ * fire, level, gaps: [[od, do], …] }.
+ */
+export function partitionsFor(S) {
+  const comp = {}
+  for (const [name, ids] of Object.entries(S.compartments ?? {})) {
+    for (const id of ids) comp[id] = name
+  }
+  const present = (b, lvl) => b.level === 'full' || b.level === lvl
+  const segs = []
+  const near = (p, q) => Math.abs(p - q) < 0.05
+
+  for (const lvl of [0, 1]) {
+    const base = levelBase(S, lvl)
+    const top = lvl === 1 ? S.eaves - 0.25 : S.clearGF
+    for (let i = 0; i < S.blocks.length; i++) {
+      for (let j = i + 1; j < S.blocks.length; j++) {
+        const a = S.blocks[i]
+        const b = S.blocks[j]
+        if (!present(a, lvl) || !present(b, lvl)) continue
+        let seg = null
+        if (near(a.x1, b.x0) || near(a.x0, b.x1)) {
+          const at = near(a.x1, b.x0) ? a.x1 : a.x0
+          const f = Math.max(a.z0, b.z0)
+          const t = Math.min(a.z1, b.z1)
+          if (t - f > 0.6) seg = { axis: 'z', at, from: f, to: t }
+        } else if (near(a.z1, b.z0) || near(a.z0, b.z1)) {
+          const at = near(a.z1, b.z0) ? a.z1 : a.z0
+          const f = Math.max(a.x0, b.x0)
+          const t = Math.min(a.x1, b.x1)
+          if (t - f > 0.6) seg = { axis: 'x', at, from: f, to: t }
+        }
+        if (!seg) continue
+
+        const gaps = []
+        for (const l of S.links ?? []) {
+          if (!((l.a === a.id && l.b === b.id) || (l.a === b.id && l.b === a.id))) continue
+          const wd = (FURN[l.type ?? 'door']?.w ?? 0.9) + 0.16
+          const pos = Math.min(Math.max(l.at ?? (seg.from + seg.to) / 2, seg.from + wd / 2), seg.to - wd / 2)
+          gaps.push([pos - wd / 2, pos + wd / 2, 2.1])
+        }
+        for (const g of S.wallGaps ?? []) {
+          if (!((g.a === a.id && g.b === b.id) || (g.a === b.id && g.b === a.id))) continue
+          gaps.push([g.from, g.to, top - base])
+        }
+        // full–full dvojice se generuje jen jednou (v přízemí přes obě podlaží)
+        if (a.level === 'full' && b.level === 'full' && lvl === 1) continue
+        const both = a.level === 'full' && b.level === 'full'
+        segs.push({
+          ...seg, base, top: both ? S.eaves - 0.25 : top, level: lvl,
+          fire: comp[a.id] !== comp[b.id], gaps,
+          blocks: [a.id, b.id],
+        })
+      }
+    }
+  }
+  return segs
+}
+
 // ------------------------------------------------------------- vybavení
 
 const box = (w, h, d, mat, x = 0, y = 0, z = 0) => {
@@ -324,6 +392,13 @@ function furnitureMesh(item, FURN) {
       const n = 14
       for (let i = 0; i < n; i++) {
         g.add(box(w, 0.06, d / n, mat, 0, ((i + 1) * h) / n, -d / 2 + ((i + 0.5) * d) / n))
+      }
+      // madla po obou stranách ve sklonu ramene
+      const railLen = Math.hypot(d, h)
+      for (const sx of [-1, 1]) {
+        const rail = box(0.05, 0.05, railLen, dark, sx * (w / 2 + 0.04), h / 2 + 0.95, 0)
+        rail.rotation.x = -Math.atan2(h, d)
+        g.add(rail)
       }
       break
     }
@@ -443,7 +518,7 @@ function furnitureMesh(item, FURN) {
 export function buildAll(spec, mep) {
   const root = new THREE.Group()
   const groups = {}
-  for (const k of ['ground', 'site', 'shell', 'glass', 'roof', 'pv', 'structure', 'slabs', 'furniture', 'blocks', 'labels', 'mep', 'stage2']) {
+  for (const k of ['ground', 'site', 'shell', 'glass', 'roof', 'pv', 'structure', 'partitions', 'slabs', 'furniture', 'blocks', 'labels', 'mep', 'stage2']) {
     groups[k] = new THREE.Group()
     groups[k].name = k
     root.add(groups[k])
@@ -614,11 +689,99 @@ export function buildAll(spec, mep) {
     const lvl = b.level === 'full' ? 0 : b.level
     const w = b.x1 - b.x0 - 0.08
     const d = b.z1 - b.z0 - 0.08
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.04, d), floorMat(fin[0], w, d, fin[1]))
-    m.position.set((b.x0 + b.x1) / 2, levelBase(S, lvl) + 0.02, (b.z0 + b.z1) / 2)
+    // fitness má plovoucí podlahu (kročejový hluk činek nad lobby) — tlustší
+    const th = b.type === 'gym' ? 0.14 : 0.04
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, th, d), floorMat(fin[0], w, d, fin[1]))
+    m.position.set((b.x0 + b.x1) / 2, levelBase(S, lvl) + th / 2, (b.z0 + b.z1) / 2)
     m.receiveShadow = true
     m.userData.block = b
     groups.ground.add(m)
+  }
+
+  // --- vnitřní příčky s dveřními otvory; požární dělení je tlustší a tónované ---
+  const partSegs = partitionsFor(S)
+  const partMat = sharedMat('plaster', { roughness: 0.92 })
+  const fireMat = new THREE.MeshStandardMaterial({ color: 0xd8b8b0, roughness: 0.9 })
+  fireMat.userData.shared = true
+  for (const seg of partSegs) {
+    const t2 = seg.fire ? 0.2 : 0.1
+    const h = seg.top - seg.base
+    const spans = []
+    let cur = seg.from
+    const gaps = [...seg.gaps].sort((a, b2) => a[0] - b2[0])
+    for (const [g0, g1, gh] of gaps) {
+      if (g0 > cur + 0.05) spans.push([cur, g0, 0])
+      spans.push([g0, g1, gh ?? 2.1])            // nadpraží nad otvorem
+      cur = Math.max(cur, g1)
+    }
+    if (cur < seg.to - 0.05) spans.push([cur, seg.to, 0])
+    for (const [f, t3, over] of spans) {
+      const len = t3 - f
+      if (len < 0.05) continue
+      const hh = over > 0 ? Math.max(0, h - over) : h
+      if (hh < 0.05) continue
+      const m = new THREE.Mesh(
+        new THREE.BoxGeometry(seg.axis === 'x' ? len : t2, hh, seg.axis === 'x' ? t2 : len),
+        seg.fire ? fireMat : partMat,
+      )
+      m.position.set(
+        seg.axis === 'x' ? (f + t3) / 2 : seg.at,
+        seg.base + (over > 0 ? over + hh / 2 : hh / 2),
+        seg.axis === 'x' ? seg.at : (f + t3) / 2,
+      )
+      m.castShadow = true
+      m.receiveShadow = true
+      m.userData.level = seg.level
+      groups.partitions.add(m)
+    }
+  }
+
+  // --- vazníky přes rozpon na rastru (spodní pásnice 5,75 m — rozvody
+  // v patře vedou POD ní, viz spineY v mep.js) ---
+  const trussMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2a, roughness: 0.6, metalness: 0.4 })
+  trussMat.userData.shared = true
+  for (const tx of [S.grid, S.grid * 2, S.grid * 3]) {
+    const chord = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.22, S.depth - 0.4), trussMat)
+    chord.position.set(tx, 5.86, S.depth / 2)
+    groups.structure.add(chord)
+    for (const side of [-1, 1]) {
+      const sl = roofSlope(S, side, 0)
+      const tc = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, sl.len - 0.3), trussMat)
+      tc.position.set(tx, sl.y - 0.12, sl.z)
+      tc.rotation.x = side * deg(S.pitch)
+      groups.structure.add(tc)
+    }
+    for (let i = 0; i < 7; i++) {                        // diagonály
+      const z = 1.8 + i * 2.4
+      const dg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.9, 0.08), trussMat)
+      dg.position.set(tx, 6.28, z)
+      dg.rotation.x = (i % 2 ? 1 : -1) * 0.7
+      groups.structure.add(dg)
+    }
+  }
+
+  // --- sloupy mezipater (statika: fitness a sklad nesou 5+ kN/m²) ---
+  const colMat2 = new THREE.MeshStandardMaterial({ color: 0x5a6169, roughness: 0.5, metalness: 0.5 })
+  colMat2.userData.shared = true
+  for (const [cx2, cz2] of [[7, 4], [7, 9], [14, 4], [14, 8], [15.4, 15.1], [18.6, 15.1], [23.3, 6.05], [26.9, 6.05]]) {
+    const c = new THREE.Mesh(new THREE.BoxGeometry(0.2, S.clearGF, 0.2), colMat2)
+    c.position.set(cx2, S.clearGF / 2, cz2)
+    c.castShadow = true
+    groups.structure.add(c)
+  }
+
+  // --- sokl po obvodu (detail obálky: tepelný most a ostřik) ---
+  const soklMat = new THREE.MeshStandardMaterial({ color: 0x4c5157, roughness: 0.9 })
+  soklMat.userData.shared = true
+  for (const [wx, hz2, px, pz] of [
+    [S.stage1 + 0.3, 0.08, S.stage1 / 2, -0.04],
+    [S.stage1 + 0.3, 0.08, S.stage1 / 2, S.depth + 0.04],
+    [0.08, S.depth + 0.3, -0.04, S.depth / 2],
+    [0.08, S.depth + 0.3, S.stage1 + 0.04, S.depth / 2],
+  ]) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(wx, 0.45, hz2), soklMat)
+    m.position.set(px, 0.225, pz)
+    groups.site.add(m)
   }
 
   // --- vestavěné stropy pod bloky v patře, s prostupy nad schodišti ---
@@ -750,6 +913,28 @@ export function buildAll(spec, mep) {
     const sign = labelSprite('1P', 'recepce · jump aréna')
     sign.position.set(cx, 3.6, -0.9)
     groups.site.add(sign)
+  }
+
+  // chodník podél jižní fasády + spojka od parkoviště k hlavnímu vstupu
+  const paveMat = siteMat(0xb9b4a8)
+  const walk1 = new THREE.Mesh(new THREE.BoxGeometry(S.stage1 + 0.6, 0.06, 1.5), paveMat)
+  walk1.position.set(S.stage1 / 2, 0.03, -1.1)
+  walk1.receiveShadow = true
+  groups.site.add(walk1)
+  const walk2 = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.06, 2.3), paveMat)
+  walk2.position.set(10.5, 0.03, -2.95)
+  groups.site.add(walk2)
+  // lavičky před vstupem
+  for (const bx of [6.9, 14.1]) {
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 0.45), siteMat(0x8a6a42))
+    seat.position.set(bx, 0.45, -2.2)
+    seat.castShadow = true
+    groups.site.add(seat)
+    for (const lx of [-0.7, 0.7]) {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.4), siteMat(0x4c5157))
+      leg.position.set(bx + lx, 0.22, -2.2)
+      groups.site.add(leg)
+    }
   }
 
   const bins = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.25, 1.1), siteMat(0x5a6169))

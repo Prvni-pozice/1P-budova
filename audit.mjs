@@ -29,7 +29,8 @@ const PAIR_OK = new Set([
 const FLAT = new Set(['mat', 'entrymat', 'floordrain', 'pram'])
 const CEIL = new Set(['diffuser', 'light', 'smoke'])
 const WALLMOUNT = new Set(['picture', 'mirror', 'screen', 'emlight', 'exitsign',
-  'co2', 'firstaid', 'airreel', 'hydrant', 'subboard', 'board', 'aircurtain', 'babychange'])
+  'co2', 'firstaid', 'airreel', 'hydrant', 'subboard', 'board', 'aircurtain', 'babychange',
+  'sidelight', 'acpanel'])
 const pairKey = (a, b) => [a, b].sort().join('|')
 
 const items = fit.items
@@ -69,7 +70,7 @@ for (const it of items) {
 import('./src/building.js').then(({ openingsFor }) => {
   const south = openingsFor(SPEC, 'south').filter((h) => h.v0 === 0)
   for (const it of items) {
-    if (it.link || ['door', 'double', 'glazed', 'service', 'escape', 'entrymat'].includes(it.kind)) continue
+    if (it.link || ['door', 'double', 'glazed', 'service', 'escape', 'entrymat', 'sidelight'].includes(it.kind)) continue
     const d = dims(it)
     for (const h of south) {
       if (it.z - d.hz < 0.6 && it.x + d.hx > h.x0 - 0.2 && it.x - d.hx < h.x1 + 0.2 && it.y < 1) {

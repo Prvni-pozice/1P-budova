@@ -48,10 +48,11 @@ export function blockDemand(b) {
 
 const levelOf = (b) => (b.level === 'full' ? 0 : b.level)
 
-/** Výška páteře v daném podlaží (pod stropem); kanalizace jde u podlahy. */
+/** Výška páteře v daném podlaží; kanalizace u podlahy. V patře vede páteř
+ * POD spodní pásnicí vazníků (5,75 m) — dřív s ní kolidovala. */
 function spineY(s, level, service) {
   if (service === 'drain') return 0.15
-  return level === 1 ? s.eaves - 0.4 : s.clearGF - 0.4
+  return level === 1 ? s.eaves - 0.85 : s.clearGF - 0.4
 }
 
 /** Souběžné trasy se odsazují SMĚREM DOVNITŘ od servisní stěny. */

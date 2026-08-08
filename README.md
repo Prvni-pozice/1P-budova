@@ -126,6 +126,14 @@ src/ui.js        textový souhrn
 src/main.js      scéna, ovládání, editace
 ```
 
+## Požární úseky a příčky
+
+Příčky se generují z sousednosti bloků (`partitionsFor`): kde je v `links`
+dveřní propojení, je otvor s nadpražím; `wallGaps` přidává průchod výtahu.
+Tři požární úseky (`spec.compartments`): kanceláře, veřejná část
+(shromažďovací prostor arény), technická zóna — stěny mezi úseky jsou
+tlustší a tónované. Postava v GTA režimu prochází jen dveřmi.
+
 ## Otevřené otázky
 
 - **Program je menší než půdorys.** 2 rigy do 42 m², 2 klece do 84 m²,

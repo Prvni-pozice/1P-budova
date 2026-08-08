@@ -45,6 +45,20 @@ export const SPEC = {
     workshop: { carLift: true, benches: 3, printers: 2 },
   },
 
+  // Požární úseky (PBŘ): mezi různými úseky jsou dělicí konstrukce s požární
+  // odolností (v modelu tlustší, tónované). Technická zóna je vlastní úsek,
+  // aréna s lobby je shromažďovací prostor, kanceláře třetí úsek.
+  compartments: {
+    office: ['office-gf', 'kitchen', 'office-1f', 'meeting', 'reserve', 'corridor'],
+    public: ['arena', 'lobby', 'wetcore', 'play', 'gym', 'sim'],
+    tech:   ['workshop', 'plant', 'storage'],
+  },
+
+  // Otvory v příčkách mimo dveře (výtahová šachta prochází stěnou office–lobby)
+  wallGaps: [
+    { a: 'office-gf', b: 'lobby', from: 8.1, to: 9.9, note: 'výtah — kabina ústí do lobby' },
+  ],
+
   // Vnitřní dveře. Co tu není, není propojené — DÍLNA JE ZÁMĚRNĚ ODDĚLENÁ:
   // technická zóna (dílna + strojovna + sklad) se vstupuje jen vlastními
   // dveřmi a vraty z jihu, do veřejné části z ní nevede nic.

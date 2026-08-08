@@ -109,6 +109,8 @@ export const FURN = {
   stairs:     { w: 1.20, d: 4.60, h: 3.30, color: 0xb9b0a2, shape: 'stairs',  label: 'Schodiště' },
   elevator:   { w: 1.40, d: 1.60, h: 5.70, color: 0x9fb6c4, shape: 'cubicle', label: 'Výtahová šachta (bezbariérový přístup)' },
   glass:      { w: 4.00, d: 0.08, h: 3.00, color: 0x9fd4e8, shape: 'net',     label: 'Prosklená příčka' },
+  sidelight:  { w: 1.90, d: 0.08, h: 2.60, color: 0x9fd4e8, shape: 'net',     label: 'Boční sklo zádveří' },
+  acpanel:    { w: 1.20, d: 0.06, h: 1.00, color: 0x3a3f47, shape: 'box',     label: 'Akustický panel' },
 }
 
 /**
@@ -304,8 +306,11 @@ const LAYOUTS = {
     const { items, put, row, seat, around } = maker(S, b)
     put('entrymat', 4.6, 1.0)
     put('glazed', 3.5, 0.14, { note: 'hlavní vstupní dveře' })
+    put('exitsign', 3.5, 0.45, { dy: 2.35 })
     put('service', 1.2, 0.14, { note: 'zásobování' })
     put('glass', 3.5, 2.1, { note: 'zádveří' })
+    put('sidelight', 2.62, 1.1, { rot: 90 })
+    put('sidelight', 4.38, 1.1, { rot: 90 })
     put('reception', 2.4, 3.7)
     put('bar', 4.5, 3.7)
     row('backbar', 1.4, 4.8, 3, 1.05)
@@ -336,6 +341,7 @@ const LAYOUTS = {
     }
     put('glass', 6.95, 8.5, { rot: 90, note: 'výhled do arény' })
     put('hydrant', 0.4, 2.6, { rot: 90, dy: 0.6 })
+    put('firstaid', 0.15, 4.6, { rot: 90, note: 'lékárnička + AED u recepce' })
     return items
   },
 
@@ -356,6 +362,7 @@ const LAYOUTS = {
     row('basin', 2.9, 0.55, sPub.basins, 0.7)
     put('wcBF', 3.4, 3.6)
     put('babychange', 5.0, 3.5, { note: 'v rodinném provozu povinná výbava' })
+    put('mirror', 4.3, 0.12, { dy: 1.35, note: 'nad umyvadly' })
     return items
   },
 
@@ -367,6 +374,7 @@ const LAYOUTS = {
     const COLS = [2.25, 4.70]                 // lože 2,10 → u 1,2–3,3 a 3,65–5,75
     put('coatrack', 0.35, 4.6, { rot: 90, note: 'odkládání u vstupu' })
     put('escape', 0.9, 0.14, { note: 'únikový východ' })
+    put('exitsign', 0.9, 0.45, { dy: 2.35 })
     put('hoop', COLS[0], 0.9, { rot: 180 })
     for (const u of COLS) put('tramp', u, 2.9, { note: 'odrazová dráha do jámy' })
     put('foampit', 3.475, 6.4)
@@ -408,6 +416,7 @@ const LAYOUTS = {
     put('picture', 0.15, 4.6, { rot: 270, img: '/art/posilka2.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
     put('picture', 0.15, 6.6, { rot: 270, img: '/art/posilka3.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
     put('cleansink', 6.6, 11.3, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
+    put('exitsign', 0.35, 5.2, { rot: 90, dy: 2.3, note: 'směr úniku na chodbu' })
     put('glass', 6.95, 9.0, { rot: 90, note: 'výhled do arény' })
     put('co2', 0.15, 6.0, { rot: 90, dy: 1.6 })
     return items
@@ -418,6 +427,7 @@ const LAYOUTS = {
     put('picture', 3.2, 5.68, { rot: 180, img: '/art/sim.jpg', pw: 1.0, ph: 1.3, py: 1.45,
       note: 'foto ze závodů' })
     put('rack19', 6.4, 5.2)
+    row('acpanel', 2.0, 5.87, 3, 2.0, { rot: 180, dy: 1.3 })
     put('rtable', 2.0, 1.4)
     around(2.0, 1.4, [[-0.78, 0], [0.78, 0]])
     put('fridge', 6.4, 1.2)
@@ -429,6 +439,7 @@ const LAYOUTS = {
     const { items, put, row } = maker(S, b)
     // u = 0 je stěna k aréně, v = 0 jižní stěna s vraty (u 2,2–6,2)
     put('service', 1.0, 0.14, { note: 'vstup pro personál' })
+    put('exitsign', 1.0, 0.45, { dy: 2.35 })
     if (P.workshop.carLift) {
       put('carlift', 4.2, 2.4, { note: 'světlá výška 4,2 m — nad tím nesmí být mezipatro' })
       put('car', 4.2, 3.0, { note: 'vozidlo na zvedáku' })

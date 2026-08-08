@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { SPEC, TYPES, area } from './spec.js'
 import { computeMEP, SERVICES, blockDemand } from './mep.js'
 import { FURN } from './fitout.js'
-import { openingsFor } from './building.js'
+import { openingsFor, partitionsFor } from './building.js'
 import { buildAll } from './building.js'
 import { Cutaway } from './cutaway.js'
 import { Env } from './env.js'
@@ -54,6 +54,7 @@ let camBlockers = []     // co nesmí zaclonit kameru za postavou
 let doorMeshes = []      // dveře s pantem
 let solids = []          // AABB překážky pro postavu
 let southDoors = []      // otvory v jižní stěně (jediná průchozí)
+let partSegs = []        // vnitřní příčky pro kolizi postavy
 
 // ------------------------------------------------------------ přegenerování
 let built = null
@@ -119,6 +120,8 @@ function rebuild() {
       }
     })
   southDoors = openingsFor(spec, 'south').filter((h) => h.v0 === 0).map((h) => [h.x0, h.x1])
+  partSegs = partitionsFor(spec)
+  camBlockers.push(...built.groups.partitions.children)
 }
 
 // -------------------------------------------------------------------- vrstvy
@@ -146,6 +149,9 @@ function applyLayers() {
   g.structure.visible = chk.structure.checked
   g.pv.visible = chk.pv.checked
   g.furniture.visible = chk.furniture.checked
+  for (const c of g.partitions.children) {
+    c.visible = levelFilter === 'all' || String(c.userData.level) === levelFilter
+  }
   g.site.visible = chk.site.checked
   g.stage2.visible = chk.stage2.checked
   for (const grp of [g.blocks, g.labels, g.slabs, g.furniture, g.ground]) {
@@ -436,6 +442,18 @@ function gtaTick(dt) {
       && !southDoors.some((o) => pos.x > o[0] + 0.05 && pos.x < o[1] - 0.05)) pos.z = old.z
   if (inZ && Math.abs(pos.x) < t) pos.x = old.x
   if (inZ && Math.abs(pos.x - spec.stage1) < t) pos.x = old.x
+
+  // vnitřní příčky: projít jde jen dveřním otvorem
+  for (const sg of partSegs) {
+    if (pos.y + 1.2 < sg.base || pos.y > sg.top) continue
+    const along = sg.axis === 'z' ? pos.z : pos.x
+    if (along < sg.from - 0.2 || along > sg.to + 0.2) continue
+    const perp = sg.axis === 'z' ? pos.x : pos.z
+    if (Math.abs(perp - sg.at) >= 0.3) continue
+    if (sg.gaps.some(([g0, g1]) => along > g0 + 0.1 && along < g1 - 0.1)) continue
+    if (sg.axis === 'z') pos.x = old.x
+    else pos.z = old.z
+  }
 
   // nábytek: postava do něj naráží, neprochází jím
   for (const sB of solids) {
