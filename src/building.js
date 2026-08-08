@@ -2,6 +2,7 @@
 import * as THREE from 'three'
 import { TYPES, area, levelBase, roofY, ridgeY, blockHeight } from './spec.js'
 import { FURN, fitoutAll } from './fitout.js'
+import { sharedMat, floorMat } from './textures.js'
 
 const deg = (d) => (d * Math.PI) / 180
 
@@ -456,10 +457,7 @@ export function buildAll(spec, mep) {
   const mepByService = {}
 
   // --- terén ---
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(400, 400),
-    new THREE.MeshStandardMaterial({ color: 0x4d9c45, roughness: 1 }),   // travnatá zelená
-  )
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), sharedMat('grass'))
   ground.rotation.x = -Math.PI / 2
   ground.position.set(S.length / 2, -0.02, S.depth / 2)
   ground.receiveShadow = true
@@ -472,7 +470,7 @@ export function buildAll(spec, mep) {
   const northHoles = openingsFor(S, 'north')
   const southHoles = openingsFor(S, 'south')
 
-  const shellMat = new THREE.MeshStandardMaterial({ color: 0xdcd6cc, roughness: 0.85, side: THREE.DoubleSide })
+  const shellMat = sharedMat('plaster', { side: THREE.DoubleSide, roughness: 0.85 })
 
   const addWall = (name, geom, ax, az, dx, dz, outward, mat = shellMat) => {
     const m = new THREE.Mesh(geom, mat.clone())
@@ -540,7 +538,7 @@ export function buildAll(spec, mep) {
   const halfD = S.depth / 2
   const slopeCenter = (side) => roofSlope(S, side)
   const slope = roofSlope(S, -1).len
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x7d8590, roughness: 0.7, metalness: 0.3, side: THREE.DoubleSide })
+  const roofMat = sharedMat('roofSheet', { side: THREE.DoubleSide, roughness: 0.65, metalness: 0.25 })
   for (const side of [-1, 1]) {
     const c = slopeCenter(side)
     const m = new THREE.Mesh(new THREE.BoxGeometry(S.stage1 + 0.8, 0.18, slope), roofMat.clone())
@@ -596,12 +594,32 @@ export function buildAll(spec, mep) {
     }
   }
 
-  // --- podlaha přízemí ---
+  // --- podlaha přízemí + nášlapné vrstvy podle provozu ---
   const slabMat = new THREE.MeshStandardMaterial({ color: 0xcfc7bb, roughness: 0.9 })
   const floor = new THREE.Mesh(new THREE.BoxGeometry(S.stage1, 0.2, S.depth), slabMat)
   floor.position.set(S.stage1 / 2, -0.1, S.depth / 2)
   floor.receiveShadow = true
   groups.ground.add(floor)
+
+  const FINISH = {
+    office: ['wood', 1.6], meeting: ['wood', 1.6], lobby: ['wood', 1.6],
+    wet: ['tile', 1.2], arena: ['rubber', 1.5], play: ['rubber', 1.5],
+    gym: ['rubber', 1.5], sim: ['rubber', 1.5],
+    workshop: ['concrete', 3.0], storage: ['concrete', 3.0], plant: ['concrete', 3.0],
+    circ: ['concrete', 3.0], reserve: ['concrete', 3.0],
+  }
+  for (const b of S.blocks) {
+    const fin = FINISH[b.type]
+    if (!fin) continue
+    const lvl = b.level === 'full' ? 0 : b.level
+    const w = b.x1 - b.x0 - 0.08
+    const d = b.z1 - b.z0 - 0.08
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.04, d), floorMat(fin[0], w, d, fin[1]))
+    m.position.set((b.x0 + b.x1) / 2, levelBase(S, lvl) + 0.02, (b.z0 + b.z1) / 2)
+    m.receiveShadow = true
+    m.userData.block = b
+    groups.ground.add(m)
+  }
 
   // --- vestavěné stropy pod bloky v patře, s prostupy nad schodišti ---
   const stairItems = fit.items.filter((it) => it.kind === 'stairs')

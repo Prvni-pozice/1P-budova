@@ -269,6 +269,16 @@ ok(doors.filter((h) => h.x0 >= lobbyB.x0 - 0.1 && h.x1 <= lobbyB.x1 + 0.1).lengt
 ok(fit.items.some((it) => it.kind === 'cleansink' && it.block === 'gym'),
   'úklidová výlevka je i v patře')
 
+// v západní (1P) části smí být jen JEDNO schodiště — bývala tam dvě 1,3 m
+// od sebe přes příčku; a veřejné patro musí mít bezbariérový přístup
+ok(stairs.filter((st) => st.x < 14).length === 1, 'v 1P části je jediné sdílené schodiště',
+  `${stairs.filter((st) => st.x < 14).length}`)
+ok(fit.counts.elevator === 1, 'výtah pro bezbariérový přístup do patra existuje')
+const elev = fit.items.find((it) => it.kind === 'elevator')
+const shStair = stairs.find((st) => st.x < 14)
+ok(Math.hypot(elev.x - shStair.x, elev.z - shStair.z) < 3.5, 'výtah stojí u sdíleného schodiště',
+  `${Math.hypot(elev.x - shStair.x, elev.z - shStair.z).toFixed(1)} m`)
+
 console.log('\nVNITŘNÍ DVEŘE A PROSTUPNOST')
 const doorsIn = doorsFor(SPEC)
 ok(doorsIn.length === SPEC.links.length, 'každé propojení ve spec má dveře',

@@ -107,6 +107,7 @@ export const FURN = {
   subboard:   { w: 0.80, d: 0.25, h: 1.60, color: 0xffd54f, shape: 'box',     label: 'Podružný rozvaděč' },
   extinguisher: { w: 0.25, d: 0.25, h: 0.75, color: 0xe23b3b, shape: 'cyl',   label: 'Hasicí přístroj' },
   stairs:     { w: 1.20, d: 4.60, h: 3.30, color: 0xb9b0a2, shape: 'stairs',  label: 'Schodiště' },
+  elevator:   { w: 1.40, d: 1.60, h: 5.70, color: 0x9fb6c4, shape: 'cubicle', label: 'Výtahová šachta (bezbariérový přístup)' },
   glass:      { w: 4.00, d: 0.08, h: 3.00, color: 0x9fd4e8, shape: 'net',     label: 'Prosklená příčka' },
 }
 
@@ -141,6 +142,7 @@ export const SVC = {
   compressor: { svc: ['elec'], conn: 0.40 },
   carlift:    { svc: ['elec'], conn: 0.60 },       // 400 V
   hoist:      { svc: ['elec'], conn: 0.30 },
+  elevator:   { svc: ['elec'], conn: 1.20 },
   airreel:    { svc: ['elec'], conn: 0.40 },
   diffuser:   { svc: ['vzt'], conn: null },        // napojení shora, řeší mep.js
   destrat:    { svc: ['elec'], conn: 0.20 },
@@ -238,8 +240,10 @@ const LAYOUTS = {
     if (n > 6) desks(1.0, 6.4, Math.ceil((n - 6) / 2))        // zbytek
     row('sideboard', 1.2, 0.35, 4, 0.9)                       // pod jižními okny
     row('cabinet', 6.5, 1.2, 5, 0.9, { along: 'v', rot: 90 }) // úložná stěna
-    // BEZ TOHOTO SCHODIŠTĚ je celé patro kanceláří (126 m²) nedostupné
-    put('stairs', 6.4, 8.0, { note: 'ústí do chodby v patře, ne do místnosti' })
+    // patro je přístupné sdíleným schodištěm v lobby (dveře office–lobby);
+    // u dělicí stěny stojí šachta výtahu — veřejné patro (fitness, sim racing)
+    // jinak nemá bezbariérový přístup. Kabina ústí do lobby a nahoře do chodby.
+    put('elevator', 6.3, 9.0, { note: 'bezbariérový přístup do patra' })
     put('pod', 4.6, 9.6)                                      // telefonní budka
     put('rtable', 2.4, 9.8)
     around(2.4, 9.8, [[-0.78, 0], [0.78, 0], [0, -0.78]])
@@ -314,7 +318,7 @@ const LAYOUTS = {
     // 3 patra po 10 sloupcích; rodiny sdílejí, na 40 lidí ve špičce to stačí
     row('valuebox', 6.6, 6.0, 10, 0.32, { along: 'v', rot: 90, note: 'cennosti, 3 patra' })
     // schodiště podél západní stěny — přes severní konec se to nemačká
-    put('stairs', 0.75, 8.2, { note: 'do fitness a sim racingu' })
+    put('stairs', 0.75, 8.2, { note: 'sdílené schodiště do patra (fitness, sim racing i kanceláře přes chodbu)' })
     // dva sloupce; řady 2,4 m od sebe, jinak židle zády k sobě kolidují.
     // U řady u příčky se severní židle vynechává.
     for (const u of [2.7, 5.1]) {

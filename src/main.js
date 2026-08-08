@@ -148,7 +148,7 @@ function applyLayers() {
   g.furniture.visible = chk.furniture.checked
   g.site.visible = chk.site.checked
   g.stage2.visible = chk.stage2.checked
-  for (const grp of [g.blocks, g.labels, g.slabs, g.furniture]) {
+  for (const grp of [g.blocks, g.labels, g.slabs, g.furniture, g.ground]) {
     for (const c of grp.children) {
       const b = c.userData.block
       c.visible = !b || levelVisible(b)
