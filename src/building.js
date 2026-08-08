@@ -1,6 +1,7 @@
 // building.js — veškerá geometrie se generuje ze SPEC. Nic není napevno.
 import * as THREE from 'three'
 import { TYPES, area, levelBase, roofY, ridgeY, blockHeight } from './spec.js'
+import { FURN, fitoutAll } from './fitout.js'
 
 const deg = (d) => (d * Math.PI) / 180
 
@@ -184,12 +185,119 @@ export function pvLayout(S, southHoles) {
   }
 }
 
+// ------------------------------------------------------------- vybavení
+
+const box = (w, h, d, mat, x = 0, y = 0, z = 0) => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat)
+  m.position.set(x, y, z)
+  return m
+}
+
+/**
+ * Jeden kus vybavení. Tvary jsou schválně hrubé — jde o kontrolu, jestli se to
+ * vejde a dá projít, ne o katalogový render.
+ */
+function furnitureMesh(item, FURN) {
+  const f = FURN[item.kind]
+  const g = new THREE.Group()
+  const mat = new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.72 })
+  const dark = new THREE.MeshStandardMaterial({ color: 0x3c4148, roughness: 0.6, metalness: 0.3 })
+  const glassy = new THREE.MeshStandardMaterial({
+    color: f.color, roughness: 0.15, transparent: true, opacity: 0.34, depthWrite: false,
+  })
+  const { w, d, h } = f
+
+  switch (f.shape) {
+    case 'table': {
+      g.add(box(w, 0.04, d, mat, 0, h, 0))
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        g.add(box(0.06, h, 0.06, dark, sx * (w / 2 - 0.08), h / 2, sz * (d / 2 - 0.08)))
+      }
+      break
+    }
+    case 'chair':
+      g.add(box(w, 0.05, d, mat, 0, 0.45, 0))
+      g.add(box(w, 0.42, 0.05, mat, 0, 0.66, d / 2 - 0.03))
+      g.add(box(0.05, 0.45, 0.05, dark, 0, 0.22, 0))
+      break
+    case 'cubicle': {
+      const t = 0.05
+      g.add(box(w, h, t, glassy, 0, h / 2, -d / 2))
+      g.add(box(t, h, d, glassy, -w / 2, h / 2, 0))
+      g.add(box(t, h, d, glassy, w / 2, h / 2, 0))
+      break
+    }
+    case 'cyl': {
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(w / 2, w / 2, h, 14), mat)
+      m.position.y = h / 2
+      g.add(m)
+      break
+    }
+    case 'stairs': {
+      const n = 14
+      for (let i = 0; i < n; i++) {
+        g.add(box(w, 0.06, d / n, mat, 0, ((i + 1) * h) / n, -d / 2 + ((i + 0.5) * d) / n))
+      }
+      break
+    }
+    case 'tramp':
+      g.add(box(w, 0.12, d, new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.9 }), 0, h - 0.06, 0))
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        g.add(box(0.08, h, 0.08, dark, sx * (w / 2 - 0.05), h / 2, sz * (d / 2 - 0.05)))
+      }
+      break
+    case 'cage':
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        g.add(box(0.09, h, 0.09, mat, sx * (w / 2 - 0.05), h / 2, sz * (d / 2 - 0.05)))
+      }
+      g.add(box(w, 0.08, 0.08, mat, 0, h, -d / 2 + 0.05))
+      g.add(box(w, 0.08, 0.08, mat, 0, h, d / 2 - 0.05))
+      break
+    case 'rack': {
+      const shelves = 3
+      for (let i = 1; i <= shelves; i++) g.add(box(w, 0.05, d, mat, 0, (i * h) / shelves, 0))
+      for (const sx of [-1, 1]) g.add(box(0.07, h, d, dark, sx * (w / 2 - 0.04), h / 2, 0))
+      break
+    }
+    case 'rig':
+      g.add(box(0.55, 0.5, 0.9, mat, 0, 0.4, d / 2 - 0.55))          // sedačka
+      g.add(box(0.36, 0.36, 0.1, dark, 0, 0.78, d / 2 - 1.25))        // volant
+      g.add(box(w, 0.42, 0.05, dark, 0, 1.15, -d / 2 + 0.25))         // trojmonitor
+      g.add(box(0.06, 0.9, 0.06, dark, 0, 0.45, -d / 2 + 0.28))
+      break
+    case 'hoop':
+      g.add(box(0.1, h, 0.1, dark, 0, h / 2, d / 2))
+      g.add(box(w, 0.7, 0.05, mat, 0, h - 0.45, 0))
+      g.add(box(0.45, 0.04, 0.45, mat, 0, h - 0.75, -0.2))
+      break
+    case 'lift':                                                       // dvousloupový zvedák
+      for (const sx of [-1, 1]) {
+        g.add(box(0.28, h, 0.32, mat, sx * (w / 2), h / 2, 0))
+        g.add(box(0.16, 0.14, 1.5, mat, sx * (w / 2 - 0.85), 1.1, 0.7))
+        g.add(box(0.16, 0.14, 1.5, mat, sx * (w / 2 - 0.85), 1.1, -0.7))
+      }
+      break
+    case 'net':
+      g.add(box(w, h, Math.max(d, 0.04), glassy, 0, h / 2, 0))
+      for (const sx of [-1, 1]) g.add(box(0.07, h, 0.07, dark, sx * (w / 2 - 0.04), h / 2, 0))
+      break
+    default:
+      g.add(box(w, h, d, mat, 0, h / 2, 0))
+  }
+
+  g.position.set(item.x, item.y, item.z)
+  g.rotation.y = (-(item.rot ?? 0) * Math.PI) / 180
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true } })
+  g.userData.item = item
+  return g
+}
+
 // ---------------------------------------------------------------- generátor
 
 export function buildAll(spec, mep) {
   const root = new THREE.Group()
   const groups = {}
-  for (const k of ['ground', 'shell', 'glass', 'roof', 'pv', 'structure', 'slabs', 'blocks', 'labels', 'mep', 'stage2']) {
+  for (const k of ['ground', 'shell', 'glass', 'roof', 'pv', 'structure', 'slabs', 'furniture', 'blocks', 'labels', 'mep', 'stage2']) {
     groups[k] = new THREE.Group()
     groups[k].name = k
     root.add(groups[k])
@@ -348,6 +456,14 @@ export function buildAll(spec, mep) {
     groups.slabs.add(m)
   }
 
+  // --- vybavení ---
+  const fit = fitoutAll(S)
+  for (const it of fit.items) {
+    const m = furnitureMesh(it, FURN)
+    m.userData.block = S.blocks.find((b) => b.id === it.block)
+    groups.furniture.add(m)
+  }
+
   // --- funkční bloky ---
   for (const b of S.blocks) {
     const ty = TYPES[b.type]
@@ -406,5 +522,5 @@ export function buildAll(spec, mep) {
   s2label.position.set(S.stage1 + s2w / 2, S.eaves * 0.7, S.depth / 2)
   groups.stage2.add(s2label)
 
-  return { root, groups, walls, blockMeshes, mepByService, pv }
+  return { root, groups, walls, blockMeshes, mepByService, pv, fit }
 }

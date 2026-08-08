@@ -73,14 +73,14 @@ function rebuild() {
   cut.mode = cutMode
   applyLayers()
   applyMepToggles()
-  document.getElementById('summary').textContent = summaryText(spec, mep, built.pv)
+  document.getElementById('summary').textContent = summaryText(spec, mep, built.pv, built.fit)
   refreshSelection()
 }
 
 // -------------------------------------------------------------------- vrstvy
 const $ = (id) => document.getElementById(id)
 const chk = { blocks: $('ly-blocks'), labels: $('ly-labels'), structure: $('ly-structure'),
-  pv: $('ly-pv'), stage2: $('ly-stage2') }
+  furniture: $('ly-furniture'), pv: $('ly-pv'), stage2: $('ly-stage2') }
 
 function levelVisible(b) {
   if (levelFilter === 'all') return true
@@ -88,14 +88,22 @@ function levelVisible(b) {
   return String(b.level) === levelFilter
 }
 
+/** Když je vidět vybavení, bloky ustoupí do pozadí — jinak by ho přebily. */
+const blockOpacity = () => (chk.furniture.checked && chk.blocks.checked ? 0.17 : 0.42)
+
 function applyLayers() {
   const g = built.groups
+  for (const m of built.blockMeshes) {
+    m.userData.baseOpacity = blockOpacity()
+    if (m.userData.block.id !== selectedId) m.material.opacity = m.userData.baseOpacity
+  }
   g.blocks.visible = chk.blocks.checked
   g.labels.visible = chk.labels.checked
   g.structure.visible = chk.structure.checked
   g.pv.visible = chk.pv.checked
+  g.furniture.visible = chk.furniture.checked
   g.stage2.visible = chk.stage2.checked
-  for (const grp of [g.blocks, g.labels, g.slabs]) {
+  for (const grp of [g.blocks, g.labels, g.slabs, g.furniture]) {
     for (const c of grp.children) {
       const b = c.userData.block
       c.visible = !b || levelVisible(b)

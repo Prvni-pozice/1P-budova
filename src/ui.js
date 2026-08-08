@@ -1,5 +1,6 @@
 // ui.js — textový souhrn. Vše se přepočítává ze SPEC, nic není opsané ručně.
 import { areaTotals } from './spec.js'
+import { FURN } from './fitout.js'
 
 const BREAKERS = [25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400]
 
@@ -12,7 +13,7 @@ const rpad = (s, w) => String(s).padStart(w)
 // Měrné výnosy pro ČR [kWh/kWp/rok] — střecha ve sklonu 10°, fasáda svisle
 const YIELD = { roof: 1020, facade: 700 }
 
-export function summaryText(spec, mep, pv) {
+export function summaryText(spec, mep, pv, fit) {
   const a = areaTotals(spec)
   const t = mep.totals
   const breaker = BREAKERS.find((b) => b >= t.breaker * 1.15) ?? '>400'
@@ -24,6 +25,10 @@ export function summaryText(spec, mep, pv) {
   L.push(`  ${pad('Celkem', 16)}${rpad(n0(a.total), 7)} m²`)
   L.push(`  ${pad('Půdorys etapy 1', 16)}${rpad(n0(a.footprint), 7)} m²`)
   L.push(`  ${pad('Koeficient', 16)}${rpad(n2(a.ratio) + '×', 7)}`)
+  if (a.shell > 0) {
+    L.push(`  ${pad('z toho vybaveno', 16)}${rpad(n0(a.fitted), 7)} m²`)
+    L.push(`  ${pad('hrubá rezerva', 16)}${rpad(n0(a.shell), 7)} m²`)
+  }
   L.push('')
   L.push('VZDUCHOTECHNIKA')
   L.push(`  ${pad('Celkem', 16)}${rpad(n0(t.vzt), 7)} m³/h`)
@@ -56,6 +61,15 @@ export function summaryText(spec, mep, pv) {
     L.push(`  ${pad('Jižní fasáda', 16)}${rpad(n1(pv.facadeKwp), 7)} kWp  (${n0(pv.facadeArea)} m²)`)
     L.push(`  ${pad('Celkem', 16)}${rpad(n1(pv.roofKwp + pv.facadeKwp), 7)} kWp`)
     L.push(`  ${pad('Odhad výroby', 16)}${rpad(n0(kwh / 1000), 7)} MWh/rok`)
+  }
+  if (fit && Object.keys(fit.counts).length) {
+    L.push('')
+    L.push('VYBAVENÍ')
+    const rows = Object.entries(fit.counts)
+      .map(([k, v]) => [FURN[k]?.label ?? k, v])
+      .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], 'cs'))
+    for (const [label, v] of rows) L.push(`  ${pad(label, 24)}${rpad(v, 4)} ks`)
+    if (fit.dropped > 0) L.push(`  ${pad('!! nevešlo se', 24)}${rpad(fit.dropped, 4)} ks`)
   }
   return L.join('\n')
 }

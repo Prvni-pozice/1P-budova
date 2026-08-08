@@ -3,6 +3,7 @@
 import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
 import { openingsFor, pvLayout } from './src/building.js'
+import { fitoutAll, fitoutFor, sanitaryFor } from './src/fitout.js'
 
 let fail = 0
 const ok = (cond, msg, extra = '') => {
@@ -31,7 +32,7 @@ const a = areaTotals(SPEC)
 console.log('\nPLOCHY')
 ok(Math.abs(a.footprint - 504) < 0.01, 'půdorys etapy 1 = 504 m²', `${a.footprint}`)
 ok(Math.abs(a.gf - 504) < 0.01, 'přízemí zaplňuje půdorys přesně', `${a.gf} m²`)
-ok(Math.abs(a.up - 336) < 0.01, 'patro = 336 m²', `${a.up} m²`)
+ok(Math.abs(a.up - 322) < 0.01, 'patro = 322 m²', `${a.up} m²`)
 ok(a.total >= 750 && a.total <= 850, 'celkem v cílovém pásmu 750–850 m²', `${a.total} m²`)
 
 const cov = coverage(SPEC)
@@ -113,6 +114,50 @@ ok(pv.panels.filter((p) => p.kind === 'facade').every((p) =>
 const noPv = structuredClone(SPEC)
 noPv.pv = { roofSouth: false, roofNorth: false, facadeSouth: false }
 ok(pvLayout(noPv, south).panels.length === 0, 'FVE jde ve spec vypnout')
+
+console.log('\nVYBAVENÍ')
+const fit = fitoutAll(SPEC)
+ok(fit.dropped === 0, 'všechno vybavení se vejde do svého bloku', `${fit.items.length} ks`)
+ok(fit.counts.desk === SPEC.program.office.desks, 'počet stolů = počet míst v programu', `${fit.counts.desk}`)
+ok(fit.counts.simrig === SPEC.program.sim.rigs, 'počet rigů sedí', `${fit.counts.simrig}`)
+ok(fit.counts.cage === SPEC.program.gym.cages, 'počet klecí sedí', `${fit.counts.cage}`)
+ok(fit.counts.tramp === SPEC.program.arena.beds + 1, 'trampolíny + 1 v dunk lane', `${fit.counts.tramp}`)
+ok(fit.counts.carlift === 1 && fit.counts.car === 1, 'zvedák i obrys vozidla v dílně')
+ok(fit.counts.wcBF === 1, 'bezbariérové WC je právě jedno (vyhl. 398/2009)')
+
+const sPub = sanitaryFor(SPEC.program.arena.peak, { publicUse: true })
+const sOff = sanitaryFor(SPEC.program.office.staffTarget)
+ok(fit.counts.wc === sPub.wcW + sPub.wcM + sOff.wcW + sOff.wcM,
+  'počet WC kabin odpovídá normě', `${fit.counts.wc} (veřejnost ${sPub.wcW + sPub.wcM} + kanceláře ${sOff.wcW + sOff.wcM})`)
+ok(fit.counts.basin === sPub.basins + sOff.basins + 2,
+  'počet umyvadel odpovídá normě + 2 v šatně', `${fit.counts.basin}`)
+
+// v hrubé rezervě nesmí být nic vybaveno
+ok(fit.items.every((it) => it.block !== 'reserve'), 'hrubá rezerva je prázdná')
+
+// vybavení jde s blokem
+const moved = structuredClone(SPEC)
+const mb = moved.blocks.find((b) => b.id === 'sim')
+mb.x0 -= 7; mb.x1 -= 7
+const rigBefore = fitoutFor(SPEC, SPEC.blocks.find((b) => b.id === 'sim'))[0]
+const rigAfter = fitoutFor(moved, mb)[0]
+ok(Math.abs(rigAfter.x - (rigBefore.x - 7)) < 1e-9, 'vybavení se posune s blokem',
+  `x ${rigBefore.x} → ${rigAfter.x}`)
+
+// při zmenšení bloku se přebytek zahodí a nahlásí
+const shrunk = structuredClone(SPEC)
+const sb = shrunk.blocks.find((b) => b.id === 'gym')
+sb.x1 = sb.x0 + 3
+ok(fitoutFor(shrunk, sb).length < fitoutFor(SPEC, SPEC.blocks.find((b) => b.id === 'gym')).length,
+  'zmenšení bloku vyhodí, co se nevejde')
+
+// změna počtu lidí přepočte stoly i sanitu
+const bigger2 = structuredClone(SPEC)
+bigger2.program.office.desks = 6
+bigger2.program.office.staffTarget = 30
+const f2 = fitoutAll(bigger2)
+ok(f2.counts.desk === 6, 'méně míst → méně stolů', `${f2.counts.desk}`)
+ok(sanitaryFor(30).wcW > sOff.wcW, 'víc lidí → víc WC', `${sOff.wcW} → ${sanitaryFor(30).wcW}`)
 
 console.log('\nPŘEPOČET PO ZMĚNĚ')
 const bigger = structuredClone(SPEC)

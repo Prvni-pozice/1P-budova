@@ -32,6 +32,16 @@ export const SPEC = {
   // Fotovoltaika. Jižní střešní rovina + jižní fasáda mezi otvory.
   pv: { roofSouth: true, roofNorth: false, facadeSouth: true, wp: 210, coverage: 0.85 },
 
+  // Program — počty osob a kusů. Od nich se odvozuje vybavení i sanita.
+  program: {
+    office:   { staff: 8, staffTarget: 10, desks: 10 },
+    arena:    { peak: 40, beds: 9 },
+    bar:      { level: 'light', seats: 32 },   // nápoje + jednoduchá příprava
+    gym:      { cages: 2, users: 8 },
+    sim:      { rigs: 2 },
+    workshop: { carLift: true, benches: 3, printers: 2 },
+  },
+
   blocks: [
     // ---- přízemí (504 m²) ----
     // sever (z 12–18) = servisní pruh bez oken, jih (z 0–12) = vstupy a světlo
@@ -43,13 +53,16 @@ export const SPEC = {
     { id: 'plant',     name: 'Strojovna',           type: 'plant',    level: 0, x0: 21, x1: 28, z0: 13, z1: 18 },
     { id: 'workshop',  name: 'Sdílená dílna',       type: 'workshop', level: 'full', x0: 21, x1: 28, z0: 0, z1: 13 },
 
-    // ---- patro (336 m²) ----
+    // ---- patro (322 m²) ----
+    // Sklad začíná až na z 6 — nad vjezdovou dráhou a zvedákem musí zůstat
+    // plná výška 4,2 m, jinak se pod mezipatro auto nevejde.
+    { id: 'office-1f', name: 'Klidové místnosti',   type: 'office',   level: 1, x0: 0,  x1: 7,  z0: 0,  z1: 5 },
+    { id: 'reserve',   name: 'Rezerva',             type: 'reserve',  level: 1, x0: 0,  x1: 7,  z0: 5,  z1: 12, fitout: 'shell' },
     { id: 'meeting',   name: 'Zasedačka / školicí', type: 'meeting',  level: 1, x0: 0,  x1: 7,  z0: 12, z1: 18 },
-    { id: 'office-1f', name: 'Kanceláře 1P',        type: 'office',   level: 1, x0: 0,  x1: 7,  z0: 0,  z1: 12 },
-    { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 7,  x1: 14, z0: 12, z1: 18 },
     { id: 'gym',       name: 'Fitness',             type: 'gym',      level: 1, x0: 7,  x1: 14, z0: 0,  z1: 12 },
+    { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 7,  x1: 14, z0: 12, z1: 18 },
     { id: 'play',      name: 'Dětské atrakce',      type: 'play',     level: 1, x0: 14, x1: 21, z0: 15, z1: 18 },
-    { id: 'storage',   name: 'Sklad nad dílnou',    type: 'storage',  level: 1, x0: 21, x1: 28, z0: 4,  z1: 13 },
+    { id: 'storage',   name: 'Sklad nad dílnou',    type: 'storage',  level: 1, x0: 21, x1: 28, z0: 6,  z1: 13 },
   ],
 }
 
@@ -73,6 +86,7 @@ export const TYPES = {
   storage:  { label: 'Sklad',       color: 0xb08a5a, vzt: 2,  heat: 25, cool: 0,   elec: 8,   wet: false },
   plant:    { label: 'Strojovna',   color: 0xd94f8a, vzt: 2,  heat: 15, cool: 0,   elec: 60,  wet: false },
   circ:     { label: 'Komunikace',  color: 0xc9cdd4, vzt: 4,  heat: 35, cool: 0,   elec: 15,  wet: false },
+  reserve:  { label: 'Rezerva',     color: 0x8a8f98, vzt: 1,  heat: 20, cool: 0,   elec: 5,   wet: false },
 }
 
 // --- odvozené veličiny ---
@@ -99,10 +113,11 @@ export function blockHeight(s, b) {
   return b.level === 1 ? s.eaves - levelBase(s, 1) : s.clearGF
 }
 
-/** Součty podlahových ploch. */
+/** Součty podlahových ploch. Shell = postavená, ale nevybavená rezerva. */
 export function areaTotals(s) {
   const gf = s.blocks.filter((b) => b.level === 0 || b.level === 'full').reduce((a, b) => a + area(b), 0)
   const up = s.blocks.filter((b) => b.level === 1).reduce((a, b) => a + area(b), 0)
+  const shell = s.blocks.filter((b) => b.fitout === 'shell').reduce((a, b) => a + area(b), 0)
   const footprint = s.stage1 * s.depth
-  return { gf, up, total: gf + up, footprint, ratio: (gf + up) / footprint }
+  return { gf, up, total: gf + up, shell, fitted: gf + up - shell, footprint, ratio: (gf + up) / footprint }
 }

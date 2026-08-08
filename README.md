@@ -15,7 +15,19 @@ node test_spec.mjs   # kontrola ploch, otvorů a rozvodů
 Celkový půdorys 18 × 56 m = 1 008 m², stavěno ve dvou etapách po 18 × 28 m.
 Okap ~6 m, typizovaná montovaná hala, rastr 7 m (28 = 4×7, 56 = 8×7).
 Cíl: z 504 m² půdorysu etapy 1 dostat vestavěnými patry 750–850 m² podlahové
-plochy. Model je teď na **840 m²** (koeficient 1,67).
+plochy. Model je teď na **826 m²** (koeficient 1,64), z toho 777 m² vybavených
+a 49 m² vědomě nechaných v hrubé stavbě jako rezerva.
+
+## Program (počty, ze kterých se vybavení odvozuje)
+
+```
+Kanceláře 1P      8 lidí, výhled 10 → 10 pracovních míst
+Jump aréna        40 osob ve špičce → 9 trampolín + airbag + dunk lane
+Bar               nápoje a jednoduchá příprava, bez fritézy → 32 míst
+Fitness           2 klece, lavičky, činky, zbytek volná plocha
+Sim racing        2 rigy
+Dílna             zvedák na auta + 3 ponky + 2 3D tiskárny
+```
 
 ## Souřadnice
 
@@ -72,6 +84,11 @@ Sklad nad dílnou         x 21–28  z 4–13    63 m²
 - **FVE**: jižní střešní rovina celá, fasáda jen do volných polí mezi otvory
   (doplněk otvorů, takže se panely nikdy nepotkají s oknem). Přepínače
   `roofSouth` / `roofNorth` / `facadeSouth` v `spec.pv`.
+- **Vybavení** (`src/fitout.js`): počty stolů, skříněk, WC a umyvadel se
+  odvozují z `spec.program`. Sanita podle NV 361/2007 a ČSN 73 4108, jedno
+  bezbariérové WC podle vyhl. 398/2009. Rozmístění je relativní k rohu bloku,
+  takže jde s ním; co se po zmenšení bloku nevejde, se zahodí a nahlásí
+  v souhrnu jako „nevešlo se“ — model radši přizná díru, než aby lhal.
 
 ## Soubory
 
@@ -82,12 +99,16 @@ src/building.js  geometrie: plášť, otvory, střecha, bloky, potrubí
 src/cutaway.js   otevírání obálky podle kamery
 src/env.js       Miami sunset (převzato z flightsim)
 src/quality.js   adaptivní kvalita (kopie z flightsim)
+src/fitout.js    vybavení místností + normové počty (taky bez Three)
 src/ui.js        textový souhrn
 src/main.js      scéna, ovládání, editace
 ```
 
 ## Otevřené otázky
 
+- **Program je menší než půdorys.** 2 rigy do 42 m², 2 klece do 84 m²,
+  10 lidí do 126 m² kanceláří. Buď se rezerva nechá v hrubé stavbě
+  (teď 49 m²), nebo se etapa 1 zkrátí, nebo se část pronajme.
 - Přípojku elektro dimenzovat na celých 56 m, ne jen na etapu 1.
 - Zapnout i severní střešní rovinu FVE? Při sklonu 10° je skoro vodorovná a
   přidala by dalších ~39 kWp při zhruba 80 % měrného výnosu.
