@@ -56,8 +56,11 @@ const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a
 const up = cross([-1, 0, 0], [0, 0, 1])
 ok(up[1] === 1, 'východ × sever = nahoru (kompas je pravotočivý)', `(${up})`)
 ok(SPEC.blocks.find((b) => b.id === 'office-gf').x0 === 0, 'kanceláře na východním průčelí (x = 0)')
-ok(SPEC.blocks.filter((b) => b.z1 >= SPEC.depth).every((b) => ['wet', 'plant', 'arena', 'sim', 'meeting', 'play'].includes(b.type)),
-  'u severní (slepé) stěny jsou jen provozy bez nároku na okna')
+const NO_WINDOW_OK = ['wet', 'plant', 'arena', 'sim', 'meeting', 'play', 'circ', 'storage']
+const atNorth = SPEC.blocks.filter((b) => b.z1 >= SPEC.depth)
+ok(atNorth.every((b) => NO_WINDOW_OK.includes(b.type)),
+  'u severní (slepé) stěny jsou jen provozy bez nároku na okna',
+  atNorth.filter((b) => !NO_WINDOW_OK.includes(b.type)).map((b) => b.id).join(', ') || `${atNorth.length} bloků`)
 ok(SPEC.blocks.some((b) => b.type === 'workshop' && b.z0 === 0), 'dílna se dotýká jižní stěny → vrata z jihu')
 
 console.log('\nOTVORY V PLÁŠTI')
@@ -167,6 +170,44 @@ bigger2.program.office.staffTarget = 30
 const f2 = fitoutAll(bigger2)
 ok(f2.counts.desk === 6, 'méně míst → méně stolů', `${f2.counts.desk}`)
 ok(sanitaryFor(30).wcW > sOff.wcW, 'víc lidí → víc WC', `${sOff.wcW} → ${sanitaryFor(30).wcW}`)
+
+console.log('\nPŘÍSTUPNOST A ÚNIK')
+// každý blok v patře musí mít pod sebou nebo vedle sebe schodiště —
+// 126 m² kanceláří bylo v jedné verzi bez přístupu
+const stairs = fit.items.filter((it) => it.kind === 'stairs')
+const upper = SPEC.blocks.filter((b) => b.level === 1)
+const touching = (a, b) => a.x0 <= b.x1 + 0.05 && a.x1 >= b.x0 - 0.05
+                        && a.z0 <= b.z1 + 0.05 && a.z1 >= b.z0 - 0.05
+// blok je obsloužený, když do něj ústí schodiště, nebo sousedí s obslouženým
+const servedUp = new Set(upper
+  .filter((b) => stairs.some((st) => st.x >= b.x0 - 1 && st.x <= b.x1 + 1
+                                  && st.z >= b.z0 - 3 && st.z <= b.z1 + 3))
+  .map((b) => b.id))
+for (let pass = 0; pass < upper.length; pass++) {
+  for (const b of upper) {
+    if (servedUp.has(b.id)) continue
+    if (upper.some((o) => servedUp.has(o.id) && touching(b, o))) servedUp.add(b.id)
+  }
+}
+const unreachable = upper.filter((b) => !servedUp.has(b.id))
+ok(unreachable.length === 0, 'každý blok v patře je dostupný ze schodiště',
+  unreachable.length ? unreachable.map((b) => b.id).join(', ') : `${upper.length} bloků, ${stairs.length} schodišť`)
+
+// do zasedačky se nesmí chodit skrz pronajatou jednotku
+const corr = SPEC.blocks.find((b) => b.id === 'corridor')
+const meet = SPEC.blocks.find((b) => b.id === 'meeting')
+ok(corr && touching(corr, meet), 'zasedačka má dveře do chodby, ne přes rezervu')
+
+const doors = openingsFor(SPEC, 'south').filter((h) => h.v0 === 0)
+ok(doors.length >= 5, 'jižní stěna má dost dveří pro únik i zásobování', `${doors.length}`)
+const arenaB = SPEC.blocks.find((b) => b.id === 'arena')
+ok(doors.some((h) => h.x0 >= arenaB.x0 - 0.1 && h.x1 <= arenaB.x1 + 0.1),
+  'aréna má vlastní únikový východ, nejen cestu přes lobby')
+const lobbyB = SPEC.blocks.find((b) => b.id === 'lobby')
+ok(doors.filter((h) => h.x0 >= lobbyB.x0 - 0.1 && h.x1 <= lobbyB.x1 + 0.1).length >= 2,
+  'lobby má hlavní vchod i zásobovací dveře')
+ok(fit.items.some((it) => it.kind === 'cleansink' && it.block === 'gym'),
+  'úklidová výlevka je i v patře')
 
 console.log('\nROZVODY KE KONCOVKÁM')
 const terms = mep.routes.filter((r) => r.kind === 'terminal')

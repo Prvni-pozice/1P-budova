@@ -63,12 +63,14 @@ Strojovna                x 21–28  z 13–18   35 m²   u hranice etapy 2
 ### Patro — 336 m²
 
 ```
-Kanceláře 1P             x 0–7    z 0–12    84 m²
-Zasedačka / školicí      x 0–7    z 12–18   42 m²   sever = bez oslnění projekce
+Chodba                   x 5,8–7  z 0–18    22 m²   propojuje schodiště se všemi
+Klidové místnosti        x 0–5,8  z 0–5     29 m²
+Rezerva k pronájmu       x 0–5,8  z 5–12    41 m²   hrubá stavba
+Zasedačka / školicí      x 0–5,8  z 12–18   35 m²   sever = bez oslnění projekce
 Fitness                  x 7–14   z 0–12    84 m²   jih = světlo
 Sim racing               x 7–14   z 12–18   42 m²   sever = tma, bez oslnění
 Dětské atrakce (galerie) x 14–21  z 15–18   21 m²   vykonzolovaná ze severní stěny
-Sklad nad dílnou         x 21–28  z 4–13    63 m²
+Sklad nad dílnou         x 21–28  z 6–13    49 m²   nad vjezdovou dráhou nesmí být
 ```
 
 ## Co se dopočítává samo
@@ -84,6 +86,10 @@ Sklad nad dílnou         x 21–28  z 4–13    63 m²
 - **FVE**: jižní střešní rovina celá, fasáda jen do volných polí mezi otvory
   (doplněk otvorů, takže se panely nikdy nepotkají s oknem). Přepínače
   `roofSouth` / `roofNorth` / `facadeSouth` v `spec.pv`.
+- **Rozvody ke koncovkám**: každý zařizovací předmět má v `SVC` napsáno, co
+  potřebuje, a `mep.js` k němu vede větev. O tom, jestli do místnosti jde voda,
+  rozhoduje předmět, ne typ provozu — bar a strojovna nejsou „mokré provozy",
+  ale dřez i výlevka v nich stojí.
 - **Vybavení** (`src/fitout.js`): počty stolů, skříněk, WC a umyvadel se
   odvozují z `spec.program`. Sanita podle NV 361/2007 a ČSN 73 4108, jedno
   bezbariérové WC podle vyhl. 398/2009. Rozmístění je relativní k rohu bloku,

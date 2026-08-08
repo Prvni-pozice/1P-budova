@@ -30,6 +30,9 @@ export const SPEC = {
   gate: { width: 4.0, height: 4.0 },
 
   // Fotovoltaika. Jižní střešní rovina + jižní fasáda mezi otvory.
+  // roofNorth zůstává vypnutá schválně: provoz je odpolední a večerní, vlastní
+  // spotřeba je slabá a přebytek by odtékal do sítě za výkupní cenu. Baterie
+  // ve strojovně vydělá víc než druhá střešní rovina.
   pv: { roofSouth: true, roofNorth: false, facadeSouth: true, wp: 210, coverage: 0.85 },
 
   // Program — počty osob a kusů. Od nich se odvozuje vybavení i sanita.
@@ -56,9 +59,14 @@ export const SPEC = {
     // ---- patro (322 m²) ----
     // Sklad začíná až na z 6 — nad vjezdovou dráhou a zvedákem musí zůstat
     // plná výška 4,2 m, jinak se pod mezipatro auto nevejde.
-    { id: 'office-1f', name: 'Klidové místnosti',   type: 'office',   level: 1, x0: 0,  x1: 7,  z0: 0,  z1: 5 },
-    { id: 'reserve',   name: 'Rezerva',             type: 'reserve',  level: 1, x0: 0,  x1: 7,  z0: 5,  z1: 12, fitout: 'shell' },
-    { id: 'meeting',   name: 'Zasedačka / školicí', type: 'meeting',  level: 1, x0: 0,  x1: 7,  z0: 12, z1: 18 },
+    // Chodba podél západní stěny propojuje všechny tři místnosti se schodištěm.
+    // Bez ní by se do zasedačky chodilo přes pronajatou rezervu.
+    { id: 'corridor',  name: 'Chodba',              type: 'circ',     level: 1, x0: 5.8, x1: 7, z0: 0, z1: 18 },
+    { id: 'office-1f', name: 'Klidové místnosti',   type: 'office',   level: 1, x0: 0,  x1: 5.8, z0: 0,  z1: 5 },
+    // 40 m² v hrubé stavbě: buď růst 1P, nebo pronájem. Má vlastní světlo
+    // z východního štítu a vlastní dveře z chodby, takže jde oddělit.
+    { id: 'reserve',   name: 'Rezerva k pronájmu',  type: 'reserve',  level: 1, x0: 0,  x1: 5.8, z0: 5,  z1: 12, fitout: 'shell' },
+    { id: 'meeting',   name: 'Zasedačka / školicí', type: 'meeting',  level: 1, x0: 0,  x1: 5.8, z0: 12, z1: 18 },
     { id: 'gym',       name: 'Fitness',             type: 'gym',      level: 1, x0: 7,  x1: 14, z0: 0,  z1: 12 },
     { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 7,  x1: 14, z0: 12, z1: 18 },
     { id: 'play',      name: 'Dětské atrakce',      type: 'play',     level: 1, x0: 14, x1: 21, z0: 15, z1: 18 },

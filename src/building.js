@@ -116,11 +116,14 @@ export function openingsFor(S, side) {
     } else if (b.type === 'lobby') {
       out.push({ x0: cx - 1.5, x1: cx + 1.5, v0: 0, v1: 2.6 })                   // hlavní vstup
       if (span > 5) {
-        out.push({ x0: b.x0 + 0.6, x1: cx - 1.8, v0: 1.0, v1: 2.8 })
+        // zásobování baru a odpad NESMÍ chodit hlavním vchodem přes lobby plné dětí
+        out.push({ x0: b.x0 + 0.6, x1: b.x0 + 1.8, v0: 0, v1: 2.2 })             // zásobovací dveře
         out.push({ x0: cx + 1.8, x1: b.x1 - 0.6, v0: 1.0, v1: 2.8 })
       }
     } else if (b.type === 'arena') {
-      const w = Math.min(5, span - 1.5)
+      // aréna je shromažďovací prostor — jediná úniková cesta přes lobby nestačí
+      out.push({ x0: b.x0 + 0.3, x1: b.x0 + 1.5, v0: 0, v1: 2.2 })               // únikový východ
+      const w = Math.min(4, span - 3)
       out.push({ x0: cx - w / 2, x1: cx + w / 2, v0: 1.0, v1: 4.4 })             // prosklení do arény
     } else if (b.type === 'plant') {
       out.push({ x0: cx - 1.0, x1: cx + 1.0, v0: 2.2, v1: 3.7 })                 // žaluzie VZT

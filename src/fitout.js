@@ -80,6 +80,13 @@ export const FURN = {
   board:      { w: 1.00, d: 0.30, h: 2.00, color: 0xffd54f, shape: 'box',     label: 'Rozvaděč' },
 
   cleansink:  { w: 0.60, d: 0.55, h: 0.60, color: 0xcdd3d8, shape: 'box',     label: 'Úklidová výlevka' },
+  binstore:   { w: 2.20, d: 1.00, h: 1.25, color: 0x5a6169, shape: 'box',     label: 'Nádoby na odpad' },
+  coatrack:   { w: 3.00, d: 0.40, h: 1.80, color: 0xa89c88, shape: 'rack',    label: 'Věšáková stěna' },
+  partition:  { w: 3.60, d: 0.12, h: 2.40, color: 0xd9a04a, shape: 'net',     label: 'Posuvná příčka' },
+  destrat:    { w: 0.90, d: 0.90, h: 0.30, color: 0x7fd4ff, shape: 'cyl',     label: 'Destratifikační ventilátor' },
+  co2:        { w: 0.12, d: 0.06, h: 0.12, color: 0x4bc46a, shape: 'box',     label: 'Čidlo CO₂' },
+  battery:    { w: 0.80, d: 0.40, h: 1.60, color: 0x4bc46a, shape: 'box',     label: 'Bateriové úložiště' },
+  aircurtain: { w: 4.00, d: 0.35, h: 0.35, color: 0x7fd4ff, shape: 'box',     label: 'Vzduchová clona' },
   diffuser:   { w: 0.60, d: 0.60, h: 0.14, color: 0x7fd4ff, shape: 'box',     label: 'Vyústka VZT' },
   subboard:   { w: 0.80, d: 0.25, h: 1.60, color: 0xffd54f, shape: 'box',     label: 'Podružný rozvaděč' },
   extinguisher: { w: 0.25, d: 0.25, h: 0.75, color: 0xe23b3b, shape: 'cyl',   label: 'Hasicí přístroj' },
@@ -120,6 +127,11 @@ export const SVC = {
   hoist:      { svc: ['elec'], conn: 0.30 },
   airreel:    { svc: ['elec'], conn: 0.40 },
   diffuser:   { svc: ['vzt'], conn: null },        // napojení shora, řeší mep.js
+  destrat:    { svc: ['elec'], conn: 0.20 },
+  co2:        { svc: ['elec', 'data'], conn: 0.10 },
+  battery:    { svc: ['elec'], conn: 1.00 },
+  aircurtain: { svc: ['elec'], conn: 0.20 },
+  coatrack:   { svc: [], conn: 0.20 },
   foampit:    { svc: ['elec'], conn: 0.30 },       // osvětlení jámy
   firstaid:   { svc: ['elec'], conn: 1.00 },
 }
@@ -187,30 +199,33 @@ const LAYOUTS = {
     if (n > 6) desks(1.0, 6.4, Math.ceil((n - 6) / 2))        // zbytek
     row('sideboard', 1.2, 0.35, 4, 0.9)                       // pod jižními okny
     row('cabinet', 6.5, 1.2, 5, 0.9, { along: 'v', rot: 90 }) // úložná stěna
-    put('pod', 5.8, 9.0)                                      // telefonní budka
+    // BEZ TOHOTO SCHODIŠTĚ je celé patro kanceláří (126 m²) nedostupné
+    put('stairs', 6.4, 8.0, { note: 'ústí do chodby v patře, ne do místnosti' })
+    put('pod', 4.6, 9.6)                                      // telefonní budka
     put('rtable', 2.4, 9.8)
     row('chair', 1.6, 9.8, 3, 0.8, { along: 'v' })
     return items
   },
   'office-1f': (S, b) => {                                     // klidové místnosti
     const { items, put } = maker(S, b)
-    for (const u of [1.6, 5.0]) {
+    for (const u of [1.4, 4.3]) {
       put('table', u, 2.4)
       put('chair', u - 0.5, 2.4, { rot: 90 })
       put('chair', u + 0.5, 2.4, { rot: 270 })
     }
-    put('cabinet', 3.3, 4.4)
+    put('cabinet', 2.9, 4.4)
     return items
   },
   meeting: (S, b, P) => {
     const { items, put, row } = maker(S, b)
-    put('mtable', 3.5, 2.8)
-    row('chair', 2.2, 1.9, 4, 0.85)                            // sever
-    row('chair', 2.2, 3.7, 4, 0.85, { rot: 180 })              // jih
-    put('chair', 1.6, 2.8, { rot: 90 })
-    put('chair', 5.4, 2.8, { rot: 270 })
-    put('screen', 3.5, 5.85, { note: `projekce pro ${P.office.staffTarget + 2}` })
-    row('sideboard', 6.5, 1.0, 2, 0.9, { along: 'v', rot: 90 })
+    put('mtable', 2.9, 2.8)
+    row('chair', 1.6, 1.9, 4, 0.85)                            // sever
+    row('chair', 1.6, 3.7, 4, 0.85, { rot: 180 })              // jih
+    put('chair', 1.0, 2.8, { rot: 90 })
+    put('chair', 4.8, 2.8, { rot: 270 })
+    put('screen', 2.9, 5.85, { note: `projekce pro ${P.office.staffTarget + 2}` })
+    put('co2', 0.15, 3.0, { rot: 90 })
+    row('sideboard', 5.3, 1.0, 2, 0.9, { along: 'v', rot: 90 })
     return items
   },
   kitchen: (S, b, P) => {
@@ -230,6 +245,11 @@ const LAYOUTS = {
     return items
   },
   reserve: () => [],                                           // hrubá stavba
+  corridor: (S, b) => {
+    const { items, put } = maker(S, b)
+    put('extinguisher', 0.6, 9.0)
+    return items
+  },
 
   // -------------------------------------------------------------- lobby
   lobby: (S, b, P) => {
@@ -253,10 +273,14 @@ const LAYOUTS = {
         put('chair', u, v + 0.75, { rot: 180 })
       }
     }
+    // narozeniny jsou u jump parků největší jednotlivá položka tržeb; posuvná
+    // příčka dá balíčku soukromí, aniž by ukrojila samostatnou místnost
     put('partyTable', 3.6, 10.2, { note: 'vyhrazený stůl pro oslavy' })
+    put('partition', 3.6, 8.9, { note: 'oddělí párty kout, jinak splyne s barem' })
     row('chair', 2.7, 9.55, 4, 0.6)
     row('chair', 2.7, 10.85, 4, 0.6, { rot: 180 })
     put('stairs', 3.0, 11.4, { rot: 90, note: 'do fitness a sim racingu' })
+    put('binstore', 1.5, 0.7, { note: 'u zásobovacích dveří, ne přes hlavní vchod' })
     put('glass', 6.95, 8.0, { rot: 90, note: 'výhled do arény' })
     return items
   },
@@ -295,9 +319,13 @@ const LAYOUTS = {
     row('walltramp', 6.75, 9.0, 2, 3.0, { along: 'v', rot: 180 })
     put('hoop', COLS[0], 0.45, { rot: 180, note: 'koš nad odrazovou dráhou' })
     put('firstaid', 6.4, 2.2, { rot: 270 })
+    put('coatrack', 3.5, 14.4, { rot: 180, note: 'odkládání pro školní skupiny' })
     put('net', 3.5, 0.35)                                    // k prosklení do lobby
     put('net', 0.35, 7.0, { rot: 90 })
     put('net', 5.35, 7.0, { rot: 90 })
+    // hřeben je 7,6 m — bez destratifikace se teplo drží nahoře a topí se stropu
+    row('destrat', 3.5, 4.5, 2, 7.0, { along: 'v' })
+    put('co2', 6.85, 6.0, { rot: 270, note: 'VZT na plný výkon jen když jsou tam lidi' })
     row('softplay', 2.2, 16.4, 2, 2.6, { note: 'batolecí zóna pod galerií' })
     put('stairs', 6.2, 15.2, { note: 'na galerii' })
     return items
@@ -323,7 +351,9 @@ const LAYOUTS = {
     row('mat', 1.6, 2.0, 2, 2.2)
     row('mat', 1.6, 3.4, 2, 2.2)
     put('mirror', 3.5, 0.35)
+    put('cleansink', 6.6, 11.5, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
     put('glass', 6.95, 9.0, { rot: 90, note: 'výhled do arény' })
+    put('co2', 0.15, 6.0, { rot: 90 })
     return items
   },
   sim: (S, b, P) => {
@@ -355,6 +385,7 @@ const LAYOUTS = {
     put('oildrum', 6.6, 12.4)
     put('compressor', 6.6, 6.2)
     put('airreel', 6.6, 3.4, { rot: 270 })
+    put('aircurtain', 4.2, 0.5, { note: 'nad vraty — jinak se při každém vjezdu vytopí ven' })
     put('cleansink', 6.6, 11.2, { rot: 270 })
     put('stairs', 6.3, 9.4, { note: 'na sklad' })
     return items
@@ -375,6 +406,9 @@ const LAYOUTS = {
     put('hpmodule', 5.0, 1.0)
     row('tank', 4.8, 2.6, 2, 0.95)
     row('board', 6.4, 0.6, 3, 1.1, { along: 'v', rot: 90 })
+    // provoz je odpolední a večerní → vlastní spotřeba FVE je slabá; baterie
+    // vydělá víc než zdvojnásobení panelů, jehož přebytek by jen odtekl do sítě
+    put('battery', 6.4, 4.2, { rot: 90 })
     return items
   },
 }
