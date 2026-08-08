@@ -91,6 +91,7 @@ export const FURN = {
   glazed:     { w: 1.60, d: 0.12, h: 2.20, color: 0x9fd4e8, shape: 'door',    label: 'Prosklené dveře' },
   service:    { w: 0.90, d: 0.12, h: 2.05, color: 0x8a8f98, shape: 'door',    label: 'Servisní dveře' },
   escape:     { w: 0.90, d: 0.12, h: 2.05, color: 0x2fbf5f, shape: 'door',    label: 'Požární dveře s panikovým kováním' },
+  picture:    { w: 0.90, d: 0.08, h: 1.00, color: 0x4a4033, shape: 'picture', label: 'Obraz' },
   light:      { w: 1.20, d: 0.14, h: 0.10, color: 0xfff2d0, shape: 'box',     label: 'Svítidlo' },
   emlight:    { w: 0.30, d: 0.12, h: 0.12, color: 0x4bc46a, shape: 'box',     label: 'Nouzové svítidlo' },
   exitsign:   { w: 0.35, d: 0.06, h: 0.16, color: 0x2fbf5f, shape: 'box',     label: 'Značka únikové cesty' },
@@ -189,7 +190,8 @@ function maker(S, b) {
   const items = []
   const y = levelBase(S, b.level === 'full' ? 0 : b.level)
   const put = (kind, u, v, o = {}) => {
-    items.push({ kind, block: b.id, x: b.x0 + u, z: b.z0 + v, y, rot: o.rot ?? 0, note: o.note })
+    items.push({ kind, block: b.id, x: b.x0 + u, z: b.z0 + v, y, rot: o.rot ?? 0, note: o.note,
+      ...(o.img && { img: o.img, pw: o.pw, ph: o.ph, py: o.py }) })
   }
   /** řada n kusů s roztečí step; rot=90 znamená, že řada běží podél v */
   const row = (kind, u, v, n, step, o = {}) => {
@@ -262,6 +264,12 @@ const LAYOUTS = {
     put('screen', 2.9, 5.85, { note: `projekce pro ${P.office.staffTarget + 2}` })
     put('co2', 0.15, 3.0, { rot: 90 })
     row('sideboard', 5.3, 1.0, 2, 0.9, { along: 'v', rot: 90 })
+    // galerie: jižní stěna tři rámy, západní dva (dveře jsou až u v 4,6)
+    put('picture', 1.2, 0.15, { img: '/art/zasedacka1.jpg', pw: 0.8,  ph: 1.05, py: 1.6, note: 'portrét' })
+    put('picture', 2.9, 0.15, { img: '/art/zasedacka4.jpg', pw: 1.35, ph: 0.95, py: 1.6 })
+    put('picture', 4.6, 0.15, { img: '/art/zasedacka5.jpg', pw: 1.35, ph: 0.95, py: 1.6 })
+    put('picture', 5.65, 1.4, { rot: 90, img: '/art/zasedacka2.jpg', pw: 0.85, ph: 1.1, py: 1.6 })
+    put('picture', 5.65, 3.0, { rot: 90, img: '/art/zasedacka3.jpg', pw: 0.85, ph: 1.1, py: 1.6 })
     return items
   },
   kitchen: (S, b, P) => {
@@ -385,6 +393,9 @@ const LAYOUTS = {
     row('mat', 1.6, 2.0, 2, 2.2)
     row('mat', 1.6, 3.4, 2, 2.2)
     put('mirror', 3.5, 0.35)
+    put('picture', 0.15, 2.6, { rot: 270, img: '/art/posilka1.jpg', pw: 1.5, ph: 0.85, py: 1.6 })
+    put('picture', 0.15, 4.6, { rot: 270, img: '/art/posilka2.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
+    put('picture', 0.15, 6.6, { rot: 270, img: '/art/posilka3.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
     put('cleansink', 6.6, 11.5, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
     put('glass', 6.95, 9.0, { rot: 90, note: 'výhled do arény' })
     put('co2', 0.15, 6.0, { rot: 90 })
@@ -393,6 +404,8 @@ const LAYOUTS = {
   sim: (S, b, P) => {
     const { items, put, row, around } = maker(S, b)
     for (let i = 0; i < P.sim.rigs; i++) put('simrig', 1.6 + i * 2.4, 4.2)
+    put('picture', 3.2, 5.85, { rot: 180, img: '/art/sim.jpg', pw: 1.1, ph: 1.45, py: 1.7,
+      note: 'foto ze závodů' })
     put('rack19', 6.4, 5.2)
     put('rtable', 2.0, 1.4)
     around(2.0, 1.4, [[-0.78, 0], [0.78, 0]])

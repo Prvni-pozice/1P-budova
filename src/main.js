@@ -7,6 +7,7 @@ import { Cutaway } from './cutaway.js'
 import { Env } from './env.js'
 import { Quality } from './quality.js'
 import { summaryText } from './ui.js'
+import { makeCharacter } from './character.js'
 
 // spec je živý — editace ho mění a model se z něj přegeneruje
 const spec = structuredClone(SPEC)
@@ -42,6 +43,12 @@ orbit.minDistance = 4
 orbit.maxDistance = 220
 orbit.update()
 
+// ------------------------------------------------------------------ postava
+const char = makeCharacter()
+char.group.visible = false
+scene.add(char.group)
+let floors = []          // po čem se dá chodit (podlahy, stropy, schodiště)
+
 // ------------------------------------------------------------ přegenerování
 let built = null
 let mep = null
@@ -76,6 +83,11 @@ function rebuild() {
   applyMepToggles()
   document.getElementById('summary').textContent = summaryText(spec, mep, built.pv, built.fit)
   refreshSelection()
+  floors = [
+    ...built.groups.ground.children,
+    ...built.groups.slabs.children.filter((c) => !c.userData.rail),
+    ...built.groups.furniture.children.filter((c) => c.userData.item?.kind === 'stairs'),
+  ]
 }
 
 // -------------------------------------------------------------------- vrstvy
@@ -181,23 +193,41 @@ group(['lvl-all', 'lvl-0', 'lvl-1'], (i) => {
   levelFilter = ['all', '0', '1'][i]
   applyLayers()
 })
-group(['cam-orbit', 'cam-walk'], (i) => setWalk(i === 1))
+group(['cam-orbit', 'cam-walk', 'cam-gta'], (i) => setMode(['orbit', 'walk', 'gta'][i]))
 
-// ------------------------------------------------------------------ procházka
+// ------------------------------------------------------ procházka a postava
 const walk = { on: false, yaw: 0, pitch: 0, keys: new Set() }
+const gta = { on: false, yaw: Math.PI, pitch: 0.35, vy: 0, angle: 0, grounded: true }
 const hint = $('hint')
 hint.textContent = HINT_ORBIT
 
-function setWalk(on) {
-  walk.on = on
-  orbit.enabled = !on
-  if (on) {
+function lockPointer() {
+  try {
+    const p = renderer.domElement.requestPointerLock()
+    if (p && p.catch) p.catch(() => {})
+  } catch { /* headless nebo odmítnuto — nevadí */ }
+}
+
+function setMode(mode) {
+  walk.on = mode === 'walk'
+  gta.on = mode === 'gta'
+  orbit.enabled = mode === 'orbit'
+  char.group.visible = gta.on
+  if (mode === 'walk') {
     const e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ')
     walk.yaw = e.y
     walk.pitch = e.x
     if (camera.position.y > 6) camera.position.y = 1.7
-    renderer.domElement.requestPointerLock()
+    lockPointer()
     hint.textContent = 'Procházka: WASD · Space/Shift výška · myš rozhlížení · Esc konec'
+  } else if (mode === 'gta') {
+    char.group.position.set(10.5, 0, -5)   // před hlavním vstupem
+    char.group.rotation.y = 0
+    gta.yaw = Math.PI
+    gta.pitch = 0.35
+    gta.vy = 0
+    lockPointer()
+    hint.textContent = 'Postava: WASD · Shift sprint · Space skok · myš kamera · Esc konec'
   } else {
     if (document.pointerLockElement) document.exitPointerLock()
     orbit.target.set(spec.stage1 / 2, spec.eaves * 0.45, spec.depth / 2)
@@ -205,18 +235,80 @@ function setWalk(on) {
   }
 }
 renderer.domElement.addEventListener('click', () => {
-  if (walk.on && !document.pointerLockElement) renderer.domElement.requestPointerLock()
+  if ((walk.on || gta.on) && !document.pointerLockElement) lockPointer()
 })
 document.addEventListener('pointerlockchange', () => {
-  if (walk.on && !document.pointerLockElement) {
+  if ((walk.on || gta.on) && !document.pointerLockElement) {
     $('cam-orbit').click()
   }
 })
 addEventListener('mousemove', (e) => {
-  if (!walk.on || !document.pointerLockElement) return
-  walk.yaw -= e.movementX * 0.0022
-  walk.pitch = Math.max(-1.5, Math.min(1.5, walk.pitch - e.movementY * 0.0022))
+  if (!document.pointerLockElement) return
+  if (walk.on) {
+    walk.yaw -= e.movementX * 0.0022
+    walk.pitch = Math.max(-1.5, Math.min(1.5, walk.pitch - e.movementY * 0.0022))
+  } else if (gta.on) {
+    gta.yaw -= e.movementX * 0.0025
+    gta.pitch = Math.max(0.02, Math.min(1.25, gta.pitch + e.movementY * 0.0025))
+  }
 })
+
+// --------------------------------------------------------------- GTA smyčka
+const downRay = new THREE.Raycaster()
+const DOWN = new THREE.Vector3(0, -1, 0)
+const GTA_WALK = 2.4
+const GTA_RUN = 5.4
+
+function gtaTick(dt) {
+  const pos = char.group.position
+  const f = new THREE.Vector3(-Math.sin(gta.yaw), 0, -Math.cos(gta.yaw))
+  const r = new THREE.Vector3(-f.z, 0, f.x)
+  let ix = 0
+  let iz = 0
+  if (walk.keys.has('KeyW')) iz += 1
+  if (walk.keys.has('KeyS')) iz -= 1
+  if (walk.keys.has('KeyD')) ix += 1
+  if (walk.keys.has('KeyA')) ix -= 1
+  const move = f.multiplyScalar(iz).addScaledVector(r, ix)
+  const moving = move.lengthSq() > 0
+  const speed = walk.keys.has('ShiftLeft') ? GTA_RUN : GTA_WALK
+  if (moving) {
+    move.normalize()
+    pos.addScaledVector(move, speed * dt)
+    const target = Math.atan2(move.x, move.z)
+    const da = Math.atan2(Math.sin(target - gta.angle), Math.cos(target - gta.angle))
+    gta.angle += da * Math.min(1, dt * 12)
+    char.group.rotation.y = gta.angle
+  }
+
+  // podlaha pod nohama — díky raycastu na schodiště se dá vyjít do patra
+  downRay.set(new THREE.Vector3(pos.x, pos.y + 1.6, pos.z), DOWN)
+  downRay.far = 60
+  const hit = downRay.intersectObjects(floors, true)[0]
+  const floorY = hit ? hit.point.y : 0
+
+  gta.vy -= 18 * dt
+  pos.y += gta.vy * dt
+  if (pos.y <= floorY + 0.02) {
+    pos.y = floorY
+    gta.vy = 0
+    gta.grounded = true
+  } else {
+    gta.grounded = false
+  }
+  if (gta.grounded && walk.keys.has('Space')) gta.vy = 6
+
+  char.update(dt, moving, speed)
+
+  const cp = gta.pitch
+  const d = 4.3
+  camera.position.set(
+    pos.x + Math.sin(gta.yaw) * d * Math.cos(cp),
+    pos.y + 1.2 + Math.sin(cp) * d,
+    pos.z + Math.cos(gta.yaw) * d * Math.cos(cp),
+  )
+  camera.lookAt(pos.x, pos.y + 1.4, pos.z)
+}
 addEventListener('keydown', (e) => walk.keys.add(e.code))
 addEventListener('keyup', (e) => walk.keys.delete(e.code))
 
@@ -255,7 +347,7 @@ function movablesOf(id) {
 }
 
 renderer.domElement.addEventListener('pointerdown', (ev) => {
-  if (walk.on || ev.button !== 0) return
+  if (walk.on || gta.on || ev.button !== 0) return
   const hit = pick(ev)
   if (!hit) return
   selectedId = hit.object.userData.block.id
@@ -368,6 +460,8 @@ renderer.setAnimationLoop(() => {
     if (walk.keys.has('KeyD')) camera.position.addScaledVector(right, sp)
     if (walk.keys.has('Space')) camera.position.y += sp
     if (walk.keys.has('ControlLeft')) camera.position.y -= sp
+  } else if (gta.on) {
+    gtaTick(dt)
   } else {
     orbit.update()
   }

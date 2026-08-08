@@ -393,6 +393,30 @@ function furnitureMesh(item, FURN) {
       g.add(box(0.05, 0.12, 0.05, jamb, w / 2 - 0.12, 1.05, d * 0.4))   // klika
       break
     }
+    case 'picture': {
+      const pw = item.pw ?? 0.8, ph = item.ph ?? 0.6, py = item.py ?? 1.5
+      g.add(box(pw + 0.1, ph + 0.1, 0.05, mat, 0, py, -0.012))
+      // fotka je MeshBasic, aby ji západ slunce nepřebarvil do oranžova
+      const plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(pw, ph),
+        new THREE.MeshBasicMaterial({ color: 0x777777 }),
+      )
+      plane.position.set(0, py, 0.02)
+      if (item.img) {
+        new THREE.TextureLoader().load(item.img, (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace
+          const a = tex.image.width / tex.image.height
+          const frame = pw / ph
+          if (a > frame) plane.scale.y = frame / a
+          else plane.scale.x = a / frame
+          plane.material.map = tex
+          plane.material.color.set(0xffffff)
+          plane.material.needsUpdate = true
+        })
+      }
+      g.add(plane)
+      break
+    }
     case 'net':
       g.add(box(w, h, Math.max(d, 0.04), glassy, 0, h / 2, 0))
       for (const sx of [-1, 1]) g.add(box(0.07, h, 0.07, dark, sx * (w / 2 - 0.04), h / 2, 0))
@@ -609,6 +633,7 @@ export function buildAll(spec, mep) {
       const len = Math.hypot(r.x1 - r.x0, r.z1 - r.z0)
       if (len < 0.4) continue
       const rm = new THREE.Mesh(new THREE.BoxGeometry(len, 1.1, 0.06), railMat)
+      rm.userData.rail = true
       rm.position.set((r.x0 + r.x1) / 2, S.clearGF + S.slab + 0.55, (r.z0 + r.z1) / 2)
       if (Math.abs(r.z1 - r.z0) > Math.abs(r.x1 - r.x0)) rm.rotation.y = Math.PI / 2
       rm.userData.block = b

@@ -196,6 +196,18 @@ for (const c of fit.items.filter((it) => it.kind === 'chair')) {
 ok(backwards.length === 0, 'žádná židle nesedí zády ke svému stolu',
   backwards.length ? `${backwards.length} ks` : `${fit.counts.chair} židlí`)
 
+console.log('\nOBRAZY')
+const pics = fit.items.filter((i) => i.kind === 'picture')
+ok(pics.length === 9, 'obrazy: 5× zasedačka + 1× sim racing + 3× fitness', `${pics.length} ks`)
+ok(pics.every((p) => p.img && p.pw > 0 && p.ph > 0), 'každý obraz má soubor a rozměr rámu')
+ok(pics.filter((p) => p.block === 'gym').length === 3 && pics.filter((p) => p.block === 'sim').length === 1
+  && pics.filter((p) => p.block === 'meeting').length === 5, 'rozmístění sedí')
+// obraz visí na stěně, ne uprostřed místnosti: musí být do 0,3 m od hrany bloku
+ok(pics.every((p) => {
+  const b = SPEC.blocks.find((x) => x.id === p.block)
+  return Math.min(p.x - b.x0, b.x1 - p.x, p.z - b.z0, b.z1 - p.z) < 0.3
+}), 'obrazy visí na stěnách')
+
 console.log('\nPŘÍSTUPNOST A ÚNIK')
 // každý blok v patře musí mít pod sebou nebo vedle sebe schodiště —
 // 126 m² kanceláří bylo v jedné verzi bez přístupu
