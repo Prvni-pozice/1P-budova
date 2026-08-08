@@ -389,8 +389,13 @@ function furnitureMesh(item, FURN) {
         color: f.color, roughness: 0.6,
         transparent: f.color === 0x9fd4e8, opacity: f.color === 0x9fd4e8 ? 0.45 : 1,
       })
-      g.add(box(w - 0.02, h - 0.02, d * 0.5, leaf, 0, h / 2, 0))
-      g.add(box(0.05, 0.12, 0.05, jamb, w / 2 - 0.12, 1.05, d * 0.4))   // klika
+      // křídlo visí na pantu, aby se dalo otevřít, když k němu přijde postava
+      const pivot = new THREE.Group()
+      pivot.position.set(-w / 2, 0, 0)
+      pivot.add(box(w - 0.02, h - 0.02, d * 0.5, leaf, (w - 0.02) / 2, h / 2, 0))
+      pivot.add(box(0.05, 0.12, 0.05, jamb, w - 0.14, 1.05, d * 0.4))   // klika
+      g.add(pivot)
+      g.userData.doorPivot = pivot
       break
     }
     case 'picture': {
@@ -721,6 +726,23 @@ export function buildAll(spec, mep) {
     u.castShadow = true
     groups.site.add(u)
   }
+  const lobbyB = S.blocks.find((b) => b.type === 'lobby')
+  if (lobbyB) {
+    const cx = (lobbyB.x0 + lobbyB.x1) / 2
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.14, 1.7), siteMat(0x3a3f47))
+    canopy.position.set(cx, 2.85, -0.95)
+    canopy.castShadow = true
+    groups.site.add(canopy)
+    for (const sx of [-1.6, 1.6]) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.85, 0.1), siteMat(0x3a3f47))
+      post.position.set(cx + sx, 1.42, -1.6)
+      groups.site.add(post)
+    }
+    const sign = labelSprite('1P', 'recepce · jump aréna')
+    sign.position.set(cx, 3.6, -0.9)
+    groups.site.add(sign)
+  }
+
   const bins = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.25, 1.1), siteMat(0x5a6169))
   bins.position.set(8.2, 0.63, -2.4)
   bins.castShadow = true

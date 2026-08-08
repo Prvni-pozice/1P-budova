@@ -56,9 +56,9 @@ export const SPEC = {
     { a: 'lobby',     b: 'arena',    type: 'glazed',  at: 1.5,  note: 'vstup do arény, do vstupní uličky' },
     { a: 'workshop',  b: 'plant',    type: 'service', at: 27.0, note: 'jediné propojení dílny' },
     { a: 'corridor',  b: 'office-1f', type: 'door',   at: 4.0 },
-    { a: 'corridor',  b: 'reserve',  type: 'door',    at: 8.5,  note: 'samostatný vstup do pronájmu' },
+    { a: 'corridor',  b: 'reserve',  type: 'door',    at: 6.0,  note: 'samostatný vstup do pronájmu' },
     { a: 'corridor',  b: 'meeting',  type: 'double',  at: 16.6 },
-    { a: 'corridor',  b: 'gym',      type: 'escape',  at: 9.0,  note: 'požární, druhá úniková cesta z fitness' },
+    { a: 'corridor',  b: 'gym',      type: 'escape',  at: 5.2,  note: 'požární, druhá úniková cesta z fitness' },
     { a: 'gym',       b: 'sim',      type: 'door',    at: 12.0 },
   ],
 

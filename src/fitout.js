@@ -290,7 +290,7 @@ const LAYOUTS = {
   reserve: () => [],                                           // hrubá stavba
   corridor: (S, b) => {
     const { items, put } = maker(S, b)
-    put('extinguisher', 0.6, 9.0)
+    put('extinguisher', 0.6, 4.0)
     return items
   },
 
@@ -298,6 +298,8 @@ const LAYOUTS = {
   lobby: (S, b, P) => {
     const { items, put, row, seat, around } = maker(S, b)
     put('entrymat', 4.6, 1.0)
+    put('glazed', 3.5, 0.14, { note: 'hlavní vstupní dveře' })
+    put('service', 1.2, 0.14, { note: 'zásobování' })
     put('glass', 3.5, 2.1, { note: 'zádveří' })
     put('reception', 2.4, 3.7)
     put('bar', 4.5, 3.7)
@@ -356,6 +358,7 @@ const LAYOUTS = {
     // pole trampolín začíná až za ní. Bez toho se dveře otevřou na lóže.
     const COLS = [2.25, 4.70]                 // lože 2,10 → u 1,2–3,3 a 3,65–5,75
     put('coatrack', 3.0, 0.5)
+    put('escape', 0.9, 0.14, { note: 'únikový východ' })
     put('hoop', COLS[0], 0.9, { rot: 180 })
     for (const u of COLS) put('tramp', u, 2.9, { note: 'odrazová dráha do jámy' })
     put('foampit', 3.475, 6.4)
@@ -404,7 +407,7 @@ const LAYOUTS = {
   sim: (S, b, P) => {
     const { items, put, row, around } = maker(S, b)
     for (let i = 0; i < P.sim.rigs; i++) put('simrig', 1.6 + i * 2.4, 4.2)
-    put('picture', 3.2, 5.85, { rot: 180, img: '/art/sim.jpg', pw: 1.1, ph: 1.45, py: 1.7,
+    put('picture', 3.2, 5.68, { rot: 180, img: '/art/sim.jpg', pw: 1.0, ph: 1.3, py: 1.45,
       note: 'foto ze závodů' })
     put('rack19', 6.4, 5.2)
     put('rtable', 2.0, 1.4)
@@ -417,6 +420,7 @@ const LAYOUTS = {
   workshop: (S, b, P) => {
     const { items, put, row } = maker(S, b)
     // u = 0 je stěna k aréně, v = 0 jižní stěna s vraty (u 2,2–6,2)
+    put('service', 1.0, 0.14, { note: 'vstup pro personál' })
     if (P.workshop.carLift) {
       put('carlift', 4.2, 2.4, { note: 'světlá výška 4,2 m — nad tím nesmí být mezipatro' })
       put('car', 4.2, 3.0, { note: 'vozidlo na zvedáku' })

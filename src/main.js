@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { SPEC, TYPES, area } from './spec.js'
 import { computeMEP, SERVICES, blockDemand } from './mep.js'
+import { FURN } from './fitout.js'
+import { openingsFor } from './building.js'
 import { buildAll } from './building.js'
 import { Cutaway } from './cutaway.js'
 import { Env } from './env.js'
@@ -48,6 +50,10 @@ const char = makeCharacter()
 char.group.visible = false
 scene.add(char.group)
 let floors = []          // po čem se dá chodit (podlahy, stropy, schodiště)
+let camBlockers = []     // co nesmí zaclonit kameru za postavou
+let doorMeshes = []      // dveře s pantem
+let solids = []          // AABB překážky pro postavu
+let southDoors = []      // otvory v jižní stěně (jediná průchozí)
 
 // ------------------------------------------------------------ přegenerování
 let built = null
@@ -88,6 +94,31 @@ function rebuild() {
     ...built.groups.slabs.children.filter((c) => !c.userData.rail),
     ...built.groups.furniture.children.filter((c) => c.userData.item?.kind === 'stairs'),
   ]
+  // co zastavuje kameru (stěny, střecha, stropy) — zábradlí ne
+  camBlockers = [
+    ...built.groups.shell.children,
+    ...built.groups.glass.children.filter((c) => c.geometry?.type !== 'BoxGeometry'),
+    ...built.groups.roof.children,
+    ...built.groups.slabs.children.filter((c) => !c.userData.rail),
+  ]
+  doorMeshes = built.groups.furniture.children.filter((c) => c.userData.doorPivot)
+  // pevné překážky pro postavu: vyšší kusy nábytku; dveřmi a sítěmi se prochází
+  const SOLID_SKIP = new Set(['stairs', 'door', 'double', 'glazed', 'service', 'escape',
+    'entrymat', 'mat', 'floordrain', 'net', 'glass', 'partition', 'diffuser', 'light',
+    'emlight', 'smoke', 'co2', 'exitsign', 'picture', 'hoist', 'aircurtain'])
+  solids = built.fit.items
+    .filter((it) => FURN[it.kind] && FURN[it.kind].h >= 0.55 && !SOLID_SKIP.has(it.kind))
+    .map((it) => {
+      const f = FURN[it.kind]
+      const turned = it.rot === 90 || it.rot === 270
+      return {
+        x: it.x, z: it.z,
+        hx: (turned ? f.d : f.w) / 2 + 0.24,
+        hz: (turned ? f.w : f.d) / 2 + 0.24,
+        yBase: it.y, yTop: it.y + f.h,
+      }
+    })
+  southDoors = openingsFor(spec, 'south').filter((h) => h.v0 === 0).map((h) => [h.x0, h.x1])
 }
 
 // -------------------------------------------------------------------- vrstvy
@@ -175,6 +206,16 @@ const setAllMep = (on) => {
 $('mep-all').addEventListener('click', () => setAllMep(true))
 $('mep-none').addEventListener('click', () => setAllMep(false))
 
+// Mezerník „kliká" na fokusované tlačítko — po klipnutí na Postavu pak skok
+// postavu resetoval, protože Space znovu aktivoval režim. Tlačítka proto
+// po kliknutí ztrácejí fokus a Space ve hře nescrolluje stránku.
+document.addEventListener('click', (e) => {
+  if (e.target instanceof HTMLButtonElement) e.target.blur()
+})
+addEventListener('keydown', (e) => {
+  if ((walk.on || gta.on) && (e.code === 'Space' || e.code.startsWith('Arrow'))) e.preventDefault()
+})
+
 // ------------------------------------------------------------- tlačítkové skupiny
 function group(ids, onPick) {
   const els = ids.map((id) => $(id))
@@ -231,12 +272,19 @@ function setMode(mode) {
     gta.yaw = Math.PI
     gta.pitch = 0.35
     gta.vy = 0
+    // jako v GTA: uvnitř plné stěny, kamera se jim vyhne. Jde ručně přepnout.
+    gta.prevCut = cutMode
+    $('cut-solid').click()
     if (!TOUCH) lockPointer()
     hint.textContent = TOUCH
       ? 'Postava: levý palec pohyb (naplno = sprint) · pravý kamera · ↑ skok'
       : 'Postava: WASD · Shift sprint · Space skok · myš kamera · Esc konec'
   } else {
     if (document.pointerLockElement) document.exitPointerLock()
+    if (gta.prevCut) {
+      $('cut-' + gta.prevCut).click()
+      gta.prevCut = null
+    }
     orbit.target.set(spec.stage1 / 2, spec.eaves * 0.45, spec.depth / 2)
     hint.textContent = HINT_ORBIT
   }
@@ -351,6 +399,7 @@ const GTA_RUN = 5.4
 
 function gtaTick(dt) {
   const pos = char.group.position
+  const old = pos.clone()
   const f = new THREE.Vector3(-Math.sin(gta.yaw), 0, -Math.cos(gta.yaw))
   const r = new THREE.Vector3(-f.z, 0, f.x)
   let ix = 0
@@ -374,11 +423,36 @@ function gtaTick(dt) {
     char.group.rotation.y = gta.angle
   }
 
-  // podlaha pod nohama — díky raycastu na schodiště se dá vyjít do patra
-  downRay.set(new THREE.Vector3(pos.x, pos.y + 1.6, pos.z), DOWN)
+  // obvodový plášť: ven jen dveřmi v jižní stěně
+  const t = 0.28
+  const inX = pos.x > -t && pos.x < spec.stage1 + t
+  const inZ = pos.z > -t && pos.z < spec.depth + t
+  if (inX && Math.abs(pos.z - spec.depth) < t) pos.z = old.z
+  if (inX && Math.abs(pos.z) < t
+      && !southDoors.some((o) => pos.x > o[0] + 0.05 && pos.x < o[1] - 0.05)) pos.z = old.z
+  if (inZ && Math.abs(pos.x) < t) pos.x = old.x
+  if (inZ && Math.abs(pos.x - spec.stage1) < t) pos.x = old.x
+
+  // nábytek: postava do něj naráží, neprochází jím
+  for (const sB of solids) {
+    if (pos.y > sB.yTop - 0.1 || pos.y + 1.7 < sB.yBase) continue
+    const dx = pos.x - sB.x
+    const dz = pos.z - sB.z
+    if (Math.abs(dx) < sB.hx && Math.abs(dz) < sB.hz) {
+      if (sB.hx - Math.abs(dx) < sB.hz - Math.abs(dz)) pos.x = sB.x + Math.sign(dx || 1) * sB.hx
+      else pos.z = sB.z + Math.sign(dz || 1) * sB.hz
+    }
+  }
+
+  // podlaha pod nohama. Limit 0,45 m nade dnem kroku je důležitý: bez něj
+  // raycast na schodech chytil STROP nad hlavou a postava se teleportovala
+  // na něj — přesně to „procházení stropem".
+  downRay.set(new THREE.Vector3(pos.x, pos.y + 1.2, pos.z), DOWN)
   downRay.far = 60
-  const hit = downRay.intersectObjects(floors, true)[0]
-  const floorY = hit ? hit.point.y : 0
+  let floorY = 0
+  for (const h of downRay.intersectObjects(floors, true)) {
+    if (h.point.y <= pos.y + 0.45) { floorY = h.point.y; break }
+  }
 
   gta.vy -= 18 * dt
   pos.y += gta.vy * dt
@@ -393,14 +467,30 @@ function gtaTick(dt) {
 
   char.update(dt, moving, speed)
 
+  // dveře se otevřou, když postava přijde — a zase se zavřou
+  for (const dm of doorMeshes) {
+    const ddx = pos.x - dm.position.x
+    const ddz = pos.z - dm.position.z
+    const near = ddx * ddx + ddz * ddz < 2.9 && Math.abs(pos.y - dm.position.y) < 2.2
+    const p = dm.userData.doorPivot
+    p.rotation.y += ((near ? 1.8 : 0) - p.rotation.y) * Math.min(1, dt * 6)
+  }
+
+  // kamera jako v GTA: sleduje postavu a nikdy neskáče skrz stěnu ani strop —
+  // když je něco v cestě, přitáhne se před překážku
   const cp = gta.pitch
-  const d = 4.3
-  camera.position.set(
-    pos.x + Math.sin(gta.yaw) * d * Math.cos(cp),
-    pos.y + 1.2 + Math.sin(cp) * d,
-    pos.z + Math.cos(gta.yaw) * d * Math.cos(cp),
-  )
-  camera.lookAt(pos.x, pos.y + 1.4, pos.z)
+  const head = new THREE.Vector3(pos.x, pos.y + 1.4, pos.z)
+  const dir = new THREE.Vector3(
+    Math.sin(gta.yaw) * Math.cos(cp), 0.0 + Math.sin(cp), Math.cos(gta.yaw) * Math.cos(cp),
+  ).normalize()
+  let dist = 4.3
+  downRay.set(head, dir)
+  downRay.far = dist + 0.4
+  const block = downRay.intersectObjects(camBlockers, false)[0]
+  if (block) dist = Math.max(0.7, block.distance - 0.35)
+  camera.position.copy(head).addScaledVector(dir, dist)
+  camera.position.y = Math.max(camera.position.y, pos.y + 0.35)
+  camera.lookAt(head)
 }
 addEventListener('keydown', (e) => walk.keys.add(e.code))
 addEventListener('keyup', (e) => walk.keys.delete(e.code))

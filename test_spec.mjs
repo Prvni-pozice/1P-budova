@@ -202,11 +202,14 @@ ok(pics.length === 9, 'obrazy: 5× zasedačka + 1× sim racing + 3× fitness', `
 ok(pics.every((p) => p.img && p.pw > 0 && p.ph > 0), 'každý obraz má soubor a rozměr rámu')
 ok(pics.filter((p) => p.block === 'gym').length === 3 && pics.filter((p) => p.block === 'sim').length === 1
   && pics.filter((p) => p.block === 'meeting').length === 5, 'rozmístění sedí')
-// obraz visí na stěně, ne uprostřed místnosti: musí být do 0,3 m od hrany bloku
+// obraz visí na stěně, ne uprostřed místnosti — ale NESMÍ být utopený v ní.
+// Obvodová stěna má tloušťku 0,25 m od hrany bloku dovnitř, takže rám musí
+// být 0,14–0,35 m od hrany (sim obraz byl na 0,10 a zmizel ve zdi).
 ok(pics.every((p) => {
   const b = SPEC.blocks.find((x) => x.id === p.block)
-  return Math.min(p.x - b.x0, b.x1 - p.x, p.z - b.z0, b.z1 - p.z) < 0.3
-}), 'obrazy visí na stěnách')
+  const d = Math.min(p.x - b.x0, b.x1 - p.x, p.z - b.z0, b.z1 - p.z)
+  return d >= 0.14 && d <= 0.35
+}), 'obrazy visí na stěnách a nejsou utopené ve zdi')
 
 console.log('\nPŘÍSTUPNOST A ÚNIK')
 // každý blok v patře musí mít pod sebou nebo vedle sebe schodiště —
