@@ -429,7 +429,7 @@ export function buildAll(spec, mep) {
   // --- terén ---
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(400, 400),
-    new THREE.MeshStandardMaterial({ color: 0x6f7a52, roughness: 1 }),
+    new THREE.MeshStandardMaterial({ color: 0x4d9c45, roughness: 1 }),   // travnatá zelená
   )
   ground.rotation.x = -Math.PI / 2
   ground.position.set(S.length / 2, -0.02, S.depth / 2)
