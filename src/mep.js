@@ -7,6 +7,7 @@
 // průměr VZT potrubí vychází z průtoku, jistič z příkonu.
 
 import { SPEC, TYPES, area, levelBase, blockHeight } from './spec.js'
+import { SVC, fitoutAll } from './fitout.js'
 
 export const SERVICES = [
   { key: 'vzt',   name: 'VZT',               color: 0x7fd4ff, dz: 0.0, dy: 0.0,  r: null },
@@ -14,7 +15,11 @@ export const SERVICES = [
   { key: 'water', name: 'Voda (SV + TUV)',   color: 0x2ecc71, dz: 1.1, dy: -0.5, r: 0.055 },
   { key: 'drain', name: 'Kanalizace',        color: 0x9b7653, dz: 0.7, dy: 0.0,  r: 0.095 },
   { key: 'elec',  name: 'Elektro',           color: 0xffd54f, dz: 1.1, dy: 0.0,  r: 0.06  },
+  { key: 'data',  name: 'Datové rozvody',    color: 0xc084fc, dz: 1.5, dy: 0.0,  r: 0.045 },
 ]
+
+// průměry koncových větví — poslední metr k zařizovacímu předmětu
+const TERMINAL_R = { water: 0.018, drain: 0.05, elec: 0.016, data: 0.012, heat: 0.02 }
 
 const AIR_SPEED = 5        // m/s v páteřním potrubí — z toho vychází průměr
 const TUV_PEAK = 25        // l/h na m² mokrého provozu (hrubý odhad, k upřesnění)
@@ -61,9 +66,18 @@ function tapPoint(s, b) {
   return { x, y, z }
 }
 
-/** Bloky, které daná služba obsluhuje. */
-function served(s, key) {
+/**
+ * Bloky, které daná služba obsluhuje. Rozhoduje se podle SKUTEČNÝCH předmětů
+ * v místnosti, ne podle typu provozu — bar a strojovna nejsou „mokré provozy",
+ * ale dřez i výlevka v nich stojí a vodu potřebují.
+ */
+function served(s, key, fitItems) {
+  const withFixture = new Set(
+    fitItems.filter((it) => SVC[it.kind]?.svc.includes(key)).map((it) => it.block),
+  )
   return s.blocks.filter((b) => {
+    if (withFixture.has(b.id)) return true
+    if (key === 'data') return false          // data jdou jen ke koncovkám
     const d = blockDemand(b)
     if (key === 'water' || key === 'drain') return d.wet
     if (key === 'vzt') return d.vzt > 0
@@ -72,17 +86,52 @@ function served(s, key) {
   })
 }
 
+// špičkový odběr TUV podle zařizovacích předmětů [l/h] — ne paušál na m²
+const TUV_FIXTURE = { shower: 600, basin: 60, kitchen: 120, bar: 120, cleansink: 90 }
+
 /**
- * Kompletní přepočet rozvodů. Vrací trasy k vykreslení a souhrnné dimenze.
+ * Koncové větve: z páteře k jednotlivým předmětům. Trasa jde vodorovně pod
+ * stropem (u kanalizace u podlahy) nad předmět a pak svisle dolů na napojení.
  */
+function terminals(s, svcKey, spineZ, items) {
+  const out = []
+  for (const it of items) {
+    const map = SVC[it.kind]
+    if (!map || !map.svc.includes(svcKey)) continue
+    const blk = s.blocks.find((b) => b.id === it.block)
+    if (!blk) continue
+    const lvl = blk.level === 'full' ? 0 : blk.level
+    const base = levelBase(s, lvl)
+
+    if (svcKey === 'vzt') {                    // vyústka se napojuje shora
+      const y = spineY(s, lvl, svcKey)
+      out.push({ service: svcKey, kind: 'terminal', block: it.block,
+        radius: Math.max(0.05, ductRadius(it.flow ?? 200)),
+        points: [{ x: it.x, y, z: spineZ }, { x: it.x, y, z: it.z }, { x: it.x, y: it.y, z: it.z }] })
+      continue
+    }
+    const runY = svcKey === 'drain' ? base + 0.12 : spineY(s, lvl, svcKey) - 0.15
+    const connY = base + (map.conn ?? 0.4)
+    out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: TERMINAL_R[svcKey],
+      points: [
+        { x: it.x, y: runY, z: spineZ },
+        { x: it.x, y: runY, z: it.z },
+        { x: it.x, y: connY, z: it.z },
+      ] })
+  }
+  return out
+}
+
+/** Kompletní přepočet rozvodů. Vrací trasy k vykreslení a souhrnné dimenze. */
 export function computeMEP(s = SPEC) {
+  const fitItems = fitoutAll(s).items
   const plant = s.blocks.find((b) => b.type === 'plant')
   const plantX = plant ? (plant.x0 + plant.x1) / 2 : s.stage1 - 2
   const routes = []
   const perService = {}
 
   for (const svc of SERVICES) {
-    const blocks = served(s, svc.key)
+    const blocks = served(s, svc.key, fitItems)
     if (!blocks.length) continue
 
     const levels = [...new Set(blocks.map(levelOf))].sort()
@@ -103,6 +152,12 @@ export function computeMEP(s = SPEC) {
         points: [{ x: x0, y, z }, { x: x1, y, z }] })
 
       for (const b of blocks.filter((bb) => levelOf(bb) === lvl)) {
+        const own = fitItems.filter((it) => it.block === b.id && SVC[it.kind]?.svc.includes(svc.key))
+        if (own.length) {
+          // blok má konkrétní koncovky → vedeme k nim, ne jen doprostřed bloku
+          for (const tr of terminals(s, svc.key, z, own)) routes.push({ ...tr, color: svc.color })
+          continue
+        }
         const t = tapPoint(s, b)
         const br = svc.r ?? ductRadius(blockDemand(b).vzt)
         routes.push({ service: svc.key, kind: 'branch', color: svc.color, radius: br, block: b.id,
@@ -153,7 +208,7 @@ export function computeMEP(s = SPEC) {
       elecCalc,
       breaker,
       hpElec,
-      tuv: sum((x) => x.tuv),
+      tuv: fitItems.reduce((a, it) => a + (TUV_FIXTURE[it.kind] ?? 0), 0),
       wetArea: d.filter((x) => x.wet).reduce((a, x) => a + x.a, 0),
       vztByZone,
     },

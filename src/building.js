@@ -33,9 +33,19 @@ function placeWall(mesh, ax, az, dx, dz) {
   mesh.rotation.y = Math.atan2(-dz, dx)
 }
 
+const pipeMats = new Map()
+const pipeMat = (color) => {
+  if (!pipeMats.has(color)) {
+    const m = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.25 })
+    m.userData.shared = true      // přežívá přegenerování, disposeTree ho musí vynechat
+    pipeMats.set(color, m)
+  }
+  return pipeMats.get(color)
+}
+
 function tube(points, radius, color) {
   const g = new THREE.Group()
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.25 })
+  const mat = pipeMat(color)
   for (let i = 0; i < points.length - 1; i++) {
     const a = new THREE.Vector3(points[i].x, points[i].y, points[i].z)
     const b = new THREE.Vector3(points[i + 1].x, points[i + 1].y, points[i + 1].z)
@@ -277,6 +287,22 @@ function furnitureMesh(item, FURN) {
         g.add(box(0.16, 0.14, 1.5, mat, sx * (w / 2 - 0.85), 1.1, -0.7))
       }
       break
+    case 'pit': {
+      const t = 0.16
+      const frame = new THREE.MeshStandardMaterial({ color: 0x4a4f57, roughness: 0.85 })
+      for (const [sx, sz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        g.add(box(sx ? t : w, h, sz ? t : d, frame, (sx * (w - t)) / 2, h / 2, (sz * (d - t)) / 2))
+      }
+      // molitanové kostky
+      const cube = new THREE.MeshStandardMaterial({ color: f.color, roughness: 1 })
+      const nx = Math.max(2, Math.round(w / 0.55))
+      const nz = Math.max(2, Math.round(d / 0.55))
+      for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
+        g.add(box(0.42, 0.4, 0.42, cube,
+          -w / 2 + ((i + 0.5) * w) / nx, 0.2 + ((i * 7 + j * 3) % 3) * 0.12, -d / 2 + ((j + 0.5) * d) / nz))
+      }
+      break
+    }
     case 'net':
       g.add(box(w, h, Math.max(d, 0.04), glassy, 0, h / 2, 0))
       for (const sx of [-1, 1]) g.add(box(0.07, h, 0.07, dark, sx * (w / 2 - 0.04), h / 2, 0))

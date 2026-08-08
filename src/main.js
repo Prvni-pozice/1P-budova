@@ -55,6 +55,7 @@ function disposeTree(obj) {
     if (o.geometry) o.geometry.dispose()
     const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : []
     for (const m of mats) {
+      if (m.userData.shared) continue     // sdílené materiály potrubí žijí dál
       if (m.map) m.map.dispose()
       m.dispose()
     }
@@ -135,12 +136,12 @@ panelToggle.addEventListener('click', () =>
 setPanelCollapsed(innerWidth <= 640)
 
 // ------------------------------------------------------------------ rozvody
-const mepOn = { vzt: true, heat: false, water: false, drain: false, elec: false }
+const mepOn = Object.fromEntries(SERVICES.map((s) => [s.key, s.key === 'vzt']))
 const togglesEl = $('mep-toggles')
 for (const s of SERVICES) {
   const lab = document.createElement('label')
   lab.className = 'chk'
-  lab.innerHTML = `<input type="checkbox" ${mepOn[s.key] ? 'checked' : ''}>` +
+  lab.innerHTML = `<input type="checkbox" data-svc="${s.key}" ${mepOn[s.key] ? 'checked' : ''}>` +
     `<span class="sw" style="background:#${s.color.toString(16).padStart(6, '0')}"></span>` +
     `<span>${s.name}</span>`
   lab.querySelector('input').addEventListener('change', (e) => {
@@ -151,7 +152,15 @@ for (const s of SERVICES) {
 }
 function applyMepToggles() {
   for (const [key, grp] of Object.entries(built.mepByService)) grp.visible = !!mepOn[key]
+  for (const el of togglesEl.querySelectorAll('input')) el.checked = !!mepOn[el.dataset.svc]
 }
+
+const setAllMep = (on) => {
+  for (const s of SERVICES) mepOn[s.key] = on
+  applyMepToggles()
+}
+$('mep-all').addEventListener('click', () => setAllMep(true))
+$('mep-none').addEventListener('click', () => setAllMep(false))
 
 // ------------------------------------------------------------- tlačítkové skupiny
 function group(ids, onPick) {
@@ -339,7 +348,7 @@ addEventListener('resize', () => {
 rebuild()
 
 // ladicí přístup pro skriptované screenshoty (a rychlé zkoušení v konzoli)
-window.__view = { camera, orbit, spec, get mep() { return mep }, rebuild }
+window.__view = { camera, orbit, scene, spec, get mep() { return mep }, get built() { return built }, rebuild }
 
 const clock = new THREE.Clock()
 renderer.setAnimationLoop(() => {

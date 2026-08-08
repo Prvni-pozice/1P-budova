@@ -3,7 +3,7 @@
 import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
 import { openingsFor, pvLayout } from './src/building.js'
-import { fitoutAll, fitoutFor, sanitaryFor } from './src/fitout.js'
+import { fitoutAll, fitoutFor, sanitaryFor, SVC } from './src/fitout.js'
 
 let fail = 0
 const ok = (cond, msg, extra = '') => {
@@ -91,6 +91,7 @@ ok(t.vzt > 8000 && t.vzt < 14000, 'VZT celkem v řádu 8–14 tis. m³/h', `${Ma
 ok(t.heat > 20 && t.heat < 60, 'tepelná ztráta 20–60 kW', `${t.heat.toFixed(1)} kW`)
 ok(t.breaker > 40 && t.breaker < 200, 'hlavní jistič v rozumném rozsahu', `${t.breaker.toFixed(0)} A`)
 ok(t.wetArea === 84, 'mokré provozy = 84 m²', `${t.wetArea} m²`)
+ok(t.tuv > 1000 && t.tuv < 6000, 'špička TUV počítaná ze sprch a dřezů, ne paušálem', `${Math.round(t.tuv)} l/h`)
 
 // každá páteř končí zaslepená na hranici etapy 2
 const spines = mep.routes.filter((r) => r.kind === 'spine')
@@ -99,7 +100,9 @@ ok(spines.every((r) => Math.abs(r.points[1].x - (SPEC.stage1 - 0.4)) < 1e-9),
 
 // každý blok s nárokem má odbočku
 for (const key of ['vzt', 'elec']) {
-  const tapped = new Set(mep.routes.filter((r) => r.service === key && r.kind === 'branch').map((r) => r.block))
+  const tapped = new Set(mep.routes
+    .filter((r) => r.service === key && (r.kind === 'branch' || r.kind === 'terminal'))
+    .map((r) => r.block))
   const need = SPEC.blocks.filter((b) => blockDemand(b)[key === 'vzt' ? 'vzt' : 'elec'] > 0)
   ok(need.every((b) => tapped.has(b.id)), `${key}: každý blok má odbočku`, `${tapped.size}/${need.length}`)
 }
@@ -121,8 +124,14 @@ ok(fit.dropped === 0, 'všechno vybavení se vejde do svého bloku', `${fit.item
 ok(fit.counts.desk === SPEC.program.office.desks, 'počet stolů = počet míst v programu', `${fit.counts.desk}`)
 ok(fit.counts.simrig === SPEC.program.sim.rigs, 'počet rigů sedí', `${fit.counts.simrig}`)
 ok(fit.counts.cage === SPEC.program.gym.cages, 'počet klecí sedí', `${fit.counts.cage}`)
-ok(fit.counts.tramp === SPEC.program.arena.beds + 1, 'trampolíny + 1 v dunk lane', `${fit.counts.tramp}`)
-ok(fit.counts.carlift === 1 && fit.counts.car === 1, 'zvedák i obrys vozidla v dílně')
+ok(fit.counts.tramp === SPEC.program.arena.beds, 'trampolíny v běžném rastru 2,10 × 3,05', `${fit.counts.tramp}`)
+ok(fit.counts.foampit === 1, 'molitanová jáma je v aréně')
+ok(fit.counts.car === 2, 'dvě vozidla v dílně — na zvedáku a odstavené', `${fit.counts.car}`)
+ok(fit.counts.hoist === 1, 'sklad má nakládací otvor, jinak tam paletu nikdo nedostane')
+ok(fit.counts.diffuser > 20, 'vyústky VZT odvozené z průtoku', `${fit.counts.diffuser}`)
+ok(fit.counts.extinguisher > 8, 'hasicí přístroje odvozené z plochy', `${fit.counts.extinguisher}`)
+ok(fit.counts.subboard === 4, 'podružný rozvaděč na každou provozní zónu')
+ok(fit.counts.carlift === 1, 'zvedák v dílně')
 ok(fit.counts.wcBF === 1, 'bezbariérové WC je právě jedno (vyhl. 398/2009)')
 
 const sPub = sanitaryFor(SPEC.program.arena.peak, { publicUse: true })
@@ -159,6 +168,32 @@ const f2 = fitoutAll(bigger2)
 ok(f2.counts.desk === 6, 'méně míst → méně stolů', `${f2.counts.desk}`)
 ok(sanitaryFor(30).wcW > sOff.wcW, 'víc lidí → víc WC', `${sOff.wcW} → ${sanitaryFor(30).wcW}`)
 
+console.log('\nROZVODY KE KONCOVKÁM')
+const terms = mep.routes.filter((r) => r.kind === 'terminal')
+ok(terms.length > 100, 'koncové větve vedou k jednotlivým předmětům', `${terms.length} koncovek`)
+ok(mep.routes.some((r) => r.service === 'data'), 'datové rozvody existují')
+
+// každý předmět, který podle SVC něco potřebuje, to musí opravdu dostat
+const needy = fit.items.filter((it) => SVC[it.kind])
+const missing = []
+for (const it of needy) {
+  for (const key of SVC[it.kind].svc) {
+    const hit = terms.some((r) => r.service === key
+      && Math.abs(r.points[2].x - it.x) < 1e-6 && Math.abs(r.points[2].z - it.z) < 1e-6)
+    if (!hit) missing.push(`${it.kind}/${key} v ${it.block}`)
+  }
+}
+ok(missing.length === 0, 'ke každému předmětu vede každá přípojka, kterou potřebuje',
+  missing.length ? missing.slice(0, 4).join(', ') : `${needy.length} předmětů`)
+
+// koncovka nesmí viset ve vzduchu mimo svůj blok
+const stray = terms.filter((r) => {
+  const b = SPEC.blocks.find((x) => x.id === r.block)
+  const p = r.points[2]
+  return !b || p.x < b.x0 - 0.4 || p.x > b.x1 + 0.4 || p.z < b.z0 - 0.4 || p.z > b.z1 + 0.4
+})
+ok(stray.length === 0, 'žádná koncovka nekončí mimo svůj blok', `${stray.length}`)
+
 console.log('\nPŘEPOČET PO ZMĚNĚ')
 const bigger = structuredClone(SPEC)
 const arena = bigger.blocks.find((b) => b.id === 'arena')
@@ -169,11 +204,17 @@ ok(after > before, 'zvětšení arény zvýší VZT', `${Math.round(before)} →
 ok(ductRadius(after) > ductRadius(before), 'a zvětší i průměr páteřního potrubí',
   `ø ${(ductRadius(before) * 2).toFixed(2)} → ${(ductRadius(after) * 2).toFixed(2)} m`)
 
-const noWet = structuredClone(SPEC)
-noWet.blocks = noWet.blocks.filter((b) => b.type !== 'wet')
-const mw = computeMEP(noWet)
-ok(mw.routes.filter((r) => r.service === 'water').length === 0,
-  'bez mokrých provozů zmizí rozvod vody')
+// voda se teď řídí předměty, ne typem místnosti: samotné smazání „mokrých"
+// provozů ji nesmí odstranit, protože dřez na baru zůstává
+const noWetRooms = structuredClone(SPEC)
+noWetRooms.blocks = noWetRooms.blocks.filter((b) => b.type !== 'wet')
+ok(computeMEP(noWetRooms).routes.some((r) => r.service === 'water' && r.block === 'lobby'),
+  'dřez na baru si drží vodu i bez „mokrých" místností')
+
+const noFixtures = structuredClone(SPEC)
+noFixtures.blocks = noFixtures.blocks.filter((b) => ['arena', 'storage'].includes(b.id))
+ok(computeMEP(noFixtures).routes.filter((r) => r.service === 'water').length === 0,
+  'bez jediného vodovodního předmětu rozvod vody zmizí')
 
 console.log(fail === 0 ? '\n✓ vše prošlo\n' : `\n✗ ${fail} selhalo\n`)
 process.exit(fail ? 1 : 0)

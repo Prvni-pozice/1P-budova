@@ -35,7 +35,7 @@ export const SPEC = {
   // Program — počty osob a kusů. Od nich se odvozuje vybavení i sanita.
   program: {
     office:   { staff: 8, staffTarget: 10, desks: 10 },
-    arena:    { peak: 40, beds: 9 },
+    arena:    { peak: 40, beds: 6 },   // 2 odrazové + 4 volné, k tomu molitanová jáma
     bar:      { level: 'light', seats: 32 },   // nápoje + jednoduchá příprava
     gym:      { cages: 2, users: 8 },
     sim:      { rigs: 2 },
