@@ -49,7 +49,7 @@ export const SPEC = {
   // odolností (v modelu tlustší, tónované). Technická zóna je vlastní úsek,
   // aréna s lobby je shromažďovací prostor, kanceláře třetí úsek.
   compartments: {
-    office: ['office-gf', 'kitchen', 'office-1f', 'meeting', 'reserve', 'corridor'],
+    office: ['office-gf', 'commons', 'wc-gf', 'office-1f', 'meeting', 'reserve', 'corridor'],
     public: ['arena', 'lobby', 'wetcore', 'play', 'gym', 'sim'],
     tech:   ['workshop', 'plant', 'storage'],
   },
@@ -59,12 +59,16 @@ export const SPEC = {
     { a: 'office-gf', b: 'lobby', from: 8.1, to: 9.9, note: 'výtah — kabina ústí do lobby' },
   ],
 
+  // Dvojice bloků BEZ příčky — jeden souvislý prostor rozdělený jen v datech.
+  // Komunitní koncept přízemí: pracovní část a kuchyňský kout tečou do sebe.
+  openPairs: [['office-gf', 'commons']],
+
   // Vnitřní dveře. Co tu není, není propojené — DÍLNA JE ZÁMĚRNĚ ODDĚLENÁ:
   // technická zóna (dílna + strojovna + sklad) se vstupuje jen vlastními
   // dveřmi a vraty z jihu, do veřejné části z ní nevede nic.
   //   at = poloha po délce společné hrany (jinak střed)
   links: [
-    { a: 'office-gf', b: 'kitchen',  type: 'door',    at: 1.5,  note: 'do kuchyňky a WC' },
+    { a: 'office-gf', b: 'wc-gf',    type: 'door',    at: 2.4,  note: 'jediné uzavřené dveře v komunitní zóně' },
     { a: 'office-gf', b: 'lobby',    type: 'door',    at: 11.4, note: 'kanceláře do lobby' },
     { a: 'lobby',     b: 'wetcore',  type: 'double',  at: 8.5,  note: 'veřejnost na WC' },
     { a: 'lobby',     b: 'arena',    type: 'glazed',  at: 1.5,  note: 'vstup do arény, do vstupní uličky' },
@@ -85,7 +89,7 @@ export const SPEC = {
       arena: 2400000, lobby: 750000,        // aréna + bar = 3,15 mil.
       gym: 330000, sim: 300000,
       workshop: 200000, storage: 50000,     // dílna vč. skladu = 0,25 mil.
-      'office-gf': 120000, 'office-1f': 60000, meeting: 60000, kitchen: 32000,
+      'office-gf': 120000, 'office-1f': 60000, meeting: 60000, commons: 32000,
       reserve: 74000,
     },
   },
@@ -93,8 +97,12 @@ export const SPEC = {
   blocks: [
     // ---- přízemí (504 m²) ----
     // sever (z 12–18) = servisní pruh bez oken, jih (z 0–12) = vstupy a světlo
-    { id: 'kitchen',   name: 'Kuchyňka + WC',       type: 'wet',      level: 0, x0: 0,  x1: 7,  z0: 12, z1: 18 },
-    { id: 'office-gf', name: 'Kanceláře 1P',        type: 'office',   level: 0, x0: 0,  x1: 7,  z0: 0,  z1: 12 },
+    // Komunitní přízemí (koncept 9. 8.): jeden otevřený prostor — pracovní
+    // zóna se dvěma typy sezení, kuchyňský kout volně u stěn, lounge.
+    // Uzavřené jsou JEN záchody v severozápadním rohu.
+    { id: 'office-gf', name: 'Komunitní prostor',   type: 'office',   level: 0, x0: 0,  x1: 7,  z0: 0,    z1: 14.6 },
+    { id: 'commons',   name: 'Kuchyňský kout',      type: 'lobby',    level: 0, x0: 3,  x1: 7,  z0: 14.6, z1: 18 },
+    { id: 'wc-gf',     name: 'WC',                  type: 'wet',      level: 0, x0: 0,  x1: 3,  z0: 14.6, z1: 18 },
     { id: 'wetcore',   name: 'Šatny + sprchy + WC', type: 'wet',      level: 0, x0: 7,  x1: 14, z0: 12, z1: 18 },
     { id: 'lobby',     name: 'Lobby / recepce / bar', type: 'lobby',  level: 0, x0: 7,  x1: 14, z0: 0,  z1: 12 },
     { id: 'arena',     name: 'Jump aréna',          type: 'arena',    level: 'full', x0: 14, x1: 21, z0: 0, z1: 18 },

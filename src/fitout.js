@@ -17,6 +17,8 @@ export const FURN = {
   cabinet:    { w: 0.80, d: 0.45, h: 1.80, color: 0xbfb5a5, shape: 'box',     label: 'Skříň' },
   pod:        { w: 1.20, d: 1.20, h: 2.20, color: 0x6b7280, shape: 'cubicle', label: 'Akustická budka' },
   mtable:     { w: 3.00, d: 1.20, h: 0.74, color: 0xd9cbb4, shape: 'table',   label: 'Jednací stůl' },
+  hightable:  { w: 2.20, d: 0.70, h: 1.05, color: 0xd9cbb4, shape: 'table',   label: 'Vysoký komunitní stůl' },
+  sofa:       { w: 1.90, d: 0.85, h: 0.78, color: 0x6c8f74, shape: 'sofa',    label: 'Pohovka' },
   table:      { w: 1.60, d: 0.80, h: 0.74, color: 0xd9cbb4, shape: 'table',   label: 'Stůl' },
   rtable:     { w: 0.80, d: 0.80, h: 0.74, color: 0xd9cbb4, shape: 'table',   label: 'Stolek' },
   partyTable: { w: 2.40, d: 0.90, h: 0.74, color: 0xd9a04a, shape: 'table',   label: 'Párty stůl' },
@@ -26,14 +28,14 @@ export const FURN = {
   locker:     { w: 0.30, d: 0.50, h: 1.80, color: 0x53707e, shape: 'box',     label: 'Skříňka' },
   valuebox:   { w: 0.30, d: 0.40, h: 1.20, color: 0x53707e, shape: 'box',     label: 'Schránka na cennosti' },
   shoerack:   { w: 1.80, d: 0.40, h: 1.60, color: 0xa89c88, shape: 'rack',    label: 'Botník' },
-  changing:   { w: 1.00, d: 1.00, h: 2.10, color: 0xcfd8de, shape: 'cubicle', label: 'Převlékací kabinka' },
+  changing:   { w: 1.00, d: 1.00, h: 2.10, color: 0xe3e0d8, shape: 'cubicle', solid: true, fix: 'bench', label: 'Převlékací kabinka' },
 
-  wc:         { w: 0.90, d: 1.50, h: 2.10, color: 0xd8dde3, shape: 'cubicle', label: 'WC kabina' },
-  wcBF:       { w: 2.20, d: 2.40, h: 2.10, color: 0xb6dbe8, shape: 'cubicle', label: 'WC bezbariérové' },
+  wc:         { w: 0.90, d: 1.50, h: 2.10, color: 0xe8ebee, shape: 'cubicle', solid: true, fix: 'wc', label: 'WC kabina' },
+  wcBF:       { w: 2.20, d: 2.40, h: 2.10, color: 0xdde8ee, shape: 'cubicle', solid: true, fix: 'wc', label: 'WC bezbariérové' },
   urinal:     { w: 0.45, d: 0.35, h: 1.20, color: 0xeef2f5, shape: 'box',     label: 'Pisoár' },
-  basin:      { w: 0.60, d: 0.45, h: 0.85, color: 0xeef2f5, shape: 'box',     label: 'Umyvadlo' },
-  shower:     { w: 0.90, d: 0.90, h: 2.10, color: 0xcbe6ea, shape: 'cubicle', label: 'Sprcha' },
-  cleaning:   { w: 1.20, d: 1.20, h: 2.10, color: 0xa9b2bb, shape: 'cubicle', label: 'Úklidová komora' },
+  basin:      { w: 0.60, d: 0.45, h: 0.85, color: 0xd9dde1, shape: 'basin',   label: 'Umyvadlo' },
+  shower:     { w: 0.90, d: 0.90, h: 2.10, color: 0xd6e9ee, shape: 'cubicle', solid: true, fix: 'shower', label: 'Sprcha' },
+  cleaning:   { w: 1.20, d: 1.20, h: 2.10, color: 0xb6bcc4, shape: 'cubicle', solid: true, label: 'Úklidová komora' },
 
   kitchen:    { w: 2.40, d: 0.60, h: 0.90, color: 0xbfb5a5, shape: 'box',     label: 'Kuchyňská linka' },
   fridge:     { w: 0.60, d: 0.65, h: 1.85, color: 0xb8bec6, shape: 'box',     label: 'Lednice' },
@@ -135,6 +137,7 @@ export const SVC = {
   subboard:   { svc: ['elec'], conn: 1.40 },
   desk:       { svc: ['elec', 'data'], conn: 0.25 },
   mtable:     { svc: ['elec', 'data'], conn: 0.25 },
+  hightable:  { svc: ['elec'], conn: 0.95 },
   screen:     { svc: ['elec', 'data'], conn: 1.10 },
   rack19:     { svc: ['elec', 'data'], conn: 1.20 },
   simrig:     { svc: ['elec', 'data'], conn: 0.30 },
@@ -236,19 +239,28 @@ function maker(S, b) {
 const LAYOUTS = {
   // ---------------------------------------------------------- kanceláře
   'office-gf': (S, b, P) => {
-    const { items, put, row, desks, around } = maker(S, b)
-    const n = P.office.desks
-    desks(1.0, 2.8, Math.min(3, Math.ceil(n / 2)))            // 6 míst
-    if (n > 6) desks(1.0, 6.4, Math.ceil((n - 6) / 2))        // zbytek
-    row('sideboard', 1.2, 0.35, 4, 0.9)                       // pod jižními okny
-    row('cabinet', 6.5, 1.2, 5, 0.9, { along: 'v', rot: 90 }) // úložná stěna
-    // patro je přístupné sdíleným schodištěm v lobby (dveře office–lobby);
-    // u dělicí stěny stojí šachta výtahu — veřejné patro (fitness, sim racing)
-    // jinak nemá bezbariérový přístup. Kabina ústí do lobby a nahoře do chodby.
+    const { items, put, row, desks, seat } = maker(S, b)
+    // typ 1: klasické pracovní stoly (bench) — počet z programu
+    const n1 = Math.ceil(P.office.desks / 2 / 2)
+    desks(1.0, 2.8, n1)
+    desks(1.0, 6.4, Math.max(0, Math.ceil(P.office.desks / 2) - n1))
+    // typ 2: vysoký komunitní stůl se stoličkami
+    put('hightable', 2.2, 9.7)
+    for (const du of [-0.8, 0, 0.8]) {
+      seat(2.2 + du, 10.4, 2.2 + du, 9.7)
+      seat(2.2 + du, 9.0, 2.2 + du, 9.7)
+    }
+    // typ 3: lounge — pohovky se stolkem
+    put('sofa', 1.0, 13.0, { rot: 90 })
+    put('sofa', 4.0, 13.6, { rot: 180 })
+    put('rtable', 2.5, 13.2)
+    // vybavení volně při stěnách, ať prostor působí společně
+    row('sideboard', 1.2, 0.35, 4, 0.9)
+    row('cabinet', 6.55, 1.6, 3, 0.9, { along: 'v', rot: 90 })
+    put('pod', 5.7, 5.7, { note: 'akustická budka na hovory' })
+    put('rack19', 6.55, 4.1, { rot: 90, note: 'uzamykatelná serverová skříň' })
+    put('printer3d', 5.9, 13.9, { note: 'sdílená tiskárna' })
     put('elevator', 6.3, 9.0, { note: 'bezbariérový přístup do patra' })
-    put('pod', 4.6, 9.6)                                      // telefonní budka
-    put('rtable', 2.4, 9.8)
-    around(2.4, 9.8, [[-0.78, 0], [0.78, 0], [0, -0.78]])
     return items
   },
   'office-1f': (S, b) => {                                     // klidové místnosti
@@ -279,22 +291,28 @@ const LAYOUTS = {
     put('picture', 5.65, 3.0, { rot: 90, img: '/art/zasedacka3.jpg', pw: 0.85, ph: 1.1, py: 1.6 })
     return items
   },
-  kitchen: (S, b, P) => {
+  commons: (S, b) => {
     const { items, put, row, seat } = maker(S, b)
-    const s = sanitaryFor(P.office.staffTarget)
-    put('kitchen', 1.6, 5.6)                                   // linka u severní stěny
-    put('fridge', 3.3, 5.6)
-    put('table', 1.6, 3.4)
-    for (const u of [1.0, 2.2]) { seat(u, 2.7, u, 3.4); seat(u, 4.1, u, 3.4) }
-    put('cleaning', 3.2, 0.8)
-    put('rack19', 5.4, 0.8, { note: 'serverovna' })
-    put('cabinet', 4.3, 0.8)
-    row('wc', 5.0, 5.1, s.wcW + s.wcM, 0.95)                   // kabiny u severní stěny
-    row('urinal', 4.9, 3.6, s.urinals, 0.5)
-    row('basin', 6.5, 3.4, s.basins, 0.7, { along: 'v', rot: 90 })
+    // kuchyňský kout volně u stěn — bez dveří, teče do komunitního prostoru
+    put('kitchen', 2.0, 3.0)
+    put('fridge', 3.55, 3.0)
+    put('hightable', 2.75, 1.1, { note: 'jídelní stůl' })
+    for (const du of [-0.7, 0.7]) {
+      seat(2.75 + du, 1.8, 2.75 + du, 1.1)
+      seat(2.75 + du, 0.45, 2.75 + du, 1.1)
+    }
     return items
   },
-  reserve: () => [],                                           // hrubá stavba
+  'wc-gf': (S, b, P) => {
+    const { items, put, row } = maker(S, b)
+    // jediná uzavřená část komunitní zóny; dveře jsou u východní stěny
+    const sOff = sanitaryFor(P.office.staffTarget)
+    row('wc', 0.75, 2.55, sOff.wcW + sOff.wcM, 1.0, { rot: 180 })
+    put('urinal', 0.35, 0.9, { rot: 270 })
+    row('basin', 2.7, 1.7, sOff.basins, 0.7, { along: 'v', rot: 90 })
+    return items
+  },
+  reserve: () => [],  reserve: () => [],                                           // hrubá stavba
   corridor: (S, b) => {
     const { items, put } = maker(S, b)
     put('extinguisher', 0.6, 4.0)
@@ -327,6 +345,7 @@ const LAYOUTS = {
     row('valuebox', 6.6, 6.0, 10, 0.32, { along: 'v', rot: 90, note: 'cennosti, 3 patra' })
     // schodiště podél západní stěny — přes severní konec se to nemačká
     put('stairs', 0.75, 8.2, { note: 'sdílené schodiště do patra (fitness, sim racing i kanceláře přes chodbu)' })
+    put('cleaning', 0.75, 9.9, { note: 'úklidová komora pod vysokým koncem schodiště' })
     // dva sloupce; řady 2,4 m od sebe, jinak židle zády k sobě kolidují.
     // U řady u příčky se severní židle vynechává.
     for (const u of [2.7, 5.1]) {
@@ -509,7 +528,7 @@ export function fitoutFor(S, b) {
  * Položky, které nekreslím ručně do každé místnosti, ale plynou z pravidla:
  * vyústky VZT z průtoku, hasicí přístroje z plochy, podružné rozvaděče ze zón.
  */
-const ZONE_BOARDS = { kitchen: 'kanceláře', lobby: 'veřejná část', gym: 'sport', workshop: 'dílna' }
+const ZONE_BOARDS = { 'office-gf': 'komunitní zóna', lobby: 'veřejná část', gym: 'sport', workshop: 'dílna' }
 
 // osvětlenost podle ČSN EN 12464-1 [lx] a plocha na jedno svítidlo [m²]
 const LUX = {

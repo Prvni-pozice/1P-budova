@@ -63,7 +63,7 @@ const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a
 const up = cross([-1, 0, 0], [0, 0, 1])
 ok(up[1] === 1, 'východ × sever = nahoru (kompas je pravotočivý)', `(${up})`)
 ok(SPEC.blocks.find((b) => b.id === 'office-gf').x0 === 0, 'kanceláře na východním průčelí (x = 0)')
-const NO_WINDOW_OK = ['wet', 'plant', 'arena', 'sim', 'meeting', 'play', 'circ', 'storage']
+const NO_WINDOW_OK = ['wet', 'plant', 'arena', 'sim', 'meeting', 'play', 'circ', 'storage', 'lobby']
 const atNorth = SPEC.blocks.filter((b) => b.z1 >= SPEC.depth)
 ok(atNorth.every((b) => NO_WINDOW_OK.includes(b.type)),
   'u severní (slepé) stěny jsou jen provozy bez nároku na okna',
@@ -100,7 +100,7 @@ ok(mep.routes.length > 0, 'trasy se vygenerovaly', `${mep.routes.length} úseků
 ok(t.vzt > 8000 && t.vzt < 14000, 'VZT celkem v řádu 8–14 tis. m³/h', `${Math.round(t.vzt)} m³/h`)
 ok(t.heat > 20 && t.heat < 60, 'tepelná ztráta 20–60 kW', `${t.heat.toFixed(1)} kW`)
 ok(t.breaker > 40 && t.breaker < 200, 'hlavní jistič v rozumném rozsahu', `${t.breaker.toFixed(0)} A`)
-ok(t.wetArea === 84, 'mokré provozy = 84 m²', `${t.wetArea} m²`)
+ok(Math.abs(t.wetArea - 52.2) < 0.01, 'mokré provozy = šatny 42 + WC 10,2 m²', `${t.wetArea} m²`)
 ok(t.tuv > 1000 && t.tuv < 6000, 'špička TUV počítaná ze sprch a dřezů, ne paušálem', `${Math.round(t.tuv)} l/h`)
 
 // každá páteř končí zaslepená na hranici etapy 2
@@ -181,7 +181,7 @@ ok(sanitaryFor(30).wcW > sOff.wcW, 'víc lidí → víc WC', `${sOff.wcW} → ${
 console.log('\nERGONOMIE')
 // geometrie židle má opěradlo na +z → při rot 0 člověk kouká na −z.
 // Ruční rotace se tu opakovaně pletly, tohle to hlídá.
-const TABLES = ['desk', 'table', 'rtable', 'mtable', 'partyTable']
+const TABLES = ['desk', 'table', 'rtable', 'mtable', 'partyTable', 'hightable']
 const facingOf = (r) => ({ x: Math.sin(((r ?? 0) * Math.PI) / 180), z: -Math.cos(((r ?? 0) * Math.PI) / 180) })
 const backwards = []
 for (const c of fit.items.filter((it) => it.kind === 'chair')) {
@@ -320,6 +320,7 @@ for (const side of ['south', 'north']) {
 }
 const edges = new Map(SPEC.blocks.map((b) => [b.id, new Set()]))
 for (const l of SPEC.links) { edges.get(l.a).add(l.b); edges.get(l.b).add(l.a) }
+for (const [a, b] of SPEC.openPairs ?? []) { edges.get(a).add(b); edges.get(b).add(a) }
 for (const st of stairs) {                       // schodiště spojuje podlaží
   const to = SPEC.blocks.find((b) => b.level === 1
     && st.x > b.x0 - 1 && st.x < b.x1 + 1 && st.z > b.z0 - 3 && st.z < b.z1 + 3)
@@ -395,6 +396,21 @@ const stray = terms.filter((r) => {
   return !b || p.x < b.x0 - 0.4 || p.x > b.x1 + 0.4 || p.z < b.z0 - 0.4 || p.z > b.z1 + 0.4
 })
 ok(stray.length === 0, 'žádná koncovka nekončí mimo svůj blok', `${stray.length}`)
+
+console.log('\nKOMUNITNÍ PŘÍZEMÍ')
+ok(!SPEC.blocks.some((b) => b.id === 'kitchen'), 'stará kuchyňka s WC neexistuje')
+ok((SPEC.openPairs ?? []).some((p2) => p2.includes('office-gf') && p2.includes('commons')),
+  'pracovní zóna a kuchyňský kout jsou jeden prostor (bez příčky)')
+ok(!parts.some((p2) => p2.blocks.includes('office-gf') && p2.blocks.includes('commons')),
+  'příčka mezi nimi se opravdu negeneruje')
+ok(SPEC.links.some((l) => (l.a === 'wc-gf' || l.b === 'wc-gf')),
+  'záchody jsou jediná uzavřená část se svými dveřmi')
+const wcItems = fit.items.filter((it) => it.block === 'wc-gf')
+ok(wcItems.some((it) => it.kind === 'wc') && !fit.items.some((it) => it.block === 'commons' && it.kind === 'wc'),
+  'WC kabiny jsou v WC zóně, žádná v kuchyňském koutě')
+const commTables = fit.items.filter((it) => it.block === 'office-gf' && ['desk', 'hightable', 'rtable'].includes(it.kind))
+ok(new Set(commTables.map((it) => it.kind)).size >= 2 && fit.counts.sofa >= 2,
+  'komunitní prostor má aspoň 2 typy stolů a lounge', `typy: ${[...new Set(commTables.map((it) => it.kind))].join(', ')}`)
 
 console.log('\nEKONOMIKA')
 const eco = SPEC.economy

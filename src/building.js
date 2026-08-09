@@ -289,6 +289,7 @@ export function roofSlope(S, side, over = 0.5) {
  * fire, level, gaps: [[od, do], …] }.
  */
 export function partitionsFor(S) {
+  const open = new Set((S.openPairs ?? []).map((p2) => [...p2].sort().join('|')))
   const comp = {}
   for (const [name, ids] of Object.entries(S.compartments ?? {})) {
     for (const id of ids) comp[id] = name
@@ -318,6 +319,7 @@ export function partitionsFor(S) {
           if (t - f > 0.6) seg = { axis: 'x', at, from: f, to: t }
         }
         if (!seg) continue
+        if (open.has([a.id, b.id].sort().join('|'))) continue   // souvislý prostor
         // příčka nesmí projít obvodovým pláštěm až do jeho vnějšího líce —
         // koplanární čelo s fasádou dělá z-fighting (problikávání zvenku)
         if (seg.axis === 'z') {
@@ -390,9 +392,36 @@ function furnitureMesh(item, FURN) {
       break
     case 'cubicle': {
       const t = 0.05
-      g.add(box(w, h, t, glassy, 0, h / 2, -d / 2))
-      g.add(box(t, h, d, glassy, -w / 2, h / 2, 0))
-      g.add(box(t, h, d, glassy, w / 2, h / 2, 0))
+      // sanita má PEVNÉ stěny (skleněné kabiny nešly přečíst); budky a výtah
+      // zůstávají prosklené
+      const wallM = f.solid
+        ? new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.85 })
+        : glassy
+      g.add(box(w, h, t, wallM, 0, h / 2, -d / 2))
+      g.add(box(t, h, d, wallM, -w / 2, h / 2, 0))
+      g.add(box(t, h, d, wallM, w / 2, h / 2, 0))
+      const white = new THREE.MeshStandardMaterial({ color: 0xf6f8f9, roughness: 0.4 })
+      if (f.fix === 'wc') {
+        g.add(box(0.4, 0.42, 0.18, white, 0, 0.6, -d / 2 + 0.16))          // nádržka
+        const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.15, 0.4, 12), white)
+        bowl.position.set(0, 0.2, -d / 2 + 0.42)
+        g.add(bowl)
+      } else if (f.fix === 'shower') {
+        g.add(box(w - 0.12, 0.06, d - 0.12, white, 0, 0.03, 0))            // vanička
+        g.add(box(0.05, 1.9, 0.05, dark, 0, 0.98, -d / 2 + 0.1))           // stoupačka
+        g.add(box(0.22, 0.05, 0.22, white, 0, 1.95, -d / 2 + 0.22))        // růžice
+      } else if (f.fix === 'bench') {
+        g.add(box(w - 0.2, 0.07, 0.35, new THREE.MeshStandardMaterial({ color: 0xc7b299, roughness: 0.8 }),
+          0, 0.45, -d / 2 + 0.25))                                          // lavička
+      }
+      break
+    }
+    case 'sofa': {
+      const sm = new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.9 })
+      g.add(box(w, 0.36, d, sm, 0, 0.24, 0))                               // sedák
+      g.add(box(w, 0.44, 0.2, sm, 0, 0.58, d / 2 - 0.1))                   // opěradlo
+      g.add(box(0.18, 0.5, d, sm, -w / 2 + 0.09, 0.32, 0))                 // područky
+      g.add(box(0.18, 0.5, d, sm, w / 2 - 0.09, 0.32, 0))
       break
     }
     case 'cyl': {
@@ -515,6 +544,15 @@ function furnitureMesh(item, FURN) {
       g.add(box(w, h, Math.max(d, 0.04), glassy, 0, h / 2, 0))
       for (const sx of [-1, 1]) g.add(box(0.07, h, 0.07, dark, sx * (w / 2 - 0.04), h / 2, 0))
       break
+    case 'basin': {
+      g.add(box(w, h - 0.18, d, mat, 0, (h - 0.18) / 2, 0))                // skříňka
+      const bowlM = new THREE.MeshStandardMaterial({ color: 0xf6f8f9, roughness: 0.35 })
+      const bw = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.16, 0.14, 12), bowlM)
+      bw.position.set(0, h - 0.08, 0)
+      g.add(bw)
+      g.add(box(0.05, 0.24, 0.05, dark, 0, h + 0.06, -d / 2 + 0.1))        // baterie
+      break
+    }
     default:
       g.add(box(w, h, d, mat, 0, h / 2, 0))
   }
@@ -869,9 +907,17 @@ export function buildAll(spec, mep) {
     })
     const rails = openEdges(S, b)
     for (const h of holes) {
-      rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u1, z0: b.z0 + h.v0, z1: b.z0 + h.v0 })
-      rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u1, z0: b.z0 + h.v1, z1: b.z0 + h.v1 })
-      rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u0, z0: b.z0 + h.v0, z1: b.z0 + h.v1 })
+      // zábradlí kolem prostupu — ale STRANA, KUDY SE VYCHÁZÍ ZE SCHODIŠTĚ,
+      // zůstává volná (dřív ji přehrazovalo a schodiště vypadalo neprůchozí)
+      const st = stairItems.find((it) => {
+        const o = stairOpening(it, FURN)
+        return o.x1 > b.x0 + h.u0 && o.x0 < b.x0 + h.u1 && o.z1 > b.z0 + h.v0 && o.z0 < b.z0 + h.v1
+      })
+      const exit = st ? ({ 0: 'v1', 180: 'v0', 90: 'u0', 270: 'u1' })[st.rot ?? 0] : null
+      if (exit !== 'v0') rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u1, z0: b.z0 + h.v0, z1: b.z0 + h.v0 })
+      if (exit !== 'v1') rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u1, z0: b.z0 + h.v1, z1: b.z0 + h.v1 })
+      if (exit !== 'u0') rails.push({ x0: b.x0 + h.u0, x1: b.x0 + h.u0, z0: b.z0 + h.v0, z1: b.z0 + h.v1 })
+      if (exit !== 'u1') rails.push({ x0: b.x0 + h.u1, x1: b.x0 + h.u1, z0: b.z0 + h.v0, z1: b.z0 + h.v1 })
     }
     for (const r of rails) {
       const len = Math.hypot(r.x1 - r.x0, r.z1 - r.z0)
