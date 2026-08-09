@@ -122,9 +122,17 @@ T.concrete = () => canvasTex(256, (g, s) => {
 
 /** antracitový sendvičový panel naležato — spára à 1 m (repeat 1:1 v metrech) */
 T.panelDark = () => canvasTex(256, (g, s) => {
-  g.fillStyle = '#34383e'
+  // modrošedý základ — pod teplým světlem západu dopadne na neutrální
+  // antracit; neutrální šedá by zhnědla (odráží jen barvu světla)
+  g.fillStyle = '#31353c'
   g.fillRect(0, 0, s, s)
-  noise(g, s, 54, 18, 900)
+  for (let i = 0; i < 900; i++) {
+    const v = 46 + (Math.random() - 0.5) * 16
+    g.fillStyle = `rgb(${v | 0},${(v + 4) | 0},${(v + 12) | 0})`
+    g.globalAlpha = 0.16
+    g.fillRect(Math.random() * s, Math.random() * s, 2 + Math.random() * 5, 2 + Math.random() * 5)
+  }
+  g.globalAlpha = 1
   const grad = g.createLinearGradient(0, 0, 0, s)
   grad.addColorStop(0, 'rgba(255,255,255,0.05)')
   grad.addColorStop(1, 'rgba(0,0,0,0.10)')

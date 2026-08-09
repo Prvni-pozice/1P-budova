@@ -45,9 +45,12 @@ export class Env {
     this.dome.frustumCulled = false
     scene.add(this.dome)
 
-    scene.add(new THREE.HemisphereLight(0xffc4a8, 0x4a4550, 1.1))
+    // Vyvážení bílé: obloha (shader) nese západ slunce, ale SVĚTLA jsou skoro
+    // neutrální — jinak tmavé/neutrální materiály přebírají barvu světla
+    // a antracit hnědne. Atmosféru dělají dlouhé stíny a nebe, ne zabarvení.
+    scene.add(new THREE.HemisphereLight(0xf6eee6, 0x4c4f56, 1.05))
 
-    this.sun = new THREE.DirectionalLight(0xffc890, 2.6)
+    this.sun = new THREE.DirectionalLight(0xfff0de, 2.4)
     this.sun.position.copy(SUN_DIR).multiplyScalar(120)
     this.sun.castShadow = true
     const c = this.sun.shadow.camera
@@ -100,7 +103,7 @@ export class Env {
     const envScene = new THREE.Scene()
     envScene.add(new THREE.Mesh(new THREE.SphereGeometry(100, 32, 16), this.skyMat))
     scene.environment = pmrem.fromScene(envScene, 0.05).texture
-    scene.environmentIntensity = 0.45
+    scene.environmentIntensity = 0.16
     pmrem.dispose()
   }
 
