@@ -76,6 +76,20 @@ export const SPEC = {
     { a: 'gym',       b: 'sim',      type: 'door',    at: 12.0 },
   ],
 
+  // Ekonomika provozu — z rozvahy 8/2026 (základní scénář, Pelhřimov):
+  // tržby po provozech [Kč/rok], náklady celkem. Sloupce ve vizualizaci
+  // mají výšku podle VÝNOSNOSTI (Kč/m²/rok) plochy pod sebou.
+  economy: {
+    costsTotal: 2970000,
+    revenue: {
+      arena: 2400000, lobby: 750000,        // aréna + bar = 3,15 mil.
+      gym: 330000, sim: 300000,
+      workshop: 200000, storage: 50000,     // dílna vč. skladu = 0,25 mil.
+      'office-gf': 120000, 'office-1f': 60000, meeting: 60000, kitchen: 32000,
+      reserve: 74000,
+    },
+  },
+
   blocks: [
     // ---- přízemí (504 m²) ----
     // sever (z 12–18) = servisní pruh bez oken, jih (z 0–12) = vstupy a světlo

@@ -317,6 +317,15 @@ export function partitionsFor(S) {
           if (t - f > 0.6) seg = { axis: 'x', at, from: f, to: t }
         }
         if (!seg) continue
+        // příčka nesmí projít obvodovým pláštěm až do jeho vnějšího líce —
+        // koplanární čelo s fasádou dělá z-fighting (problikávání zvenku)
+        if (seg.axis === 'z') {
+          seg.from = Math.max(seg.from, 0.28)
+          seg.to = Math.min(seg.to, S.depth - 0.28)
+        } else {
+          seg.from = Math.max(seg.from, 0.28)
+          seg.to = Math.min(seg.to, S.stage1 - 0.28)
+        }
 
         const gaps = []
         for (const l of S.links ?? []) {
@@ -521,7 +530,7 @@ function furnitureMesh(item, FURN) {
 export function buildAll(spec, mep) {
   const root = new THREE.Group()
   const groups = {}
-  for (const k of ['ground', 'site', 'shell', 'glass', 'roof', 'pv', 'structure', 'partitions', 'slabs', 'furniture', 'blocks', 'labels', 'mep', 'stage2']) {
+  for (const k of ['ground', 'site', 'shell', 'glass', 'roof', 'pv', 'structure', 'partitions', 'slabs', 'furniture', 'blocks', 'labels', 'mep', 'econ', 'stage2']) {
     groups[k] = new THREE.Group()
     groups[k].name = k
     root.add(groups[k])
@@ -710,6 +719,7 @@ export function buildAll(spec, mep) {
     workshop: ['concrete', 3.0], storage: ['concrete', 3.0], plant: ['concrete', 3.0],
     circ: ['concrete', 3.0], reserve: ['concrete', 3.0],
   }
+  const stairsForHoles = fit.items.filter((it) => it.kind === 'stairs')
   for (const b of S.blocks) {
     const fin = FINISH[b.type]
     if (!fin) continue
@@ -718,8 +728,28 @@ export function buildAll(spec, mep) {
     const d = b.z1 - b.z0 - 0.08
     // fitness má plovoucí podlahu (kročejový hluk činek nad lobby) — tlustší
     const th = b.type === 'gym' ? 0.14 : 0.04
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, th, d), floorMat(fin[0], w, d, fin[1]))
-    m.position.set((b.x0 + b.x1) / 2, levelBase(S, lvl) + th / 2, (b.z0 + b.z1) / 2)
+    // nášlapná vrstva v patře MUSÍ mít stejné prostupy jako stropní deska —
+    // plný kvádr se položil přes schodišťový otvor a dal se přejít
+    const holes = lvl === 1
+      ? stairsForHoles.map((it) => stairOpening(it, FURN))
+          .filter((o) => o.x1 > b.x0 && o.x0 < b.x1 && o.z1 > b.z0 && o.z0 < b.z1)
+          .map((o) => ({
+            u0: Math.max(o.x0, b.x0 + 0.04) - b.x0 - 0.04,
+            u1: Math.min(o.x1, b.x1 - 0.04) - b.x0 - 0.04,
+            v0: Math.max(o.z0, b.z0 + 0.04) - b.z0 - 0.04,
+            v1: Math.min(o.z1, b.z1 - 0.04) - b.z0 - 0.04,
+          }))
+      : []
+    let m
+    if (holes.length) {
+      const g2 = wallGeom([[0, 0], [w, 0], [w, d], [0, d]], holes, th)
+      g2.rotateX(-Math.PI / 2)
+      m = new THREE.Mesh(g2, floorMat(fin[0], w, d, fin[1]))
+      m.position.set(b.x0 + 0.04, levelBase(S, lvl) + th / 2, b.z0 + 0.04 + d)
+    } else {
+      m = new THREE.Mesh(new THREE.BoxGeometry(w, th, d), floorMat(fin[0], w, d, fin[1]))
+      m.position.set((b.x0 + b.x1) / 2, levelBase(S, lvl) + th / 2, (b.z0 + b.z1) / 2)
+    }
     m.receiveShadow = true
     m.userData.block = b
     groups.ground.add(m)
@@ -992,6 +1022,51 @@ export function buildAll(spec, mep) {
   const lapol = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.05, 16), siteMat(0x6a6a55))
   lapol.position.set(25.0, 0.03, -3.0)
   groups.site.add(lapol)                               // odlučovač ropných látek od dílny
+
+  // --- ekonomika: sloupce výnosnosti nad bloky + bilance nad východní fasádou ---
+  if (S.economy) {
+    const M2_PER_M = 2500                      // 2 500 Kč/m²·rok = 1 m výšky sloupce
+    const baseY = ridge + 0.7
+    for (const [id, rev] of Object.entries(S.economy.revenue)) {
+      const b = S.blocks.find((x) => x.id === id)
+      if (!b || rev <= 0) continue
+      const a = (b.x1 - b.x0) * (b.z1 - b.z0)
+      const perM2 = rev / a
+      const h = Math.max(0.3, perM2 / M2_PER_M)
+      const col = new THREE.Mesh(
+        new THREE.BoxGeometry(b.x1 - b.x0 - 0.5, h, b.z1 - b.z0 - 0.5),
+        new THREE.MeshStandardMaterial({
+          color: new THREE.Color().setHSL(0.58 - 0.42 * Math.min(1, perM2 / 16000), 0.75, 0.5),
+          transparent: true, opacity: 0.45, depthWrite: false,
+        }),
+      )
+      col.position.set((b.x0 + b.x1) / 2, baseY + h / 2, (b.z0 + b.z1) / 2)
+      groups.econ.add(col)
+      const lb = labelSprite(b.name, `${Math.round(perM2).toLocaleString('cs-CZ')} Kč/m²·rok`)
+      lb.position.set((b.x0 + b.x1) / 2, baseY + h + 0.5, (b.z0 + b.z1) / 2)
+      groups.econ.add(lb)
+    }
+    // bilance: jeden sloupec — spodek náklady (červeně), vršek zisk (limetkou)
+    const M_PER_MIL = 1.6
+    const revT = Object.values(S.economy.revenue).reduce((a2, v) => a2 + v, 0)
+    const cost = S.economy.costsTotal
+    const hCost = (cost / 1e6) * M_PER_MIL
+    const hProfit = ((revT - cost) / 1e6) * M_PER_MIL
+    const bx = -3.2
+    const bz = S.depth / 2
+    const costBox = new THREE.Mesh(new THREE.BoxGeometry(2.4, hCost, 2.4),
+      new THREE.MeshStandardMaterial({ color: 0xd94f4f, transparent: true, opacity: 0.55, depthWrite: false }))
+    costBox.position.set(bx, ridge + 0.7 + hCost / 2, bz)
+    groups.econ.add(costBox)
+    const profBox = new THREE.Mesh(new THREE.BoxGeometry(2.4, hProfit, 2.4),
+      new THREE.MeshStandardMaterial({ color: 0xbfe32e, transparent: true, opacity: 0.6, depthWrite: false }))
+    profBox.position.set(bx, ridge + 0.7 + hCost + hProfit / 2, bz)
+    groups.econ.add(profBox)
+    const l1 = labelSprite(`Výnosy ${(revT / 1e6).toFixed(2).replace('.', ',')} mil. Kč/rok`,
+      `náklady ${(cost / 1e6).toFixed(2).replace('.', ',')} · zisk ${((revT - cost) / 1e6).toFixed(2).replace('.', ',')} mil.`)
+    l1.position.set(bx, ridge + 1.4 + hCost + hProfit, bz)
+    groups.econ.add(l1)
+  }
 
   // --- etapa 2 jako obrys ---
   const s2w = S.length - S.stage1

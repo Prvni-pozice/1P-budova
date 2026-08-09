@@ -307,7 +307,11 @@ const LAYOUTS = {
     put('entrymat', 4.6, 1.0)
     put('glazed', 3.5, 0.14, { note: 'hlavní vstupní dveře' })
     put('exitsign', 3.5, 0.45, { dy: 2.35 })
-    put('glass', 3.5, 2.1, { note: 'zádveří' })
+    // zádveří jako skutečný vestibul: pevná boční skla + prosklené dveře
+    // uprostřed, které se před postavou samy otevřou (jediná cesta dál)
+    put('sidelight', 1.75, 2.1)
+    put('sidelight', 5.25, 2.1)
+    put('glazed', 3.5, 2.1, { note: 'vnitřní dveře zádveří' })
     put('sidelight', 2.62, 1.1, { rot: 90 })
     put('sidelight', 4.38, 1.1, { rot: 90 })
     put('reception', 2.4, 3.7)

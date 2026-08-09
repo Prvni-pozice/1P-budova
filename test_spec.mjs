@@ -396,6 +396,14 @@ const stray = terms.filter((r) => {
 })
 ok(stray.length === 0, 'žádná koncovka nekončí mimo svůj blok', `${stray.length}`)
 
+console.log('\nEKONOMIKA')
+const eco = SPEC.economy
+const badIds = Object.keys(eco.revenue).filter((id) => !SPEC.blocks.some((b) => b.id === id))
+ok(badIds.length === 0, 'výnosy jen pro existující bloky', badIds.join(', ') || `${Object.keys(eco.revenue).length} bloků`)
+const revSum = Object.values(eco.revenue).reduce((a2, v) => a2 + v, 0)
+ok(revSum === 4376000, 'součet výnosů sedí na rozvahu 4,376 mil.', `${revSum.toLocaleString('cs-CZ')}`)
+ok(eco.costsTotal === 2970000 && revSum > eco.costsTotal, 'náklady 2,97 mil. a kladný zisk')
+
 console.log('\nPŘEPOČET PO ZMĚNĚ')
 const bigger = structuredClone(SPEC)
 const arena = bigger.blocks.find((b) => b.id === 'arena')

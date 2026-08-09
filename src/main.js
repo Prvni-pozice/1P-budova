@@ -93,7 +93,8 @@ function rebuild() {
   floors = [
     ...built.groups.ground.children,
     ...built.groups.slabs.children.filter((c) => !c.userData.rail),
-    ...built.groups.furniture.children.filter((c) => c.userData.item?.kind === 'stairs'),
+    ...built.groups.furniture.children.filter((c) =>
+      c.userData.item?.kind === 'stairs' || c.userData.item?.kind === 'tramp'),
   ]
   // co zastavuje kameru (stěny, střecha, stropy) — zábradlí ne
   camBlockers = [
@@ -104,8 +105,10 @@ function rebuild() {
   ]
   doorMeshes = built.groups.furniture.children.filter((c) => c.userData.doorPivot)
   // pevné překážky pro postavu: vyšší kusy nábytku; dveřmi a sítěmi se prochází
+  // skla, sítě i posuvná příčka jsou PEVNÉ — projít jde jen dveřmi;
+  // trampolína není překážka, ale podlaha (skáče se na ni, viz floors)
   const SOLID_SKIP = new Set(['stairs', 'door', 'double', 'glazed', 'service', 'escape',
-    'entrymat', 'mat', 'floordrain', 'net', 'glass', 'partition', 'diffuser', 'light',
+    'entrymat', 'mat', 'floordrain', 'diffuser', 'light', 'tramp',
     'emlight', 'smoke', 'co2', 'exitsign', 'picture', 'hoist', 'aircurtain'])
   solids = built.fit.items
     .filter((it) => FURN[it.kind] && FURN[it.kind].h >= 0.55 && !SOLID_SKIP.has(it.kind))
@@ -127,7 +130,8 @@ function rebuild() {
 // -------------------------------------------------------------------- vrstvy
 const $ = (id) => document.getElementById(id)
 const chk = { blocks: $('ly-blocks'), labels: $('ly-labels'), structure: $('ly-structure'),
-  furniture: $('ly-furniture'), pv: $('ly-pv'), site: $('ly-site'), stage2: $('ly-stage2') }
+  furniture: $('ly-furniture'), pv: $('ly-pv'), site: $('ly-site'),
+  econ: $('ly-econ'), stage2: $('ly-stage2') }
 
 function levelVisible(b) {
   if (levelFilter === 'all') return true
@@ -148,6 +152,7 @@ function applyLayers() {
   g.labels.visible = chk.labels.checked
   g.structure.visible = chk.structure.checked
   g.pv.visible = chk.pv.checked
+  g.econ.visible = chk.econ.checked
   g.furniture.visible = chk.furniture.checked
   for (const c of g.partitions.children) {
     c.visible = levelFilter === 'all' || String(c.userData.level) === levelFilter
@@ -244,7 +249,8 @@ group(['cam-orbit', 'cam-walk', 'cam-gta'], (i) => setMode(['orbit', 'walk', 'gt
 
 // ------------------------------------------------------ procházka a postava
 const walk = { on: false, yaw: 0, pitch: 0, keys: new Set() }
-const gta = { on: false, yaw: Math.PI, pitch: 0.35, vy: 0, angle: 0, grounded: true }
+const gta = { on: false, yaw: Math.PI, pitch: 0.35, vy: 0, angle: 0, grounded: true,
+  flip: 0, flipDir: 1, flipping: false }
 const hint = $('hint')
 hint.textContent = HINT_ORBIT
 
@@ -472,20 +478,49 @@ function gtaTick(dt) {
   downRay.set(new THREE.Vector3(pos.x, pos.y + 1.2, pos.z), DOWN)
   downRay.far = 60
   let floorY = 0
+  let onTramp = false
   for (const h of downRay.intersectObjects(floors, true)) {
-    if (h.point.y <= pos.y + 0.45) { floorY = h.point.y; break }
+    if (h.point.y <= pos.y + 0.45) {
+      floorY = h.point.y
+      let o = h.object
+      while (o && !o.userData.item) o = o.parent
+      onTramp = o?.userData.item?.kind === 'tramp'
+      break
+    }
   }
 
   gta.vy -= 18 * dt
   pos.y += gta.vy * dt
   if (pos.y <= floorY + 0.02) {
-    pos.y = floorY
-    gta.vy = 0
-    gta.grounded = true
+    if (onTramp) {
+      // trampolína: odraz se saltem, směr se střídá dopředu/dozadu
+      pos.y = floorY
+      gta.vy = 8.2
+      gta.flipping = true
+      gta.flip = 0
+      gta.flipDir = -gta.flipDir
+      gta.grounded = false
+    } else {
+      pos.y = floorY
+      gta.vy = 0
+      gta.grounded = true
+      gta.flipping = false
+      char.group.rotation.x = 0
+    }
   } else {
     gta.grounded = false
   }
   if (gta.grounded && walk.keys.has('Space')) gta.vy = 6
+
+  // salto: otočka o 360° během letu z trampolíny
+  if (gta.flipping) {
+    gta.flip = Math.min(1, gta.flip + dt / 0.85)
+    char.group.rotation.x = gta.flipDir * Math.PI * 2 * gta.flip
+    if (gta.flip >= 1) {
+      char.group.rotation.x = 0
+      gta.flipping = false
+    }
+  }
 
   char.update(dt, moving, speed)
 
@@ -668,7 +703,7 @@ renderer.setAnimationLoop(() => {
       camera.position.addScaledVector(right, joy.x * sp)
     }
     if (walk.keys.has('Space')) camera.position.y += sp
-    if (walk.keys.has('ControlLeft')) camera.position.y -= sp
+    if (walk.keys.has('KeyC') || walk.keys.has('ControlLeft')) camera.position.y -= sp
   } else if (gta.on) {
     gtaTick(dt)
   } else {
