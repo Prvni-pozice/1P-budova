@@ -120,6 +120,20 @@ T.concrete = () => canvasTex(256, (g, s) => {
   }
 }, [0.7, 0.7])
 
+/** antracitový sendvičový panel naležato — spára à 1 m (repeat 1:1 v metrech) */
+T.panelDark = () => canvasTex(256, (g, s) => {
+  g.fillStyle = '#34383e'
+  g.fillRect(0, 0, s, s)
+  noise(g, s, 54, 18, 900)
+  const grad = g.createLinearGradient(0, 0, 0, s)
+  grad.addColorStop(0, 'rgba(255,255,255,0.05)')
+  grad.addColorStop(1, 'rgba(0,0,0,0.10)')
+  g.fillStyle = grad
+  g.fillRect(0, 0, s, s)
+  g.fillStyle = '#24272c'
+  g.fillRect(0, 0, s, 7)              // vodorovná spára panelu
+}, [1, 1])
+
 // ---- sdílené materiály ---------------------------------------------------
 const cacheTex = new Map()
 const baseTex = (name) => {
@@ -136,6 +150,7 @@ export function sharedMat(name, opts = {}) {
       map: baseTex(name), roughness: opts.roughness ?? 0.9,
       metalness: opts.metalness ?? 0, side: opts.side ?? THREE.FrontSide,
     })
+    if (opts.tint) m.color.set(opts.tint)
     m.userData.shared = true
     cacheMat.set(key, m)
   }

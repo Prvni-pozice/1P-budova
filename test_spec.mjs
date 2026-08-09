@@ -367,8 +367,8 @@ const daylight = SPEC.blocks.filter((b) => ['office', 'meeting'].includes(b.type
 ok(daylight.every((b) => b.z0 <= 0.01 || b.x0 <= 0.01),
   'kanceláře a zasedačka mají denní světlo (jih nebo prosklený východ)')
 // dílna: nadsvětlík nad vraty
-ok(openingsFor(SPEC, 'south').some((h) => h.x0 >= 23 && h.v0 > SPEC.gate.height),
-  'dílna má nadsvětlík nad vraty')
+ok(openingsFor(SPEC, 'south').some((h) => h.v0 >= 4.2 && h.x0 <= 23.4 && h.x1 >= 26),
+  'dílna má nadsvětlík v horním pásu nad vraty')
 
 console.log('\nROZVODY KE KONCOVKÁM')
 const terms = mep.routes.filter((r) => r.kind === 'terminal')

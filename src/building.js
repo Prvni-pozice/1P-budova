@@ -110,26 +110,28 @@ export function openingsFor(S, side) {
     const cx = (b.x0 + b.x1) / 2
 
     if (b.type === 'workshop') {
-      out.push({ x0: b.x0 + 0.4, x1: b.x0 + 1.6, v0: 0, v1: 2.2 })              // dveře pro personál
+      out.push({ x0: b.x0 + 0.4, x1: b.x0 + 1.6, v0: 0, v1: 2.0 })              // personál (900/1970)
       const gs = b.x0 + 2.2
       const ge = Math.min(gs + S.gate.width, b.x1 - 0.5)
       if (ge > gs + 1.5) {
         out.push({ x0: gs, x1: ge, v0: 0, v1: S.gate.height })                     // vrata
-        out.push({ x0: gs, x1: ge, v0: S.gate.height + 0.35, v1: S.eaves - 0.55 }) // nadsvětlík
+        // nadsvětlík v jednotném horním pásu fasády (4,3–5,6) přes dveře i vrata
+        out.push({ x0: b.x0 + 0.4, x1: ge, v0: 4.3, v1: 5.6 })
       }
     } else if (b.type === 'lobby') {
       out.push({ x0: cx - 1.5, x1: cx + 1.5, v0: 0, v1: 2.6 })                   // hlavní vstup
-      // zásobování i odpad chodí hlavním vchodem (rozhodnutí 9. 8. — objem je
-      // malý, samostatné dveře zrušeny), okna po stranách vstupu zůstávají
+      out.push({ x0: cx - 1.7, x1: cx + 1.7, v0: 4.1, v1: 5.35 })                 // okno patra v portálu
+      // zásobování zrušeno (9. 8.) — boční okna drží rytmus pásů kanceláří
       if (span > 5) {
-        out.push({ x0: b.x0 + 0.6, x1: cx - 1.8, v0: 1.0, v1: 2.8 })
-        out.push({ x0: cx + 1.8, x1: b.x1 - 0.6, v0: 1.0, v1: 2.8 })
+        out.push({ x0: b.x0 + 0.6, x1: cx - 1.8, v0: 0.9, v1: 2.4 })
+        out.push({ x0: cx + 1.8, x1: b.x1 - 0.6, v0: 0.9, v1: 2.4 })
       }
     } else if (b.type === 'arena') {
       // aréna je shromažďovací prostor — jediná úniková cesta přes lobby nestačí
-      out.push({ x0: b.x0 + 0.3, x1: b.x0 + 1.5, v0: 0, v1: 2.2 })               // únikový východ
-      const w = Math.min(4, span - 3)
-      out.push({ x0: cx - w / 2, x1: cx + w / 2, v0: 1.0, v1: 4.4 })             // prosklení do arény
+      out.push({ x0: b.x0 + 0.3, x1: b.x0 + 1.5, v0: 0, v1: 2.0 })               // únik (900/1970)
+      // v2.2: žádný výklad — stejná okna jako kanceláře, jednotný rytmus fasády
+      out.push({ x0: b.x0 + 1.9, x1: b.x1 - 1.2, v0: 0.9, v1: 2.4 })
+      out.push({ x0: b.x0 + 1.9, x1: b.x1 - 1.2, v0: 4.3, v1: 5.6 })
     } else if (b.type === 'plant') {
       out.push({ x0: cx - 1.9, x1: cx - 0.4, v0: 2.2, v1: 3.7 })                 // žaluzie sání
       out.push({ x0: cx + 0.4, x1: cx + 1.9, v0: 2.2, v1: 3.7 })                 // žaluzie výfuk
@@ -546,7 +548,7 @@ export function buildAll(spec, mep) {
   const northHoles = openingsFor(S, 'north')
   const southHoles = openingsFor(S, 'south')
 
-  const shellMat = sharedMat('plaster', { side: THREE.DoubleSide, roughness: 0.85 })
+  const shellMat = sharedMat('panelDark', { side: THREE.DoubleSide, roughness: 0.85 })
 
   const addWall = (name, geom, ax, az, dx, dz, outward, mat = shellMat) => {
     const m = new THREE.Mesh(geom, mat.clone())
@@ -574,7 +576,7 @@ export function buildAll(spec, mep) {
     0, S.depth - t / 2, 1, 0, [0, 0, 1])
 
   // Západní štít etapy 1 — DOČASNÝ, demontovatelný (jiný odstín)
-  const tempMat = new THREE.MeshStandardMaterial({ color: 0xb9aa96, roughness: 0.9, side: THREE.DoubleSide })
+  const tempMat = new THREE.MeshStandardMaterial({ color: 0x484d54, roughness: 0.9, side: THREE.DoubleSide })
   addWall('západ (dočasný štít)',
     wallGeom([[0, 0], [S.depth, 0], [S.depth, S.eaves], [S.depth / 2, ridge], [0, S.eaves]], [], t),
     S.stage1 - t / 2, S.depth, 0, -1, [1, 0, 0], tempMat)
@@ -925,41 +927,57 @@ export function buildAll(spec, mep) {
 
   const lobbyB = S.blocks.find((b) => b.type === 'lobby')
   if (lobbyB) {
+    // ---- vstupní portál v2.2: bílý rám s limetkovým ostěním (jediná barva
+    // na antracitové hale), bílá markýza s limetkovou hranou, logo 1P ----
     const cx = (lobbyB.x0 + lobbyB.x1) / 2
-    const canopy = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.14, 1.7), siteMat(0x3a3f47))
-    canopy.position.set(cx, 2.85, -0.95)
-    canopy.castShadow = true
-    groups.site.add(canopy)
-    for (const sx of [-1.6, 1.6]) {
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.85, 0.1), siteMat(0x3a3f47))
-      post.position.set(cx + sx, 1.42, -1.6)
-      groups.site.add(post)
+    const whiteM = new THREE.MeshStandardMaterial({ color: 0xf4f2ee, roughness: 0.6 })
+    whiteM.userData.shared = true
+    const limeM = new THREE.MeshStandardMaterial({ color: 0xbfe32e, roughness: 0.45 })
+    limeM.userData.shared = true
+    const portal = (geo, x, y, z) => {
+      const m = new THREE.Mesh(geo, whiteM)
+      m.position.set(x, y, z)
+      m.castShadow = true
+      m.userData.outward = new THREE.Vector3(0, 0, -1)
+      m.userData.baseOpacity = 1
+      groups.shell.add(m)
+      walls.push(m)
+      return m
     }
-    const sign = labelSprite('1P', 'recepce · jump aréna')
-    sign.position.set(cx, 3.6, -0.9)
-    groups.site.add(sign)
-  }
-
-  // chodník podél jižní fasády + spojka od parkoviště k hlavnímu vstupu
-  const paveMat = siteMat(0xb9b4a8)
-  const walk1 = new THREE.Mesh(new THREE.BoxGeometry(S.stage1 + 0.6, 0.06, 1.5), paveMat)
-  walk1.position.set(S.stage1 / 2, 0.03, -1.1)
-  walk1.receiveShadow = true
-  groups.site.add(walk1)
-  const walk2 = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.06, 2.3), paveMat)
-  walk2.position.set(10.5, 0.03, -2.95)
-  groups.site.add(walk2)
-  // lavičky před vstupem
-  for (const bx of [6.9, 14.1]) {
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.08, 0.45), siteMat(0x8a6a42))
-    seat.position.set(bx, 0.45, -2.2)
-    seat.castShadow = true
-    groups.site.add(seat)
-    for (const lx of [-0.7, 0.7]) {
-      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 0.4), siteMat(0x4c5157))
-      leg.position.set(bx + lx, 0.22, -2.2)
-      groups.site.add(leg)
+    portal(new THREE.BoxGeometry(0.38, 6.15, 0.34), cx - 1.86, 3.07, -0.16)   // pilíř západ
+    portal(new THREE.BoxGeometry(0.38, 6.15, 0.34), cx + 1.86, 3.07, -0.16)   // pilíř východ
+    portal(new THREE.BoxGeometry(4.1, 0.45, 0.34), cx, 5.93, -0.16)           // překlad
+    const limePc = (geo, x, y, z) => {
+      const m = portal(geo, x, y, z)
+      m.material = limeM
+      return m
     }
+    limePc(new THREE.BoxGeometry(0.1, 5.5, 0.08), cx - 1.62, 2.85, -0.35)     // limetkové ostění
+    limePc(new THREE.BoxGeometry(0.1, 5.5, 0.08), cx + 1.62, 2.85, -0.35)
+    limePc(new THREE.BoxGeometry(3.34, 0.1, 0.08), cx, 5.65, -0.35)
+    // markýza bílá s limetkovou hranou
+    const canopy = portal(new THREE.BoxGeometry(4.0, 0.14, 1.7), cx, 2.9, -0.92)
+    limePc(new THREE.BoxGeometry(4.0, 0.05, 0.07), cx, 2.8, -1.74)
+    // logo 1P na překladu — limetka na antracitu
+    const lc = document.createElement('canvas')
+    lc.width = 256; lc.height = 128
+    const lg = lc.getContext('2d')
+    lg.fillStyle = '#f4f2ee'
+    lg.fillRect(0, 0, 256, 128)
+    lg.fillStyle = '#9bbf10'
+    lg.font = '900 96px system-ui'
+    lg.textAlign = 'center'
+    lg.fillText('1P', 128, 96)
+    const ltex = new THREE.CanvasTexture(lc)
+    ltex.colorSpace = THREE.SRGBColorSpace
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.65),
+      new THREE.MeshBasicMaterial({ map: ltex }))
+    sign.position.set(cx, 5.05, -0.36)
+    sign.rotation.y = Math.PI
+    sign.userData.outward = new THREE.Vector3(0, 0, -1)
+    sign.userData.baseOpacity = 1
+    groups.shell.add(sign)
+    walls.push(sign)
   }
 
   const bins = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.25, 1.1), siteMat(0x5a6169))
