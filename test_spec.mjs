@@ -259,13 +259,13 @@ const meet = SPEC.blocks.find((b) => b.id === 'meeting')
 ok(corr && touching(corr, meet), 'zasedačka má dveře do chodby, ne přes rezervu')
 
 const doors = openingsFor(SPEC, 'south').filter((h) => h.v0 === 0)
-ok(doors.length >= 5, 'jižní stěna má dost dveří pro únik i zásobování', `${doors.length}`)
+ok(doors.length >= 4, 'jižní stěna: vstup, únik arény, personál dílny, vrata', `${doors.length}`)
 const arenaB = SPEC.blocks.find((b) => b.id === 'arena')
 ok(doors.some((h) => h.x0 >= arenaB.x0 - 0.1 && h.x1 <= arenaB.x1 + 0.1),
   'aréna má vlastní únikový východ, nejen cestu přes lobby')
 const lobbyB = SPEC.blocks.find((b) => b.id === 'lobby')
-ok(doors.filter((h) => h.x0 >= lobbyB.x0 - 0.1 && h.x1 <= lobbyB.x1 + 0.1).length >= 2,
-  'lobby má hlavní vchod i zásobovací dveře')
+ok(doors.filter((h) => h.x0 >= lobbyB.x0 - 0.1 && h.x1 <= lobbyB.x1 + 0.1).length === 1,
+  'lobby má jen hlavní vchod (zásobování zrušeno 9. 8.)')
 ok(fit.items.some((it) => it.kind === 'cleansink' && it.block === 'gym'),
   'úklidová výlevka je i v patře')
 

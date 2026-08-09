@@ -307,7 +307,6 @@ const LAYOUTS = {
     put('entrymat', 4.6, 1.0)
     put('glazed', 3.5, 0.14, { note: 'hlavní vstupní dveře' })
     put('exitsign', 3.5, 0.45, { dy: 2.35 })
-    put('service', 1.2, 0.14, { note: 'zásobování' })
     put('glass', 3.5, 2.1, { note: 'zádveří' })
     put('sidelight', 2.62, 1.1, { rot: 90 })
     put('sidelight', 4.38, 1.1, { rot: 90 })

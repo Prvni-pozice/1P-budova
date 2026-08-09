@@ -119,9 +119,10 @@ export function openingsFor(S, side) {
       }
     } else if (b.type === 'lobby') {
       out.push({ x0: cx - 1.5, x1: cx + 1.5, v0: 0, v1: 2.6 })                   // hlavní vstup
+      // zásobování i odpad chodí hlavním vchodem (rozhodnutí 9. 8. — objem je
+      // malý, samostatné dveře zrušeny), okna po stranách vstupu zůstávají
       if (span > 5) {
-        // zásobování baru a odpad NESMÍ chodit hlavním vchodem přes lobby plné dětí
-        out.push({ x0: b.x0 + 0.6, x1: b.x0 + 1.8, v0: 0, v1: 2.2 })             // zásobovací dveře
+        out.push({ x0: b.x0 + 0.6, x1: cx - 1.8, v0: 1.0, v1: 2.8 })
         out.push({ x0: cx + 1.8, x1: b.x1 - 0.6, v0: 1.0, v1: 2.8 })
       }
     } else if (b.type === 'arena') {
@@ -964,7 +965,7 @@ export function buildAll(spec, mep) {
   const bins = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.25, 1.1), siteMat(0x5a6169))
   bins.position.set(6.6, 0.63, -1.6)
   bins.castShadow = true
-  groups.site.add(bins)                                // odpad u zásobovacích dveří, mimo stání
+  groups.site.add(bins)                                // odpad — vynáší se hlavním vchodem
 
   const retention = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.1, 3.0), siteMat(0x3f6f8f, 0.5))
   retention.position.set(34, 0.05, -5.0)
