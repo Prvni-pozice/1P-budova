@@ -66,19 +66,20 @@ function tube(points, radius, color) {
 }
 
 function labelSprite(title, sub) {
+  // dvojnásobné rozlišení plátna, ať je text při větším měřítku ostrý
   const c = document.createElement('canvas')
-  c.width = 512; c.height = 160
+  c.width = 1024; c.height = 320
   const g = c.getContext('2d')
   g.fillStyle = 'rgba(18,16,24,0.82)'
-  g.roundRect(6, 6, 500, 148, 18); g.fill()
-  g.strokeStyle = 'rgba(255,255,255,0.28)'; g.lineWidth = 2; g.stroke()
+  g.roundRect(12, 12, 1000, 296, 36); g.fill()
+  g.strokeStyle = 'rgba(255,255,255,0.28)'; g.lineWidth = 4; g.stroke()
   g.textAlign = 'center'
   g.fillStyle = '#fff'
-  g.font = 'bold 46px system-ui, sans-serif'
-  g.fillText(title, 256, 68)
+  g.font = 'bold 92px system-ui, sans-serif'
+  g.fillText(title, 512, 136)
   g.fillStyle = '#ffd7a8'
-  g.font = '38px system-ui, sans-serif'
-  g.fillText(sub, 256, 122)
+  g.font = '76px system-ui, sans-serif'
+  g.fillText(sub, 512, 244)
   const tex = new THREE.CanvasTexture(c)
   tex.colorSpace = THREE.SRGBColorSpace
   // depthTest zapnutý schválně: popisky se objeví teprve až se obálka otevře,
@@ -88,7 +89,7 @@ function labelSprite(title, sub) {
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({
     map: tex, transparent: true, depthWrite: false, sizeAttenuation: false,
   }))
-  sp.scale.set(0.115, 0.036, 1)
+  sp.scale.set(0.23, 0.072, 1)
   return sp
 }
 
