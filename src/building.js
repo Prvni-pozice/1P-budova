@@ -578,33 +578,57 @@ export function buildAll(spec, mep) {
     wallGeom([[0, 0], [S.depth, 0], [S.depth, S.eaves], [S.depth / 2, ridge], [0, S.eaves]], [], t),
     S.stage1 - t / 2, S.depth, 0, -1, [1, 0, 0], tempMat)
 
-  // Východní průčelí = celoprosklené (rám + sklo)
+  // Východní průčelí — schválený návrh: prosklení jen PO OKAP, štítový
+  // trojúhelník v antracitovém panelu (šikmé zasklení je drahé a špinavé),
+  // přiznaný mezipatrový pás, sloupky à 1,5 m (po 4,5 m zesílené) a dubové
+  // slunolamy na jižní třetině proti nízkému rannímu slunci.
   const glassMat = new THREE.MeshPhysicalMaterial({
     color: 0x9fd4e8, roughness: 0.08, metalness: 0, transmission: 0.72,
     transparent: true, opacity: 0.5, side: THREE.DoubleSide,
   })
   const east = new THREE.Mesh(
-    wallGeom([[0, 0], [S.depth, 0], [S.depth, S.eaves], [S.depth / 2, ridge], [0, S.eaves]], [], 0.06),
+    wallGeom([[0, 0], [S.depth, 0], [S.depth, S.eaves], [0, S.eaves]], [], 0.06),
     glassMat,
   )
   placeWall(east, t / 2, 0, 0, 1)
   east.userData.outward = new THREE.Vector3(-1, 0, 0)
   east.userData.baseOpacity = 0.5
-  east.name = 'východní průčelí (prosklené)'
+  east.name = 'východní průčelí (prosklené po okap)'
   groups.glass.add(east)
   walls.push(east)
 
-  const mullMat = new THREE.MeshStandardMaterial({ color: 0x3a3f47, roughness: 0.6, metalness: 0.4 })
-  for (let z = 3; z < S.depth; z += 3) {
-    const h = roofY(S, z)
-    const m = new THREE.Mesh(new THREE.BoxGeometry(0.16, h, 0.16), mullMat)
-    m.position.set(t / 2, h / 2, z)
+  // štít v antracitu — patří k plášti, s cutaway mizí jako stěna
+  const gableMat = new THREE.MeshStandardMaterial({ color: 0x33373d, roughness: 0.8, side: THREE.DoubleSide })
+  addWall('východní štít (antracit)',
+    wallGeom([[0, S.eaves], [S.depth, S.eaves], [S.depth / 2, ridge]], [], t),
+    t / 2, 0, 0, 1, [-1, 0, 0], gableMat)
+
+  const mullMat = new THREE.MeshStandardMaterial({ color: 0x33373d, roughness: 0.55, metalness: 0.35 })
+  mullMat.userData.shared = true
+  // sloupky à 1,5 m, každý třetí zesílený
+  for (let z = 1.5; z < S.depth; z += 1.5) {
+    const heavy = Math.abs(z % 4.5) < 0.01
+    const m = new THREE.Mesh(new THREE.BoxGeometry(heavy ? 0.22 : 0.12, S.eaves, heavy ? 0.22 : 0.12), mullMat)
+    m.position.set(t / 2, S.eaves / 2, z)
     groups.glass.add(m)
   }
-  for (const y of [S.clearGF + S.slab / 2, S.eaves - 0.1]) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, S.depth), mullMat)
-    m.position.set(t / 2, y, S.depth / 2)
-    groups.glass.add(m)
+  // mezipatrový pás — přiznaná deska patra
+  const band = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, S.depth), mullMat)
+  band.position.set(t / 2, S.clearGF + S.slab / 2 + 0.04, S.depth / 2)
+  groups.glass.add(band)
+  // horní paždík pod okapem
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, S.depth), mullMat)
+  head.position.set(t / 2, S.eaves - 0.1, S.depth / 2)
+  groups.glass.add(head)
+
+  // dubové slunolamy à 0,75 m na jižní třetině (z 0–6; z=0 je jih)
+  const finMat = new THREE.MeshStandardMaterial({ color: 0xb0793f, roughness: 0.75 })
+  finMat.userData.shared = true
+  for (let z = 0.4; z <= 6.0; z += 0.75) {
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.3, S.eaves - 0.1, 0.06), finMat)
+    fin.position.set(-0.38, (S.eaves - 0.1) / 2, z)
+    fin.castShadow = true
+    groups.glass.add(fin)
   }
 
   // --- střecha ---
