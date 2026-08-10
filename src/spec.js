@@ -51,7 +51,7 @@ export const SPEC = {
   compartments: {
     office: ['office-gf', 'commons', 'wc-gf', 'office-1f', 'meeting', 'reserve', 'corridor'],
     public: ['arena', 'lobby', 'wetcore', 'play', 'gym', 'sim'],
-    tech:   ['workshop', 'plant', 'storage'],
+    tech:   ['workshop', 'plant', 'store-gf'],
   },
 
   // Otvory v příčkách mimo dveře (výtahová šachta prochází stěnou office–lobby)
@@ -68,15 +68,15 @@ export const SPEC = {
   // dveřmi a vraty z jihu, do veřejné části z ní nevede nic.
   //   at = poloha po délce společné hrany (jinak střed)
   links: [
-    { a: 'office-gf', b: 'wc-gf',    type: 'door',    at: 2.4,  note: 'jediné uzavřené dveře v komunitní zóně' },
+    { a: 'office-gf', b: 'wc-gf',    type: 'door',    at: 5.0,  note: 'jediné uzavřené dveře v komunitní zóně' },
     { a: 'office-gf', b: 'lobby',    type: 'door',    at: 11.4, note: 'kanceláře do lobby' },
     { a: 'lobby',     b: 'wetcore',  type: 'double',  at: 8.5,  note: 'veřejnost na WC' },
     { a: 'lobby',     b: 'arena',    type: 'glazed',  at: 1.5,  note: 'vstup do arény, do vstupní uličky' },
-    { a: 'workshop',  b: 'plant',    type: 'service', at: 27.0, note: 'jediné propojení dílny' },
+    { a: 'workshop',  b: 'store-gf', type: 'service', at: 24.0, note: 'jediné vnitřní propojení technické zóny' },
     { a: 'corridor',  b: 'office-1f', type: 'door',   at: 4.0 },
     { a: 'corridor',  b: 'reserve',  type: 'door',    at: 6.0,  note: 'samostatný vstup do pronájmu' },
     { a: 'corridor',  b: 'meeting',  type: 'double',  at: 16.6 },
-    { a: 'corridor',  b: 'gym',      type: 'escape',  at: 5.2,  note: 'požární, druhá úniková cesta z fitness' },
+    { a: 'corridor',  b: 'gym',      type: 'double',  at: 5.2,  note: 'vstup do chodby přímo u výstupu schodiště; slouží i jako úniková' },
     { a: 'gym',       b: 'sim',      type: 'door',    at: 12.0 },
   ],
 
@@ -88,7 +88,7 @@ export const SPEC = {
     revenue: {
       arena: 2400000, lobby: 750000,        // aréna + bar = 3,15 mil.
       gym: 330000, sim: 300000,
-      workshop: 200000, storage: 50000,     // dílna vč. skladu = 0,25 mil.
+      workshop: 200000, 'store-gf': 50000,  // dílna vč. skladu = 0,25 mil.
       'office-gf': 120000, 'office-1f': 60000, meeting: 60000, commons: 32000,
       reserve: 74000,
     },
@@ -101,12 +101,12 @@ export const SPEC = {
     // zóna se dvěma typy sezení, kuchyňský kout volně u stěn, lounge.
     // Uzavřené jsou JEN záchody v severozápadním rohu.
     { id: 'office-gf', name: 'Komunitní prostor',   type: 'office',   level: 0, x0: 0,  x1: 7,  z0: 0,    z1: 14.6 },
-    { id: 'commons',   name: 'Kuchyňský kout',      type: 'lobby',    level: 0, x0: 3,  x1: 7,  z0: 14.6, z1: 18 },
-    { id: 'wc-gf',     name: 'WC',                  type: 'wet',      level: 0, x0: 0,  x1: 3,  z0: 14.6, z1: 18 },
+    { id: 'commons',   name: 'Kuchyňský kout',      type: 'lobby',    level: 0, x0: 0,  x1: 4,  z0: 14.6, z1: 18 },
+    { id: 'wc-gf',     name: 'WC',                  type: 'wet',      level: 0, x0: 4,  x1: 7,  z0: 14.6, z1: 18 },
     { id: 'wetcore',   name: 'Šatny + sprchy + WC', type: 'wet',      level: 0, x0: 7,  x1: 14, z0: 12, z1: 18 },
     { id: 'lobby',     name: 'Lobby / recepce / bar', type: 'lobby',  level: 0, x0: 7,  x1: 14, z0: 0,  z1: 12 },
     { id: 'arena',     name: 'Jump aréna',          type: 'arena',    level: 'full', x0: 14, x1: 21, z0: 0, z1: 18 },
-    { id: 'plant',     name: 'Strojovna',           type: 'plant',    level: 0, x0: 21, x1: 28, z0: 13, z1: 18 },
+    { id: 'store-gf',  name: 'Sklad',               type: 'storage',  level: 0, x0: 21, x1: 28, z0: 13, z1: 18 },
     { id: 'workshop',  name: 'Sdílená dílna',       type: 'workshop', level: 'full', x0: 21, x1: 28, z0: 0, z1: 13 },
 
     // ---- patro (322 m²) ----
@@ -123,7 +123,7 @@ export const SPEC = {
     { id: 'gym',       name: 'Fitness',             type: 'gym',      level: 1, x0: 7,  x1: 14, z0: 0,  z1: 12 },
     { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 7,  x1: 14, z0: 12, z1: 18 },
     { id: 'play',      name: 'Dětské atrakce',      type: 'play',     level: 1, x0: 14, x1: 21, z0: 15, z1: 18 },
-    { id: 'storage',   name: 'Sklad nad dílnou',    type: 'storage',  level: 1, x0: 21, x1: 28, z0: 6,  z1: 13 },
+    { id: 'plant',     name: 'Technická místnost',  type: 'plant',    level: 1, x0: 21, x1: 28, z0: 13, z1: 18 },
   ],
 }
 

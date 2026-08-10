@@ -5,7 +5,7 @@
 // (u podél x, v podél z), takže když se blok posune, vybavení jde s ním.
 // Položka, která by po zmenšení bloku vypadla ven, se zahodí.
 
-import { levelBase, TYPES } from './spec.js'
+import { levelBase, TYPES, blockHeight } from './spec.js'
 
 const TYPES_VZT = Object.fromEntries(Object.entries(TYPES).map(([k, v]) => [k, v.vzt]))
 
@@ -72,7 +72,7 @@ export const FURN = {
   tyrerack:   { w: 1.60, d: 0.60, h: 2.00, color: 0x3f4a52, shape: 'rack',    label: 'Regál na pneu' },
   oildrum:    { w: 0.62, d: 0.62, h: 0.90, color: 0x4a5a3a, shape: 'cyl',     label: 'Sud na olej' },
   airreel:    { w: 0.45, d: 0.30, h: 0.45, color: 0x6a7078, shape: 'box',     label: 'Naviják na vzduch' },
-  hoist:      { w: 1.00, d: 1.80, h: 0.30, color: 0xc9a227, shape: 'box',     label: 'Nakládací otvor s kladkostrojem' },
+  tyreloft:   { w: 3.20, d: 1.60, h: 0.55, color: 0x3f4a52, shape: 'rack',    label: 'Závěsný sklad pneu' },
   palrack:    { w: 2.70, d: 1.10, h: 2.40, color: 0x9c7b4f, shape: 'rack',    label: 'Paletový regál' },
 
   ahu:        { w: 3.00, d: 1.60, h: 2.00, color: 0x7fd4ff, shape: 'box',     label: 'VZT jednotka' },
@@ -146,7 +146,6 @@ export const SVC = {
   workbench:  { svc: ['elec'], conn: 0.90 },
   compressor: { svc: ['elec'], conn: 0.40 },
   carlift:    { svc: ['elec'], conn: 0.60 },       // 400 V
-  hoist:      { svc: ['elec'], conn: 0.30 },
   elevator:   { svc: ['elec'], conn: 1.20 },
   airreel:    { svc: ['elec'], conn: 0.40 },
   diffuser:   { svc: ['vzt'], conn: null },        // napojení shora, řeší mep.js
@@ -251,15 +250,15 @@ const LAYOUTS = {
       seat(2.2 + du, 9.0, 2.2 + du, 9.7)
     }
     // typ 3: lounge — pohovky se stolkem
-    put('sofa', 1.0, 13.0, { rot: 90 })
-    put('sofa', 4.0, 13.6, { rot: 180 })
-    put('rtable', 2.5, 13.2)
+    put('sofa', 0.95, 12.9, { rot: 90 })
+    put('sofa', 2.55, 14.05, { rot: 180 })
+    put('rtable', 2.2, 12.9)
     // vybavení volně při stěnách, ať prostor působí společně
     row('sideboard', 1.2, 0.35, 4, 0.9)
     row('cabinet', 6.55, 1.6, 3, 0.9, { along: 'v', rot: 90 })
     put('pod', 5.7, 5.7, { note: 'akustická budka na hovory' })
     put('rack19', 6.55, 4.1, { rot: 90, note: 'uzamykatelná serverová skříň' })
-    put('printer3d', 5.9, 13.9, { note: 'sdílená tiskárna' })
+    put('printer3d', 6.55, 12.6, { rot: 90, note: 'sdílená tiskárna' })
     put('elevator', 6.3, 9.0, { note: 'bezbariérový přístup do patra' })
     return items
   },
@@ -294,12 +293,12 @@ const LAYOUTS = {
   commons: (S, b) => {
     const { items, put, row, seat } = maker(S, b)
     // kuchyňský kout volně u stěn — bez dveří, teče do komunitního prostoru
-    put('kitchen', 2.0, 3.0)
-    put('fridge', 3.55, 3.0)
-    put('hightable', 2.75, 1.1, { note: 'jídelní stůl' })
+    put('kitchen', 2.15, 3.0)
+    put('fridge', 3.68, 2.95)
+    put('hightable', 1.15, 1.0, { note: 'jídelní stůl u proskleného štítu' })
     for (const du of [-0.7, 0.7]) {
-      seat(2.75 + du, 1.8, 2.75 + du, 1.1)
-      seat(2.75 + du, 0.45, 2.75 + du, 1.1)
+      seat(1.15 + du, 1.7, 1.15 + du, 1.0)
+      seat(1.15 + du, 0.35, 1.15 + du, 1.0)
     }
     return items
   },
@@ -308,7 +307,7 @@ const LAYOUTS = {
     // jediná uzavřená část komunitní zóny; dveře jsou u východní stěny
     const sOff = sanitaryFor(P.office.staffTarget)
     row('wc', 0.75, 2.55, sOff.wcW + sOff.wcM, 1.0, { rot: 180 })
-    put('urinal', 0.35, 0.9, { rot: 270 })
+    put('urinal', 0.35, 1.5, { rot: 270 })
     row('basin', 2.7, 1.7, sOff.basins, 0.7, { along: 'v', rot: 90 })
     return items
   },
@@ -344,8 +343,8 @@ const LAYOUTS = {
     // 3 patra po 10 sloupcích; rodiny sdílejí, na 40 lidí ve špičce to stačí
     row('valuebox', 6.6, 6.0, 10, 0.32, { along: 'v', rot: 90, note: 'cennosti, 3 patra' })
     // schodiště podél západní stěny — přes severní konec se to nemačká
-    put('stairs', 0.75, 8.2, { note: 'sdílené schodiště do patra (fitness, sim racing i kanceláře přes chodbu)' })
-    put('cleaning', 0.75, 9.9, { note: 'úklidová komora pod vysokým koncem schodiště' })
+    put('stairs', 0.75, 8.2, { rot: 180, note: 'výstup na jih — přímo u dveří do chodby' })
+    put('cleaning', 0.75, 6.4, { note: 'úklidová komora pod vysokým koncem schodiště' })
     // dva sloupce; řady 2,4 m od sebe, jinak židle zády k sobě kolidují.
     // U řady u příčky se severní židle vynechává.
     for (const u of [2.7, 5.1]) {
@@ -473,22 +472,21 @@ const LAYOUTS = {
     row('workbench', 1.3, 6.6, P.workshop.benches, 2.1, { along: 'v', rot: 90 })
     row('toolchest', 0.6, 2.2, 2, 1.45, { along: 'v', rot: 90 })
     row('toolcart', 0.55, 5.9, 2, 1.1, { along: 'v' })
-    row('partshelf', 1.8, 12.3, 2, 2.2)
-    put('tyrerack', 0.65, 10.9, { rot: 90 })
     put('oildrum', 6.6, 5.3)
     put('compressor', 6.6, 6.2)
     put('airreel', 6.6, 3.4, { rot: 270, dy: 1.2 })
     put('aircurtain', 4.2, 0.5, { dy: 4.15, note: 'nad vraty — jinak se při každém vjezdu vytopí ven' })
     put('cleansink', 0.4, 12.6, { rot: 270 })
-    put('stairs', 6.3, 9.4, { note: 'na sklad' })
+    put('tyreloft', 4.2, 2.4, { dy: 4.5, note: 'závěsný sklad pneu nad zvedákem' })
     return items
   },
-  storage: (S, b) => {
+  'store-gf': (S, b) => {
     const { items, put, row } = maker(S, b)
-    row('palrack', 1.6, 1.6, 3, 2.4, { along: 'v' })
-    row('palrack', 5.4, 1.6, 3, 2.4, { along: 'v' })
-    // bez nakládacího otvoru se paleta do patra nedostane — po schodech ji nikdo nevynese
-    put('hoist', 3.5, 5.6, { note: 'kladkostroj nad otvorem v uličce mezi regály' })
+    // sklad v přízemí — paletové regály obsluhované vozíkem přímo z dílny
+    row('palrack', 1.75, 4.4, 2, 2.9)
+    put('palrack', 0.55, 2.4, { rot: 90 })
+    put('partshelf', 4.9, 0.55)
+    put('stairs', 6.3, 2.3, { note: 'do technické místnosti v patře' })
     return items
   },
 
@@ -543,11 +541,20 @@ const DRAINED = { wet: 2, workshop: 2, plant: 1 }
 function derivedFor(S, b) {
   if (b.fitout === 'shell') return []
   const out = []
+  // část půdorysu haly překrytá blokem patra (galerie, mezipatro) nemá strop
+  // u střechy — stropní prvky se tam nesmí generovat
+  const mezz = b.level === 'full'
+    ? S.blocks.filter((o) => o.level === 1
+        && o.x0 < b.x1 && o.x1 > b.x0 && o.z0 < b.z1 && o.z1 > b.z0)
+    : []
+  const underMezz = (x, z) => mezz.some((o) => x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1)
   const base = levelBase(S, b.level === 'full' ? 0 : b.level)
   const w = b.x1 - b.x0
   const d = b.z1 - b.z0
   const a = w * d
-  const ceil = base + (b.level === 'full' ? 4.6 : (b.level === 1 ? S.eaves - base : S.clearGF) - 0.25)
+  const ceil = b.level === 'full'
+    ? blockHeight(S, b) - 0.4
+    : base + (b.level === 1 ? S.eaves - base : S.clearGF) - 0.25
 
   // vyústky: jedna na 400 m³/h, rozmístěné do pravidelné mřížky
   const flow = (TYPES_VZT[b.type] ?? 0) * a
@@ -557,8 +564,10 @@ function derivedFor(S, b) {
   for (let i = 0; i < n; i++) {
     const cx = ((i % cols) + 0.5) / cols
     const cz = (Math.floor(i / cols) + 0.5) / rows
-    out.push({ kind: 'diffuser', block: b.id, x: b.x0 + cx * w, z: b.z0 + cz * d,
-      y: ceil, rot: 0, flow: flow / n })
+    if (!underMezz(b.x0 + cx * w, b.z0 + cz * d)) {
+      out.push({ kind: 'diffuser', block: b.id, x: b.x0 + cx * w, z: b.z0 + cz * d,
+        y: ceil, rot: 0, flow: flow / n })
+    }
   }
 
   // podružný rozvaděč na zónu — kvůli podružnému měření po provozech
@@ -615,7 +624,8 @@ function derivedFor(S, b) {
     for (let i = 0; i < nl; i++) {
       const lx = b.x0 + (((i % lc) + 0.5) / lc) * w
       const lz = b.z0 + ((Math.floor(i / lc) + 0.5) / lr) * d
-      out.push({ kind: 'light', block: b.id, rot: 0, y: ceil + 0.08, x: lx, z: dodgeZ(lx, lz) })
+      const lz2 = dodgeZ(lx, lz)
+      if (!underMezz(lx, lz2)) out.push({ kind: 'light', block: b.id, rot: 0, y: ceil + 0.08, x: lx, z: lz2 })
     }
   }
 
@@ -626,7 +636,8 @@ function derivedFor(S, b) {
     for (let i = 0; i < ns; i++) {
       const sx = b.x0 + ((i + 0.5) / ns) * w
       const sz = b.z0 + Math.min(d - 0.5, d / 2 + 0.85)
-      out.push({ kind: 'smoke', block: b.id, rot: 0, y: ceil, x: sx, z: dodgeZ(sx, sz) })
+      const sz2 = dodgeZ(sx, sz)
+      if (!underMezz(sx, sz2)) out.push({ kind: 'smoke', block: b.id, rot: 0, y: ceil, x: sx, z: sz2 })
     }
   }
 

@@ -9,13 +9,15 @@
 import { SPEC, TYPES, area, levelBase, blockHeight } from './spec.js'
 import { SVC, fitoutAll } from './fitout.js'
 
+// Všechny trasy se drží STROPU (rozestup jen do stran, ne dolů) — svěšené
+// rozvody půl metru pod stropem byly nesmysl. Kanalizace jde v podlaze.
 export const SERVICES = [
-  { key: 'vzt',   name: 'VZT',               color: 0x7fd4ff, dz: 0.0, dy: 0.0,  r: null },
-  { key: 'heat',  name: 'Topení + chlazení', color: 0xff8a4c, dz: 0.7, dy: -0.5, r: 0.075 },
-  { key: 'water', name: 'Voda (SV + TUV)',   color: 0x2ecc71, dz: 1.1, dy: -0.5, r: 0.055 },
-  { key: 'drain', name: 'Kanalizace',        color: 0x9b7653, dz: 0.7, dy: 0.0,  r: 0.095 },
-  { key: 'elec',  name: 'Elektro',           color: 0xffd54f, dz: 1.1, dy: 0.0,  r: 0.06  },
-  { key: 'data',  name: 'Datové rozvody',    color: 0xc084fc, dz: 1.5, dy: 0.0,  r: 0.045 },
+  { key: 'vzt',   name: 'VZT',               color: 0x7fd4ff, dz: 0.0,  r: null },
+  { key: 'heat',  name: 'Topení + chlazení', color: 0xff8a4c, dz: 0.55, r: 0.075 },
+  { key: 'water', name: 'Voda (SV + TUV)',   color: 0x2ecc71, dz: 0.95, r: 0.055 },
+  { key: 'drain', name: 'Kanalizace',        color: 0x9b7653, dz: 0.75, r: 0.095 },
+  { key: 'elec',  name: 'Elektro',           color: 0xffd54f, dz: 1.25, r: 0.06  },
+  { key: 'data',  name: 'Datové rozvody',    color: 0xc084fc, dz: 1.5,  r: 0.045 },
 ]
 
 // průměry koncových větví — poslední metr k zařizovacímu předmětu
@@ -48,11 +50,15 @@ export function blockDemand(b) {
 
 const levelOf = (b) => (b.level === 'full' ? 0 : b.level)
 
-/** Výška páteře v daném podlaží; kanalizace u podlahy. V patře vede páteř
- * POD spodní pásnicí vazníků (5,75 m) — dřív s ní kolidovala. */
+/** Výška trasy: těsně pod stropem daného podlaží, odstupňovaná jen o průměr
+ * potrubí. V patře pod spodní pásnicí vazníků (5,75 m); kanalizace v podlaze. */
+const DROP1 = { vzt: 0.85, heat: 0.6, water: 0.5, elec: 0.4, data: 0.4 }
+const DROP0 = { vzt: 0.45, heat: 0.22, water: 0.16, elec: 0.12, data: 0.1 }
 function spineY(s, level, service) {
-  if (service === 'drain') return 0.15
-  return level === 1 ? s.eaves - 0.85 : s.clearGF - 0.4
+  if (service === 'drain') return 0.12
+  return level === 1
+    ? s.eaves - (DROP1[service] ?? 0.5)
+    : s.clearGF - (DROP0[service] ?? 0.2)
 }
 
 /** Souběžné trasy se odsazují SMĚREM DOVNITŘ od servisní stěny. */
@@ -63,7 +69,7 @@ function tapPoint(s, b) {
   const x = (b.x0 + b.x1) / 2
   const z = Math.min(Math.max(s.spineZ, b.z0), b.z1)
   const base = levelBase(s, levelOf(b))
-  const y = b.level === 'full' ? Math.min(4.6, blockHeight(s, b) - 0.6) : base + blockHeight(s, b) * 0.55
+  const y = b.level === 'full' ? blockHeight(s, b) - 0.5 : base + blockHeight(s, b) * 0.55
   return { x, y, z }
 }
 
@@ -104,23 +110,31 @@ function terminals(s, svcKey, spineZ, items) {
     const lvl = blk.level === 'full' ? 0 : blk.level
     const base = levelBase(s, lvl)
 
+    const full = blk.level === 'full'
+    const highY = full ? blockHeight(s, blk) - 0.45 : null
+
     if (svcKey === 'vzt') {                    // vyústka se napojuje shora
-      const y = spineY(s, lvl, svcKey)
-      out.push({ service: svcKey, kind: 'terminal', block: it.block,
-        radius: Math.max(0.05, ductRadius(it.flow ?? 200)),
-        points: [{ x: it.x, y, z: spineZ }, { x: it.x, y, z: it.z }, { x: it.x, y: it.y, z: it.z }] })
+      const y0 = spineY(s, lvl, svcKey)
+      const runY = full ? highY : y0
+      const r2 = Math.max(0.05, ductRadius(it.flow ?? 200))
+      out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: r2,
+        points: full
+          ? [{ x: it.x, y: y0, z: spineZ }, { x: it.x, y: runY, z: spineZ },
+             { x: it.x, y: runY, z: it.z }, { x: it.x, y: it.y, z: it.z }]
+          : [{ x: it.x, y: y0, z: spineZ }, { x: it.x, y: runY, z: it.z },
+             { x: it.x, y: it.y, z: it.z }] })
       continue
     }
-    const runY = svcKey === 'drain' ? base + 0.12 : spineY(s, lvl, svcKey) - 0.15
-    // vysoko umístěné předměty (svítidla, čidla, clony) se napojují ve své
-    // výšce — pevná kóta od podlahy by ke stropnímu svítidlu svěsila kabel dolů
+    const hug = svcKey === 'elec' || svcKey === 'data' ? 0.05 : 0.12
+    const yLow = svcKey === 'drain' ? base + 0.12 : spineY(s, lvl, svcKey) - hug
+    const runY = svcKey === 'drain' ? yLow : (full ? highY : yLow)
     const connY = it.y > base + 0.3 ? it.y : base + (map.conn ?? 0.4)
-    out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: TERMINAL_R[svcKey],
-      points: [
-        { x: it.x, y: runY, z: spineZ },
-        { x: it.x, y: runY, z: it.z },
-        { x: it.x, y: connY, z: it.z },
-      ] })
+    const pts = full && svcKey !== 'drain'
+      ? [{ x: it.x, y: yLow, z: spineZ }, { x: it.x, y: runY, z: spineZ },
+         { x: it.x, y: runY, z: it.z }, { x: it.x, y: connY, z: it.z }]
+      : [{ x: it.x, y: runY, z: spineZ }, { x: it.x, y: runY, z: it.z },
+         { x: it.x, y: connY, z: it.z }]
+    out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: TERMINAL_R[svcKey], points: pts })
   }
   return out
 }
@@ -144,7 +158,7 @@ export function computeMEP(s = SPEC) {
     }
 
     for (const lvl of levels) {
-      const y = spineY(s, lvl, svc.key) + svc.dy
+      const y = spineY(s, lvl, svc.key)
       const z = s.spineZ + inward(s) * svc.dz
       const xs = blocks.filter((b) => levelOf(b) === lvl).map((b) => (b.x0 + b.x1) / 2)
       const x0 = Math.min(...xs, plantX)
@@ -163,8 +177,11 @@ export function computeMEP(s = SPEC) {
         }
         const t = tapPoint(s, b)
         const br = svc.r ?? ductRadius(blockDemand(b).vzt)
-        routes.push({ service: svc.key, kind: 'branch', color: svc.color, radius: br, block: b.id,
-          points: [{ x: t.x, y, z }, { x: t.x, y, z: t.z }, { x: t.x, y: t.y, z: t.z }] })
+        // v hale s plnou výškou odbočka stoupne hned u páteře a běží nahoře
+        const pts = b.level === 'full'
+          ? [{ x: t.x, y, z }, { x: t.x, y: t.y, z }, { x: t.x, y: t.y, z: t.z }]
+          : [{ x: t.x, y, z }, { x: t.x, y, z: t.z }, { x: t.x, y: t.y, z: t.z }]
+        routes.push({ service: svc.key, kind: 'branch', color: svc.color, radius: br, block: b.id, points: pts })
       }
     }
 
@@ -173,8 +190,8 @@ export function computeMEP(s = SPEC) {
       const z = s.spineZ + inward(s) * svc.dz
       routes.push({ service: svc.key, kind: 'riser', color: svc.color, radius: svc.r ?? ductRadius(flowByLevel[1] ?? 0),
         points: [
-          { x: plantX, y: spineY(s, 0, svc.key) + svc.dy, z },
-          { x: plantX, y: spineY(s, 1, svc.key) + svc.dy, z },
+          { x: plantX, y: spineY(s, 0, svc.key), z },
+          { x: plantX, y: spineY(s, 1, svc.key), z },
         ] })
     }
 

@@ -32,7 +32,7 @@ const a = areaTotals(SPEC)
 console.log('\nPLOCHY')
 ok(Math.abs(a.footprint - 504) < 0.01, 'půdorys etapy 1 = 504 m²', `${a.footprint}`)
 ok(Math.abs(a.gf - 504) < 0.01, 'přízemí zaplňuje půdorys přesně', `${a.gf} m²`)
-ok(Math.abs(a.up - 322) < 0.01, 'patro = 322 m²', `${a.up} m²`)
+ok(Math.abs(a.up - 308) < 0.01, 'patro = 308 m² (technická místnost místo skladu)', `${a.up} m²`)
 ok(a.total >= 750 && a.total <= 850, 'celkem v cílovém pásmu 750–850 m²', `${a.total} m²`)
 
 const cov = coverage(SPEC)
@@ -137,7 +137,6 @@ ok(fit.counts.cage === SPEC.program.gym.cages, 'počet klecí sedí', `${fit.cou
 ok(fit.counts.tramp === SPEC.program.arena.beds, 'trampolíny v běžném rastru 2,10 × 3,05', `${fit.counts.tramp}`)
 ok(fit.counts.foampit === 1, 'molitanová jáma je v aréně')
 ok(fit.counts.car === 2, 'dvě vozidla v dílně — na zvedáku a odstavené', `${fit.counts.car}`)
-ok(fit.counts.hoist === 1, 'sklad má nakládací otvor, jinak tam paletu nikdo nedostane')
 ok(fit.counts.diffuser > 20, 'vyústky VZT odvozené z průtoku', `${fit.counts.diffuser}`)
 ok(fit.counts.extinguisher > 8, 'hasicí přístroje odvozené z plochy', `${fit.counts.extinguisher}`)
 ok(fit.counts.subboard === 4, 'podružný rozvaděč na každou provozní zónu')
@@ -334,12 +333,12 @@ ok(cutOff.length === 0, 'z každé místnosti se dá dojít ven',
   cutOff.length ? cutOff.map((b) => b.id).join(', ') : `${seen.size} místností, vchody: ${[...entrances].join(', ')}`)
 
 // dílna zůstává oddělená od veřejné části
-const tech = new Set(['workshop', 'plant', 'storage'])
+const tech = new Set(['workshop', 'plant', 'store-gf'])
 const leaks = SPEC.links.filter((l) => tech.has(l.a) !== tech.has(l.b))
 ok(leaks.length === 0, 'z dílny nevede do veřejné části žádné dveře',
   leaks.length ? leaks.map((l) => `${l.a}–${l.b}`).join(', ') : 'technická zóna je samostatná')
 ok(SPEC.links.some((l) => tech.has(l.a) && tech.has(l.b) && l.type === 'service'),
-  'dílna a strojovna propojené jen servisními dveřmi')
+  'dílna a sklad propojené jen servisními dveřmi')
 
 console.log('\nPŘÍČKY A POŽÁRNÍ ÚSEKY')
 const parts = partitionsFor(SPEC)
@@ -370,6 +369,22 @@ ok(daylight.every((b) => b.z0 <= 0.01 || b.x0 <= 0.01),
 // dílna: nadsvětlík nad vraty
 ok(openingsFor(SPEC, 'south').some((h) => h.v0 >= 4.2 && h.x0 <= 23.4 && h.x1 >= 26),
   'dílna má nadsvětlík v horním pásu nad vraty')
+
+// rozvody se drží stropu: žádný vodorovný běh (mimo kanalizaci a svody)
+// nesmí viset níž než 0,5 m pod stropem svého podlaží
+const lowRuns = []
+for (const r of mep.routes) {
+  if (r.service === 'drain') continue
+  for (let i = 0; i < r.points.length - 1; i++) {
+    const a2 = r.points[i]
+    const b2 = r.points[i + 1]
+    if (Math.abs(a2.y - b2.y) > 1e-6 || (a2.x === b2.x && a2.z === b2.z)) continue
+    const lvlTop = a2.y > 3.4 ? SPEC.eaves : SPEC.clearGF
+    if (a2.y > 1 && a2.y < lvlTop - 1.0) lowRuns.push(`${r.service}@${r.block ?? 'páteř'} y${a2.y.toFixed(2)}`)
+  }
+}
+ok(lowRuns.length === 0, 'žádný rozvod nevisí níž než 1 m pod stropem',
+  lowRuns.slice(0, 4).join(', ') || `${mep.routes.length} úseků`)
 
 console.log('\nROZVODY KE KONCOVKÁM')
 const terms = mep.routes.filter((r) => r.kind === 'terminal')
