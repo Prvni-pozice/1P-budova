@@ -1002,7 +1002,9 @@ export function buildAll(spec, mep) {
   for (let i = 0; i < 2; i++) bay(16.4 + i * 2.6, 2.4, false)
   for (let i = 0; i < 4; i++) bay(29.7 + i * 2.6, 2.4, false)
 
-  const lobbyB = S.blocks.find((b) => b.type === 'lobby')
+  // POZOR: hledat podle ID — kuchyňský kout má taky typ 'lobby' a portál
+  // se po komunitní přestavbě přestěhoval na jeho střed (x=2)
+  const lobbyB = S.blocks.find((b) => b.id === 'lobby')
   if (lobbyB) {
     // ---- vstupní portál v2.2: bílý rám s limetkovým ostěním (jediná barva
     // na antracitové hale), bílá markýza s limetkovou hranou, logo 1P ----

@@ -13,11 +13,11 @@ import { SVC, fitoutAll } from './fitout.js'
 // rozvody půl metru pod stropem byly nesmysl. Kanalizace jde v podlaze.
 export const SERVICES = [
   { key: 'vzt',   name: 'VZT',               color: 0x7fd4ff, dz: 0.0,  r: null },
-  { key: 'heat',  name: 'Topení + chlazení', color: 0xff8a4c, dz: 0.55, r: 0.075 },
-  { key: 'water', name: 'Voda (SV + TUV)',   color: 0x2ecc71, dz: 0.95, r: 0.055 },
-  { key: 'drain', name: 'Kanalizace',        color: 0x9b7653, dz: 0.75, r: 0.095 },
-  { key: 'elec',  name: 'Elektro',           color: 0xffd54f, dz: 1.25, r: 0.06  },
-  { key: 'data',  name: 'Datové rozvody',    color: 0xc084fc, dz: 1.5,  r: 0.045 },
+  { key: 'heat',  name: 'Topení + chlazení', color: 0xff8a4c, dz: 0.35, r: 0.075 },
+  { key: 'water', name: 'Voda (SV + TUV)',   color: 0x2ecc71, dz: 0.6,  r: 0.055 },
+  { key: 'drain', name: 'Kanalizace',        color: 0x9b7653, dz: 0.45, r: 0.095 },
+  { key: 'elec',  name: 'Elektro',           color: 0xffd54f, dz: 0.8,  r: 0.045 },
+  { key: 'data',  name: 'Datové rozvody',    color: 0xc084fc, dz: 0.95, r: 0.035 },
 ]
 
 // průměry koncových větví — poslední metr k zařizovacímu předmětu
@@ -52,8 +52,10 @@ const levelOf = (b) => (b.level === 'full' ? 0 : b.level)
 
 /** Výška trasy: těsně pod stropem daného podlaží, odstupňovaná jen o průměr
  * potrubí. V patře pod spodní pásnicí vazníků (5,75 m); kanalizace v podlaze. */
-const DROP1 = { vzt: 0.85, heat: 0.6, water: 0.5, elec: 0.4, data: 0.4 }
-const DROP0 = { vzt: 0.45, heat: 0.22, water: 0.16, elec: 0.12, data: 0.1 }
+// elektro a data jedou ÚPLNĚ na stropě (kabelové trasy na pásnicích vazníků),
+// mokré a vzduchové trasy těsně pod nimi
+const DROP1 = { vzt: 0.85, heat: 0.5, water: 0.45, elec: 0.22, data: 0.18 }
+const DROP0 = { vzt: 0.38, heat: 0.15, water: 0.18, elec: 0.1, data: 0.07 }
 function spineY(s, level, service) {
   if (service === 'drain') return 0.12
   return level === 1
@@ -100,41 +102,69 @@ const TUV_FIXTURE = { shower: 600, basin: 60, kitchen: 120, bar: 120, cleansink:
  * Koncové větve: z páteře k jednotlivým předmětům. Trasa jde vodorovně pod
  * stropem (u kanalizace u podlahy) nad předmět a pak svisle dolů na napojení.
  */
-function terminals(s, svcKey, spineZ, items) {
+function terminals(s, svcKey, spineZ, items, blk) {
   const out = []
+  if (!items.length) return out
+  const lvl = blk.level === 'full' ? 0 : blk.level
+  const base = levelBase(s, lvl)
+  const full = blk.level === 'full'
+  const highY = full ? blockHeight(s, blk) - 0.35 : null
+  const hug = svcKey === 'elec' || svcKey === 'data' ? 0.04 : 0.1
+  const y0 = svcKey === 'drain' ? base + 0.12 : spineY(s, lvl, svcKey) - hug
+
+  // Strom na místnost: JEDEN kmen u stropu podél z, krátké odbočky nad místem
+  // potřeby, svod dolů až u předmětu. V hale s plnou výškou kmen stoupá na
+  // HRANĚ mezipatra/galerie (ne uprostřed vedlejší místnosti) a vede nahoře.
+  const cover = full
+    ? s.blocks.find((o) => o.level === 1
+        && o.x0 < (blk.x0 + blk.x1) / 2 && o.x1 > (blk.x0 + blk.x1) / 2
+        && o.z0 < spineZ && o.z1 > spineZ - 0.01)
+    : null
+  const zEdge = cover ? Math.max(cover.z0, blk.z0) - 0.15 : null
+  const runHigh = full && svcKey !== 'drain'
+  const subX = Math.min(Math.max(
+    items.reduce((a, it) => a + it.x, 0) / items.length, blk.x0 + 0.5), blk.x1 - 0.5)
+  const zs = items.map((it) => it.z)
+  const zNear = Math.min(Math.max(spineZ, blk.z0 + 0.2), blk.z1 - 0.2)
+  const zLo = Math.min(...zs, zNear)
+  const zHi = Math.max(...zs, zNear)
+  const r0 = TERMINAL_R[svcKey] ?? 0.05
+  const trunkR = svcKey === 'vzt'
+    ? Math.max(0.08, ductRadius(items.reduce((a, it) => a + (it.flow ?? 200), 0)))
+    : r0 * 1.4
+
+  const trunk = []
+  if (runHigh && zEdge !== null) {
+    trunk.push({ x: subX, y: y0, z: spineZ })
+    trunk.push({ x: subX, y: y0, z: zEdge })
+    trunk.push({ x: subX, y: highY, z: zEdge })
+    if (zLo < zEdge) trunk.push({ x: subX, y: highY, z: zLo })
+  } else if (runHigh) {
+    trunk.push({ x: subX, y: y0, z: spineZ })
+    trunk.push({ x: subX, y: highY, z: spineZ })
+    trunk.push({ x: subX, y: highY, z: zLo })
+  } else {
+    trunk.push({ x: subX, y: y0, z: Math.max(zHi, spineZ) })
+    trunk.push({ x: subX, y: y0, z: zLo })
+  }
+  out.push({ service: svcKey, kind: 'trunk', block: blk.id, radius: trunkR, points: trunk })
+
   for (const it of items) {
     const map = SVC[it.kind]
     if (!map || !map.svc.includes(svcKey)) continue
-    const blk = s.blocks.find((b) => b.id === it.block)
-    if (!blk) continue
-    const lvl = blk.level === 'full' ? 0 : blk.level
-    const base = levelBase(s, lvl)
-
-    const full = blk.level === 'full'
-    const highY = full ? blockHeight(s, blk) - 0.45 : null
-
-    if (svcKey === 'vzt') {                    // vyústka se napojuje shora
-      const y0 = spineY(s, lvl, svcKey)
-      const runY = full ? highY : y0
-      const r2 = Math.max(0.05, ductRadius(it.flow ?? 200))
-      out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: r2,
-        points: full
-          ? [{ x: it.x, y: y0, z: spineZ }, { x: it.x, y: runY, z: spineZ },
-             { x: it.x, y: runY, z: it.z }, { x: it.x, y: it.y, z: it.z }]
-          : [{ x: it.x, y: y0, z: spineZ }, { x: it.x, y: runY, z: it.z },
-             { x: it.x, y: it.y, z: it.z }] })
-      continue
-    }
-    const hug = svcKey === 'elec' || svcKey === 'data' ? 0.05 : 0.12
-    const yLow = svcKey === 'drain' ? base + 0.12 : spineY(s, lvl, svcKey) - hug
-    const runY = svcKey === 'drain' ? yLow : (full ? highY : yLow)
-    const connY = it.y > base + 0.3 ? it.y : base + (map.conn ?? 0.4)
-    const pts = full && svcKey !== 'drain'
-      ? [{ x: it.x, y: yLow, z: spineZ }, { x: it.x, y: runY, z: spineZ },
-         { x: it.x, y: runY, z: it.z }, { x: it.x, y: connY, z: it.z }]
-      : [{ x: it.x, y: runY, z: spineZ }, { x: it.x, y: runY, z: it.z },
-         { x: it.x, y: connY, z: it.z }]
-    out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: TERMINAL_R[svcKey], points: pts })
+    // pod mezipatrem se zůstává na nízkém stropě, v hale nahoře
+    const underCover = runHigh && zEdge !== null && it.z > zEdge
+    const latY = svcKey === 'drain' ? y0 : (runHigh && !underCover ? highY : y0)
+    const connY = svcKey === 'vzt'
+      ? it.y
+      : (it.y > base + 0.3 ? it.y : base + (map.conn ?? 0.4))
+    const latR = svcKey === 'vzt' ? Math.max(0.05, ductRadius(it.flow ?? 200)) : r0
+    out.push({ service: svcKey, kind: 'terminal', block: it.block, radius: latR,
+      points: [
+        { x: subX, y: latY, z: it.z },
+        { x: it.x, y: latY, z: it.z },
+        { x: it.x, y: connY, z: it.z },
+      ] })
   }
   return out
 }
@@ -172,15 +202,22 @@ export function computeMEP(s = SPEC) {
         const own = fitItems.filter((it) => it.block === b.id && SVC[it.kind]?.svc.includes(svc.key))
         if (own.length) {
           // blok má konkrétní koncovky → vedeme k nim, ne jen doprostřed bloku
-          for (const tr of terminals(s, svc.key, z, own)) routes.push({ ...tr, color: svc.color })
+          for (const tr of terminals(s, svc.key, z, own, b)) routes.push({ ...tr, color: svc.color })
           continue
         }
         const t = tapPoint(s, b)
         const br = svc.r ?? ductRadius(blockDemand(b).vzt)
-        // v hale s plnou výškou odbočka stoupne hned u páteře a běží nahoře
-        const pts = b.level === 'full'
-          ? [{ x: t.x, y, z }, { x: t.x, y: t.y, z }, { x: t.x, y: t.y, z: t.z }]
-          : [{ x: t.x, y, z }, { x: t.x, y, z: t.z }, { x: t.x, y: t.y, z: t.z }]
+        // v hale s plnou výškou odbočka stoupá na hraně mezipatra a běží nahoře
+        let pts
+        if (b.level === 'full') {
+          const cov = s.blocks.find((o) => o.level === 1
+            && o.x0 < t.x && o.x1 > t.x && o.z0 < z && o.z1 > z - 0.01)
+          const zE = cov ? Math.max(cov.z0, b.z0) - 0.15 : z
+          pts = [{ x: t.x, y, z }, { x: t.x, y, z: zE }, { x: t.x, y: t.y, z: zE },
+                 { x: t.x, y: t.y, z: t.z }]
+        } else {
+          pts = [{ x: t.x, y, z }, { x: t.x, y, z: t.z }, { x: t.x, y: t.y, z: t.z }]
+        }
         routes.push({ service: svc.key, kind: 'branch', color: svc.color, radius: br, block: b.id, points: pts })
       }
     }

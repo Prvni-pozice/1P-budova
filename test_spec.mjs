@@ -359,9 +359,13 @@ ok(parts.some((p2) => p2.blocks.includes('office-gf') && p2.blocks.includes('lob
 console.log('\nSTATIKA A TZB')
 // páteř rozvodů v patře musí projít pod spodní pásnicí vazníků (5,75 m)
 const upperSpines = mep.routes.filter((r) => r.kind === 'spine' && r.points[0].y > 4)
-ok(upperSpines.every((r) => r.points[0].y + r.radius < 5.72),
-  'páteře v patře vedou pod pásnicí vazníků',
-  upperSpines.map((r) => (r.points[0].y + r.radius).toFixed(2)).join(', '))
+// mokré a vzduchové páteře pod pásnicí; elektro a data jedou NA pásnicích
+ok(upperSpines.filter((r) => !['elec', 'data'].includes(r.service))
+  .every((r) => r.points[0].y + r.radius < 5.72),
+  'VZT/topení/voda v patře pod pásnicí vazníků')
+ok(upperSpines.filter((r) => ['elec', 'data'].includes(r.service))
+  .every((r) => r.points[0].y >= 5.7 && r.points[0].y <= 5.9),
+  'elektro a data na kabelových trasách na pásnicích')
 // denní světlo: pracovní místnosti se dotýkají fasády s okny (jih/východ)
 const daylight = SPEC.blocks.filter((b) => ['office', 'meeting'].includes(b.type))
 ok(daylight.every((b) => b.z0 <= 0.01 || b.x0 <= 0.01),
