@@ -6,3 +6,8 @@ dist/
 *.key
 *.pem
 *.log
+research/*.parquet
+research/*.npy
+research/schema.json
+research/manifest.json
+research/.venv/
