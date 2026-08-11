@@ -99,3 +99,34 @@ Stejné jako u hlavního panelu + jeden navíc: u ceny 2 000 Kč/h je rozptyl
 deflátoru obrovský (5–15 % = trojnásobný rozdíl tržeb). Levné ověření:
 předprodej 20 poukazů „Pro Rig Experience" před nákupem rigů — pokud se
 neprodají za měsíc, hypotéza padá.
+
+---
+
+# Pesimistický scénář „Vysočina" (12. 8.)
+
+*Post-stratifikace obou studií na šetřivé rozložení: Frugal saver 50 % ·
+Balanced 35 % · Spender 12 % · Splurger 3 % (původní panely měly šetřílků
+jen 17–27 %). Přepočet vahami, ne nová simulace.*
+
+## Budova
+
+    aréna            3,12 → 2,90 návštěv/os/rok (−7 %)
+                     extrapolace 23–31 tis. návštěv (plán 15 tis. DRŽÍ
+                     i pesimisticky, rezerva ~1,5×)
+    cena 210 „moc"   19 % → 24 % → rodinné vstupné je ještě důležitější
+    fitness          19 % → 13 % členství (pořád ≫ plán 50 členů)
+    kavárna          79 → 71 Kč/návštěvu (−10 % tržeb baru)
+
+## Pro-sim 2 000 Kč/h
+
+    placené hodiny   beze změny (+1 %) — jádro kupuje z vášně, ne z rozmaru;
+                     šetřivost ho nefiltruje
+    DÁRKOVÉ POUKAZY  40 % → 27 % (−⅓!) — šetřivost dopadá NEJVÍC na
+                     dárkový kanál, který je hlavním pilířem tržeb
+    → pesimisticky se posouvá težiště z poukazů na firemní akce; předprodej
+    poukazů jako test hypotézy je tím DŮLEŽITĚJŠÍ
+
+## Poznámka k metodě
+Převážení 48/30 person má velký rozptyl (váhy až 1,9×) — čísla jsou směrová.
+Pro nové studie je čistší rovnou stavět panely s českými kvótami frugality
+(viz README nástroje persony).
