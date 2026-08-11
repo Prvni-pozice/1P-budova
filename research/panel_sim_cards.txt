@@ -1,0 +1,30 @@
+S00|25-34|Woman|inc:<$25k|Small|Part-time|cars:Passio|moto:Intere|autoIND:Some e|driv:Beginner/Non-driver|game:Neutra/Monthl|risk:Very low|frug:Splurger|fit:Fit/Monthl|weight:None|adv:Moderate|comp:Slight
+S01|18-24|Woman|inc:$200k+|Small|Full-time|cars:Intere|moto:Indiff|autoIND:None|driv:Beginner/Non-driver|game:Intere/Weekly|risk:Average|frug:Splurger|fit:Fit/Never|weight:Casual|adv:Moderate|comp:Moderate
+S02|35-44|Woman|inc:$100k-200k|Rural|Homemaker|cars:Intere|moto:Neutra|autoIND:None|driv:Beginner/Occasional|game:Indiff/Never|risk:Average|frug:Balanced|fit:Athlete/Daily|weight:None|adv:Moderate|comp:Slight
+S03|35-44|Woman|inc:$50k-100k|Nomad|Full-time|cars:Intere|moto:Neutra|autoIND:None|driv:Beginner/Daily driv|game:Neutra/Never|risk:Low|frug:Balanced|fit:Sedentar/Daily|weight:Casual|adv:Moderate|comp:Strong
+S04|18-24|Woman|inc:$200k+|Rural|Self-emplo|cars:Passio|moto:Indiff|autoIND:None|driv:Beginner/Occasional|game:Indiff/Never|risk:High|frug:Frugal s|fit:Fit/Daily|weight:None|adv:Moderate|comp:Moderate
+S05|18-24|Woman|inc:<$25k|Subur|Gig / free|cars:Intere|moto:Indiff|autoIND:Experi|driv:Master/Daily driv|game:Intere/Never|risk:High|frug:Spender|fit:Fit/Rarely|weight:None|adv:Importan|comp:Strong
+S06|18-24|Woman|inc:$50k-100k|Rural|Full-time|cars:Intere|moto:Indiff|autoIND:Experi|driv:Intermed/Occasional|game:Indiff/Never|risk:Low|frug:Spender|fit:Fit/Rarely|weight:None|adv:Minor|comp:Moderate
+S07|35-44|Woman|inc:<$25k|Rural|Self-emplo|cars:Passio|moto:Intere|autoIND:None|driv:Advanced/Daily driv|game:Neutra/Weekly|risk:Very low|frug:Balanced|fit:Sedentar/Weekly|weight:None|adv:Importan|comp:Strong
+S08|18-24|Woman|inc:<$25k|Rural|Student|cars:Passio|moto:Neutra|autoIND:None|driv:Advanced/Licensed, |game:Indiff/Daily|risk:High|frug:Frugal s|fit:Fit/Monthl|weight:Play|adv:Moderate|comp:Moderate
+S09|18-24|Woman|inc:$50k-100k|Rural|Full-time|cars:Intere|moto:Intere|autoIND:Some e|driv:Beginner/Non-driver|game:Neutra/Daily|risk:Low|frug:Balanced|fit:Sedentar/Weekly|weight:Play|adv:Minor|comp:Moderate
+S10|18-24|Woman|inc:$50k-100k|Rural|Student|cars:Neutra|moto:Passio|autoIND:Vetera|driv:Intermed/Licensed, |game:Neutra/Monthl|risk:High|frug:Spender|fit:Fit/Weekly|weight:None|adv:Importan|comp:Moderate
+S11|25-34|Woman|inc:<$25k|Subur|Full-time|cars:Neutra|moto:Intere|autoIND:Experi|driv:None/Non-driver|game:Indiff/Weekly|risk:Average|frug:Balanced|fit:Fit/Rarely|weight:None|adv:Minor|comp:Absent
+S12|35-44|Man|inc:<$25k|Rural|Full-time|cars:Passio|moto:Indiff|autoIND:None|driv:Beginner/Occasional|game:Indiff/Weekly|risk:High|frug:Balanced|fit:Average/Weekly|weight:None|adv:Moderate|comp:Moderate
+S13|35-44|Man|inc:<$25k|Rural|Full-time|cars:Passio|moto:Neutra|autoIND:None|driv:Advanced/Daily driv|game:Averse/Never|risk:High|frug:Balanced|fit:Sedentar/Rarely|weight:None|adv:Importan|comp:Moderate
+S14|18-24|Woman|inc:<$25k|Rural|Full-time|cars:Neutra|moto:Passio|autoIND:Experi|driv:Intermed/Licensed, |game:Intere/Rarely|risk:Very hig|frug:Spender|fit:Fit/Daily|weight:None|adv:Importan|comp:Moderate
+S15|18-24|Woman|inc:<$25k|Rural|Unemployed|cars:Passio|moto:Indiff|autoIND:None|driv:Beginner/Non-driver|game:Passio/Weekly|risk:Very low|frug:Frugal s|fit:Sedentar/Never|weight:None|adv:Core val|comp:Strong
+S16|35-44|Man|inc:$25k-50k|Rural|Self-emplo|cars:Intere|moto:Neutra|autoIND:None|driv:Intermed/Daily driv|game:Intere/Never|risk:Very hig|frug:Balanced|fit:Fit/Weekly|weight:None|adv:Moderate|comp:Strong
+S17|45-54|Man|inc:<$25k|Subur|Full-time|cars:Passio|moto:Neutra|autoIND:Experi|driv:Advanced/Daily driv|game:Intere/Never|risk:Average|frug:Balanced|fit:Average/Daily|weight:Play|adv:Core val|comp:Strong
+S18|45-54|Woman|inc:<$25k|Rural|Homemaker|cars:Passio|moto:Neutra|autoIND:None|driv:Intermed/Occasional|game:Neutra/Never|risk:Low|frug:Balanced|fit:Fit/Weekly|weight:None|adv:Moderate|comp:Moderate
+S19|25-34|Woman|inc:$25k-50k|Rural|Homemaker|cars:Passio|moto:Intere|autoIND:None|driv:Intermed/Daily driv|game:Intere/Weekly|risk:Average|frug:Splurger|fit:Average/Weekly|weight:Follow|adv:Core val|comp:Slight
+S20|45-54|Man|inc:$50k-100k|Small|Full-time|cars:Indiff|moto:Indiff|autoIND:Experi|driv:Beginner/Non-driver|game:Passio/Rarely|risk:Low|frug:Spender|fit:Average/Daily|weight:None|adv:Irreleva|comp:Moderate
+S21|45-54|Non-b|inc:$25k-50k|Rural|Unemployed|cars:Passio|moto:Neutra|autoIND:None|driv:Advanced/Daily driv|game:Neutra/Weekly|risk:Average|frug:Frugal s|fit:Sedentar/Weekly|weight:None|adv:Importan|comp:Moderate
+S22|18-24|Woman|inc:<$25k|Rural|Student|cars:Indiff|moto:Intere|autoIND:Experi|driv:Intermed/Licensed, |game:Neutra/Never|risk:Average|frug:Spender|fit:Fit/Weekly|weight:Casual|adv:Moderate|comp:Signatur
+S23|45-54|Man|inc:$25k-50k|Dense|Full-time|cars:Indiff|moto:Indiff|autoIND:Experi|driv:Beginner/Licensed, |game:Indiff/Rarely|risk:High|frug:Splurger|fit:Fit/Weekly|weight:None|adv:Importan|comp:Slight
+S24|45-54|Man|inc:<$25k|Dense|Full-time|cars:Passio|moto:Neutra|autoIND:None|driv:Intermed/Daily driv|game:Neutra/Weekly|risk:High|frug:Spender|fit:Fit/Weekly|weight:None|adv:Moderate|comp:Slight
+S25|18-24|Self-|inc:$50k-100k|Rural|Student|cars:Intere|moto:Averse|autoIND:Some e|driv:Intermed/Occasional|game:Indiff/Monthl|risk:Low|frug:Balanced|fit:Fit/Daily|weight:None|adv:Core val|comp:Moderate
+S26|18-24|Woman|inc:$200k+|Subur|Student|cars:Intere|moto:Indiff|autoIND:None|driv:Advanced/Daily driv|game:Indiff/Daily|risk:Very hig|frug:Frugal s|fit:Fit/Weekly|weight:Casual|adv:Moderate|comp:Strong
+S27|25-34|Man|inc:<$25k|Nomad|Homemaker|cars:Intere|moto:Neutra|autoIND:Vetera|driv:Advanced/Occasional|game:Indiff/Weekly|risk:High|frug:Balanced|fit:Average/Weekly|weight:None|adv:Minor|comp:Signatur
+S28|25-34|Woman|inc:<$25k|Rural|Part-time|cars:Passio|moto:Intere|autoIND:None|driv:Beginner/Cannot dri|game:Indiff/Never|risk:High|frug:Spender|fit:Average/Weekly|weight:Casual|adv:Importan|comp:Moderate
+S29|18-24|Woman|inc:<$25k|Rural|Student|cars:Passio|moto:Intere|autoIND:None|driv:Beginner/Non-driver|game:Passio/Weekly|risk:Low|frug:Balanced|fit:Average/Weekly|weight:Casual|adv:Moderate|comp:Moderate

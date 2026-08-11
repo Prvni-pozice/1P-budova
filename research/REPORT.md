@@ -52,3 +52,50 @@ záznamem persony; bez externího API).*
   ne měření. Čísla ber jako HYPOTÉZY pro ověření (pilotní ceník, předprodej),
   ne jako průzkum trhu. I autoři píší: „not a replacement for evidence
   from real people".
+
+---
+
+# Dotest 11. 8.: pro-sim 2 000 Kč/h a „Race Fit"
+
+*Cílený panel 30 person (motorsport: Passionate/industry/moto + vyšší příjmy
++ adrenalinové profily) — pro prémiovou niku je obecný panel k ničemu.
+Karty: panel_sim_cards.txt, odpovědi: simulate_sim.py.*
+
+## H1 — 2 profi simulátory (>1 mil. Kč), 2 000 Kč/h
+
+    Koupí aspoň 1 h/rok     83 % cílovky (většina 1× — zážitek/odměna)
+    Dárkový poukaz          40 % koupí PRO NĚKOHO — nejsilnější signál panelu
+    Cena 2 000 Kč           ok 27 % · hraniční 37 % · moc 37 % (chtěli by 600–1000)
+    Extrapolace (dojezd 60 min po D1, ~280 tis. dospělých):
+      deflátor 5–15 % → 1 100–3 300 placených hodin/rok → 2,2–6,7 mil. Kč
+      break-even 2 rigů vč. prostoru ≈ 600–800 h/rok → I PESIMISTICKY NAD
+
+    Závěr: životaschopné, ALE ne jako walk-in. Nosné pilíře:
+    1) dárkové poukazy (40 %!), 2) firemní akce a teambuilding,
+    3) tréninkové bloky skutečných jezdců (věrohodnost + obsah),
+    4) dvouvrstvý ceník — profi rig 2 000, standardní rig 250–400
+       (vstupní schod pro „moc drahé" třetinu, která chce 600–1000).
+
+## H2 — „Race Fit": kruhový trénink jezdce vedle simu
+
+    Vyzkouší               63 % cílovky
+    Balíček/pravidelně     30 % deklarace → po deflaci realisticky
+                           30–80 pravidelných v dojezdu 20 min
+    Závěr: NENÍ samostatný byznys, ALE naplní 4–6 skupinových lekcí
+    týdně jako prémiový program fitka. Unikátnost potvrzena — nikdo
+    z panelu nic podobného nezná.
+
+    Promo háčky, které v panelu rezonovaly (soutěživé profily):
+    - „Trénuj jako jezdec" — identita, ne cvičení; krk, předloktí,
+      reakce, periferní vidění
+    - MĚŘITELNOST: reakční čas + čas na kolo na simu vedle = leaderboard;
+      pokrok vidíš v číslech i v jízdě
+    - obsah: video skutečného jezdce/driftera v tréninku (drift dny
+      Vysočina, autokluby, sim-racing ligy CZ — kanály zdarma)
+    - balíček SIM + FIT (po tréninku měřená kola) — nikdo jiný nenabízí
+
+## Limity dotestu
+Stejné jako u hlavního panelu + jeden navíc: u ceny 2 000 Kč/h je rozptyl
+deflátoru obrovský (5–15 % = trojnásobný rozdíl tržeb). Levné ověření:
+předprodej 20 poukazů „Pro Rig Experience" před nákupem rigů — pokud se
+neprodají za měsíc, hypotéza padá.
