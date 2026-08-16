@@ -1,0 +1,300 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1137" height="575" viewBox="0 0 1137 575" font-family="Helvetica, Arial, sans-serif">
+<style>
+  .bg{fill:#ffffff}
+  .wall{fill:#2b2f36;stroke:none}
+  .walltemp{fill:#8f959d;stroke:#2b2f36;stroke-width:0.7;stroke-dasharray:4 3}
+  .glassw{fill:#bcd9e6;stroke:#2b2f36;stroke-width:0.7}
+  .part{fill:#5b616a;stroke:none}
+  .partfire{fill:#b4544a;stroke:none}
+  .room{stroke:none}
+  .void{fill:#eceff3;stroke:#9aa1ab;stroke-width:0.8;stroke-dasharray:5 4}
+  .furn{fill:#ffffff;fill-opacity:0.55;stroke:#6d747d;stroke-width:0.7}
+  .furnkey{fill:#ffffff;fill-opacity:0.75;stroke:#2b2f36;stroke-width:1.1}
+  .beyond{fill:#ffffff;fill-opacity:0.5;stroke:#a7adb6;stroke-width:0.7}
+  .slab{fill:#7d848d;stroke:#2b2f36;stroke-width:0.6}
+  .roof{fill:#4a505a;stroke:none}
+  .ground{stroke:#2b2f36;stroke-width:2.2;fill:none}
+  .grid{stroke:#c2c8d0;stroke-width:0.8;stroke-dasharray:9 4 2 4;fill:none}
+  .dim{stroke:#2b2f36;stroke-width:0.7;fill:none}
+  .lead{stroke:#8b929b;stroke-width:0.6;fill:none}
+  .door{stroke:#2b2f36;stroke-width:0.9;fill:none}
+  .frame{fill:none;stroke:#2b2f36;stroke-width:1.2}
+  .thin{fill:none;stroke:#2b2f36;stroke-width:0.8}
+  .hatch{fill:none;stroke:#2b2f36;stroke-width:0.7}
+  text{fill:#20242a}
+  .lbl{font-size:11px}
+  .lblsm{font-size:9px;fill:#5b616a}
+  .lblrm{font-size:11.5px;font-weight:700}
+  .lblar{font-size:9.5px;fill:#4a505a}
+  .ttl{font-size:19px;font-weight:700;letter-spacing:0.2px}
+  .sub{font-size:11px;fill:#5b616a}
+  .axis{font-size:10px;font-weight:700;fill:#2b2f36}
+  .dimt{font-size:9.5px;fill:#2b2f36}
+  .warn{font-size:9.5px;fill:#a3453c}
+</style>
+<rect class="bg" x="0" y="0" width="1137" height="575"/>
+<rect x="803.4" y="304.4" width="43.2" height="20.0" class="beyond" />
+<rect x="818.3" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="759.7" y="304.4" width="43.2" height="20.0" class="beyond" />
+<rect x="774.5" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="762.9" y="296.0" width="59.4" height="28.4" class="beyond" />
+<rect x="807.5" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="807.5" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="785.9" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="785.9" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="764.3" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="764.3" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="814.9" y="303.3" width="23.0" height="21.1" class="beyond" />
+<rect x="757.5" y="303.3" width="51.3" height="21.1" class="beyond" />
+<rect x="781.8" y="304.4" width="21.6" height="20.0" class="beyond" />
+<rect x="667.0" y="302.8" width="16.2" height="21.6" class="beyond" />
+<rect x="663.0" y="170.5" width="37.8" height="153.9" class="beyond" />
+<rect x="761.5" y="300.1" width="64.8" height="24.3" class="beyond" />
+<rect x="744.5" y="274.4" width="16.2" height="50.0" class="beyond" />
+<rect x="791.3" y="296.0" width="59.4" height="28.4" class="beyond" />
+<rect x="833.1" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="833.1" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="795.3" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="795.3" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="711.6" y="267.7" width="24.3" height="56.7" class="beyond" />
+<rect x="684.6" y="267.7" width="24.3" height="56.7" class="beyond" />
+<rect x="729.8" y="292.0" width="9.5" height="32.4" class="beyond" />
+<rect x="665.0" y="301.4" width="12.2" height="22.9" class="beyond" />
+<rect x="665.0" y="301.4" width="12.2" height="22.9" class="beyond" />
+<rect x="719.7" y="323.3" width="8.1" height="1.1" class="beyond" />
+<rect x="679.2" y="323.3" width="8.1" height="1.1" class="beyond" />
+<rect x="645.5" y="275.8" width="13.5" height="48.6" class="beyond" />
+<rect x="645.5" y="275.8" width="13.5" height="48.6" class="beyond" />
+<rect x="645.5" y="275.8" width="13.5" height="48.6" class="beyond" />
+<rect x="645.5" y="275.8" width="13.5" height="48.6" class="beyond" />
+<rect x="645.5" y="275.8" width="13.5" height="48.6" class="beyond" />
+<rect x="645.5" y="275.8" width="13.5" height="48.6" class="beyond" />
+<rect x="614.4" y="312.3" width="10.8" height="12.2" class="beyond" />
+<rect x="633.3" y="267.7" width="24.3" height="56.7" class="beyond" />
+<rect x="607.7" y="267.7" width="24.3" height="56.7" class="beyond" />
+<rect x="588.8" y="301.4" width="16.2" height="22.9" class="beyond" />
+<rect x="571.2" y="301.4" width="16.2" height="22.9" class="beyond" />
+<rect x="545.5" y="267.7" width="27.0" height="56.7" class="beyond" />
+<rect x="517.2" y="267.7" width="27.0" height="56.7" class="beyond" />
+<rect x="474.0" y="267.7" width="40.5" height="56.7" class="beyond" />
+<rect x="474.0" y="267.7" width="40.5" height="56.7" class="beyond" />
+<rect x="474.0" y="267.7" width="40.5" height="56.7" class="beyond" />
+<rect x="474.0" y="267.7" width="40.5" height="56.7" class="beyond" />
+<rect x="474.0" y="267.7" width="40.5" height="56.7" class="beyond" />
+<rect x="648.8" y="292.0" width="9.4" height="32.4" class="beyond" />
+<rect x="648.8" y="292.0" width="9.4" height="32.4" class="beyond" />
+<rect x="576.6" y="301.4" width="16.2" height="22.9" class="beyond" />
+<rect x="557.7" y="301.4" width="16.2" height="22.9" class="beyond" />
+<rect x="538.8" y="301.4" width="16.2" height="22.9" class="beyond" />
+<rect x="519.9" y="301.4" width="16.2" height="22.9" class="beyond" />
+<rect x="541.5" y="267.7" width="59.4" height="56.7" class="beyond" />
+<rect x="515.9" y="298.8" width="24.3" height="25.6" class="beyond" />
+<rect x="611.7" y="323.3" width="8.1" height="1.1" class="beyond" />
+<rect x="517.2" y="323.3" width="8.1" height="1.1" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="479.4" y="292.0" width="10.8" height="32.4" class="beyond" />
+<rect x="626.5" y="235.3" width="32.4" height="89.1" class="beyond" />
+<rect x="626.5" y="267.7" width="32.4" height="56.7" class="beyond" />
+<rect x="579.3" y="304.4" width="21.6" height="20.0" class="beyond" />
+<rect x="603.3" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="562.8" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="583.4" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="579.3" y="304.4" width="21.6" height="20.0" class="beyond" />
+<rect x="603.3" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="562.8" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="583.4" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="514.5" y="304.4" width="21.6" height="20.0" class="beyond" />
+<rect x="538.5" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="498.0" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="518.5" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="514.5" y="304.4" width="21.6" height="20.0" class="beyond" />
+<rect x="538.5" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="498.0" y="301.4" width="14.0" height="22.9" class="beyond" />
+<rect x="518.5" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="522.6" y="304.4" width="64.8" height="20.0" class="beyond" />
+<rect x="506.4" y="259.6" width="97.2" height="64.8" class="beyond" />
+<rect x="572.5" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="572.5" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="556.4" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="556.4" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="540.1" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="540.1" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="524.0" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="524.0" y="301.4" width="13.5" height="22.9" class="beyond" />
+<rect x="474.3" y="243.4" width="2.2" height="81.0" class="beyond" />
+<rect x="318.8" y="294.7" width="122.8" height="29.7" class="beyond" />
+<rect x="384.9" y="298.8" width="56.7" height="25.6" class="beyond" />
+<rect x="318.8" y="298.8" width="56.7" height="25.6" class="beyond" />
+<rect x="384.9" y="298.8" width="56.7" height="25.6" class="beyond" />
+<rect x="318.8" y="298.8" width="56.7" height="25.6" class="beyond" />
+<rect x="441.9" y="243.4" width="2.2" height="81.0" class="beyond" />
+<rect x="315.0" y="243.4" width="2.2" height="81.0" class="beyond" />
+<rect x="384.9" y="267.7" width="59.4" height="56.7" class="beyond" />
+<rect x="314.7" y="267.7" width="59.4" height="56.7" class="beyond" />
+<rect x="289.0" y="235.3" width="32.4" height="89.1" class="beyond" />
+<rect x="201.3" y="259.6" width="72.9" height="64.8" class="beyond" />
+<rect x="123.0" y="259.6" width="72.9" height="64.8" class="beyond" />
+<rect x="255.3" y="259.6" width="29.7" height="64.8" class="beyond" />
+<rect x="128.4" y="265.0" width="48.6" height="59.4" class="beyond" />
+<rect x="98.7" y="235.3" width="32.4" height="89.1" class="beyond" />
+<rect x="141.2" y="285.3" width="50.0" height="39.1" class="beyond" />
+<rect x="239.1" y="300.1" width="21.6" height="24.3" class="beyond" />
+<rect x="239.1" y="300.1" width="21.6" height="24.3" class="beyond" />
+<rect x="239.1" y="300.1" width="21.6" height="24.3" class="beyond" />
+<rect x="260.0" y="297.4" width="20.3" height="27.0" class="beyond" />
+<rect x="97.3" y="292.0" width="18.9" height="32.4" class="beyond" />
+<rect x="266.8" y="308.2" width="14.9" height="16.2" class="beyond" />
+<rect x="233.7" y="323.3" width="8.1" height="1.1" class="beyond" />
+<rect x="139.2" y="323.3" width="8.1" height="1.1" class="beyond" />
+<rect x="733.2" y="215.3" width="81.0" height="20.0" class="beyond" />
+<rect x="802.0" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="802.0" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="779.1" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="779.1" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="756.1" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="756.1" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="733.2" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="733.2" y="212.3" width="13.5" height="22.9" class="beyond" />
+<rect x="818.0" y="212.3" width="14.0" height="22.9" class="beyond" />
+<rect x="715.4" y="212.3" width="14.0" height="22.9" class="beyond" />
+<rect x="702.8" y="215.0" width="12.2" height="20.3" class="beyond" />
+<rect x="702.8" y="215.0" width="12.2" height="20.3" class="beyond" />
+<rect x="590.1" y="173.2" width="37.8" height="62.1" class="beyond" />
+<rect x="592.8" y="223.1" width="32.4" height="12.2" class="beyond" />
+<rect x="525.3" y="173.2" width="37.8" height="62.1" class="beyond" />
+<rect x="528.0" y="223.1" width="32.4" height="12.2" class="beyond" />
+<rect x="492.9" y="211.0" width="16.2" height="24.3" class="beyond" />
+<rect x="477.4" y="219.1" width="14.9" height="16.2" class="beyond" />
+<rect x="474.3" y="154.3" width="2.2" height="81.0" class="beyond" />
+<rect x="598.2" y="196.1" width="43.2" height="39.1" class="beyond" />
+<rect x="533.4" y="196.1" width="43.2" height="39.1" class="beyond" />
+<rect x="482.1" y="184.0" width="16.2" height="51.3" class="beyond" />
+<rect x="598.2" y="215.3" width="21.6" height="20.0" class="beyond" />
+<rect x="623.0" y="212.3" width="14.0" height="22.9" class="beyond" />
+<rect x="580.9" y="212.3" width="14.0" height="22.9" class="beyond" />
+<rect x="482.1" y="185.3" width="16.2" height="50.0" class="beyond" />
+<rect x="390.3" y="178.6" width="59.4" height="56.7" class="beyond" />
+<rect x="314.7" y="178.6" width="59.4" height="56.7" class="beyond" />
+<rect x="298.5" y="154.3" width="162.0" height="81.0" class="beyond" />
+<rect x="187.8" y="181.3" width="81.0" height="54.0" class="beyond" />
+<rect x="100.0" y="181.3" width="81.0" height="54.0" class="beyond" />
+<rect x="227.0" y="194.8" width="35.1" height="40.5" class="beyond" />
+<rect x="187.8" y="184.0" width="21.6" height="51.3" class="beyond" />
+<rect x="160.8" y="184.0" width="21.6" height="51.3" class="beyond" />
+<rect x="104.1" y="192.1" width="10.8" height="43.2" class="beyond" />
+<rect x="186.5" y="234.2" width="8.1" height="1.1" class="beyond" />
+<rect x="704.9" y="269.0" width="24.3" height="55.3" class="beyond" />
+<rect x="661.4" y="269.0" width="3.2" height="55.3" class="beyond" />
+<rect x="600.9" y="269.0" width="43.2" height="55.3" class="beyond" />
+<rect x="191.9" y="270.4" width="24.3" height="54.0" class="beyond" />
+<rect x="693.8" y="179.9" width="3.2" height="55.3" class="beyond" />
+<rect x="515.9" y="179.9" width="24.3" height="55.3" class="beyond" />
+<rect x="96.0" y="162.4" width="756.0" height="162.0" class="beyond" fill-opacity="0.2"/>
+<rect x="96.0" y="324.4" width="756.0" height="5.4" class="slab" />
+<line x1="56.0" y1="329.8" x2="892.0" y2="329.8" class="ground" />
+<rect x="845.3" y="162.4" width="6.8" height="162.0" class="glassw" />
+<rect x="96.0" y="133.8" width="6.8" height="190.6" class="walltemp" />
+<rect x="85.2" y="129.0" width="777.6" height="4.9" class="roof" />
+<rect x="663.0" y="235.3" width="32.4" height="8.1" class="slab" />
+<rect x="695.4" y="235.3" width="156.6" height="8.1" class="slab" />
+<rect x="474.0" y="235.3" width="189.0" height="8.1" class="slab" />
+<rect x="660.3" y="243.4" width="5.4" height="81.0" class="partfire" />
+<rect x="472.6" y="243.4" width="2.7" height="81.0" class="part" />
+<rect x="282.3" y="169.1" width="5.4" height="155.3" class="partfire" />
+<rect x="472.6" y="169.1" width="2.7" height="66.2" class="part" />
+<rect x="694.0" y="169.1" width="2.7" height="66.2" class="part" />
+<rect x="660.3" y="169.1" width="5.4" height="66.2" class="partfire" />
+<text x="757.5" y="294.7" class="lblrm" text-anchor="middle">Komunitní prostor</text>
+<text x="757.5" y="306.7" class="lblar" text-anchor="middle">sv. v. 3,00</text>
+<text x="568.5" y="294.7" class="lblrm" text-anchor="middle">Lobby / recepce / bar</text>
+<text x="568.5" y="306.7" class="lblar" text-anchor="middle">sv. v. 3,00</text>
+<text x="379.5" y="259.6" class="lblrm" text-anchor="middle">Jump aréna</text>
+<text x="379.5" y="271.6" class="lblar" text-anchor="middle">přes 2 podlaží · 6,00–7,06</text>
+<text x="190.5" y="259.6" class="lblrm" text-anchor="middle">Sdílená dílna</text>
+<text x="190.5" y="271.6" class="lblar" text-anchor="middle">přes 2 podlaží · 6,00–7,06</text>
+<text x="773.7" y="202.9" class="lblrm" text-anchor="middle">Rezerva k pronájmu</text>
+<text x="773.7" y="214.9" class="lblar" text-anchor="middle">shell · sv. v. 2,70</text>
+<text x="568.5" y="202.9" class="lblrm" text-anchor="middle">Fitness</text>
+<text x="568.5" y="214.9" class="lblar" text-anchor="middle">plovoucí podlaha · sv. v. 2,70</text>
+<text x="679.2" y="178.6" class="lblar" text-anchor="middle">chodba</text>
+<line x1="852.0" y1="324.4" x2="888.0" y2="324.4" class="lead" />
+<circle cx="892.0" cy="324.4" r="2.4" fill="#2b2f36"/>
+<text x="898.0" y="327.9" class="dimt" >± 0,000 — podlaha přízemí</text>
+<line x1="852.0" y1="243.4" x2="888.0" y2="243.4" class="lead" />
+<circle cx="892.0" cy="243.4" r="2.4" fill="#2b2f36"/>
+<text x="898.0" y="252.4" class="dimt" >+ 3,000 — podhled přízemí</text>
+<line x1="852.0" y1="235.3" x2="888.0" y2="235.3" class="lead" />
+<circle cx="892.0" cy="235.3" r="2.4" fill="#2b2f36"/>
+<text x="898.0" y="232.3" class="dimt" >+ 3,300 — podlaha patra</text>
+<line x1="852.0" y1="162.4" x2="888.0" y2="162.4" class="lead" />
+<circle cx="892.0" cy="162.4" r="2.4" fill="#2b2f36"/>
+<text x="898.0" y="165.9" class="dimt" >+ 6,000 — okap</text>
+<line x1="852.0" y1="133.8" x2="888.0" y2="133.8" class="lead" />
+<circle cx="892.0" cy="133.8" r="2.4" fill="#2b2f36"/>
+<text x="898.0" y="137.3" class="dimt" >+ 7,058 — podhled střechy v rovině řezu</text>
+<line x1="852.0" y1="52.0" x2="852.0" y2="329.8" class="grid" />
+<circle cx="852.0" cy="42.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="852.0" y="46.0" class="axis" text-anchor="middle">1</text>
+<line x1="663.0" y1="52.0" x2="663.0" y2="329.8" class="grid" />
+<circle cx="663.0" cy="42.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="663.0" y="46.0" class="axis" text-anchor="middle">2</text>
+<line x1="474.0" y1="52.0" x2="474.0" y2="329.8" class="grid" />
+<circle cx="474.0" cy="42.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="474.0" y="46.0" class="axis" text-anchor="middle">3</text>
+<line x1="285.0" y1="52.0" x2="285.0" y2="329.8" class="grid" />
+<circle cx="285.0" cy="42.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="285.0" y="46.0" class="axis" text-anchor="middle">4</text>
+<line x1="96.0" y1="52.0" x2="96.0" y2="329.8" class="grid" />
+<circle cx="96.0" cy="42.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="96.0" y="46.0" class="axis" text-anchor="middle">5</text>
+<line x1="852.0" y1="375.8" x2="663.0" y2="375.8" class="dim" />
+<line x1="852.0" y1="371.8" x2="852.0" y2="379.8" class="dim" />
+<line x1="663.0" y1="371.8" x2="663.0" y2="379.8" class="dim" />
+<text x="757.5" y="370.8" class="dimt" text-anchor="middle">7,00</text>
+<line x1="663.0" y1="375.8" x2="474.0" y2="375.8" class="dim" />
+<line x1="663.0" y1="371.8" x2="663.0" y2="379.8" class="dim" />
+<line x1="474.0" y1="371.8" x2="474.0" y2="379.8" class="dim" />
+<text x="568.5" y="370.8" class="dimt" text-anchor="middle">7,00</text>
+<line x1="474.0" y1="375.8" x2="285.0" y2="375.8" class="dim" />
+<line x1="474.0" y1="371.8" x2="474.0" y2="379.8" class="dim" />
+<line x1="285.0" y1="371.8" x2="285.0" y2="379.8" class="dim" />
+<text x="379.5" y="370.8" class="dimt" text-anchor="middle">7,00</text>
+<line x1="285.0" y1="375.8" x2="96.0" y2="375.8" class="dim" />
+<line x1="285.0" y1="371.8" x2="285.0" y2="379.8" class="dim" />
+<line x1="96.0" y1="371.8" x2="96.0" y2="379.8" class="dim" />
+<text x="190.5" y="370.8" class="dimt" text-anchor="middle">7,00</text>
+<line x1="852.0" y1="401.8" x2="96.0" y2="401.8" class="dim" />
+<line x1="852.0" y1="397.8" x2="852.0" y2="405.8" class="dim" />
+<line x1="96.0" y1="397.8" x2="96.0" y2="405.8" class="dim" />
+<text x="474.0" y="396.8" class="dimt" text-anchor="middle">28,00</text>
+<text x="92.0" y="70.0" class="lblsm" >ZÁPAD</text>
+<text x="856.0" y="70.0" class="lblsm" text-anchor="end">VÝCHOD</text>
+<rect x="96.0" y="437.8" width="16.0" height="9.0" class="slab" />
+<text x="117.0" y="445.8" class="lblsm" >řezaná konstrukce (deska)</text>
+<rect x="262.0" y="437.8" width="16.0" height="9.0" class="part" />
+<text x="283.0" y="445.8" class="lblsm" >řezaná příčka</text>
+<rect x="368.0" y="437.8" width="16.0" height="9.0" class="partfire" />
+<text x="389.0" y="445.8" class="lblsm" >požárně dělicí</text>
+<rect x="479.0" y="437.8" width="16.0" height="9.0" class="beyond" />
+<text x="500.0" y="445.8" class="lblsm" >pohled za rovinou řezu</text>
+<line x1="40.0" y1="478.4" x2="1097.0" y2="478.4" class="frame" />
+<text x="40.0" y="502.4" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1</text>
+<text x="40.0" y="520.4" class="sub" >ŘEZ A–A · podélný, rovina z = 6,00 m od jižní stěny, pohled k severu</text>
+<text x="40.0" y="535.4" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
+<text x="40.0" y="550.4" class="sub" >Generováno ze src/spec.js · 16. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>
+<text x="40.0" y="565.4" class="warn" >NENÍ projektová dokumentace — nástroj na hledání poměrů ploch před zadáním projektantovi.</text>
+<text x="1097.0" y="502.4" class="sub" text-anchor="end">aréna a dílna přes dvě podlaží · vestavěné patro nad lobby a kancelářemi</text>
+<rect x="827.0" y="540.4" width="67.5" height="6.0" class="frame" />
+<rect x="894.5" y="540.4" width="67.5" height="6.0" class="wall" />
+<rect x="962.0" y="540.4" width="67.5" height="6.0" class="frame" />
+<rect x="1029.5" y="540.4" width="67.5" height="6.0" class="wall" />
+<text x="827.0" y="557.4" class="dimt" >0</text>
+<text x="1097.0" y="557.4" class="dimt" text-anchor="end">10 m</text>
+</svg>

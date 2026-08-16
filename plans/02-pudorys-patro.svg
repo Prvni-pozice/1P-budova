@@ -1,0 +1,287 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1017" height="828" viewBox="0 0 1017 828" font-family="Helvetica, Arial, sans-serif">
+<style>
+  .bg{fill:#ffffff}
+  .wall{fill:#2b2f36;stroke:none}
+  .walltemp{fill:#8f959d;stroke:#2b2f36;stroke-width:0.7;stroke-dasharray:4 3}
+  .glassw{fill:#bcd9e6;stroke:#2b2f36;stroke-width:0.7}
+  .part{fill:#5b616a;stroke:none}
+  .partfire{fill:#b4544a;stroke:none}
+  .room{stroke:none}
+  .void{fill:#eceff3;stroke:#9aa1ab;stroke-width:0.8;stroke-dasharray:5 4}
+  .furn{fill:#ffffff;fill-opacity:0.55;stroke:#6d747d;stroke-width:0.7}
+  .furnkey{fill:#ffffff;fill-opacity:0.75;stroke:#2b2f36;stroke-width:1.1}
+  .beyond{fill:#ffffff;fill-opacity:0.5;stroke:#a7adb6;stroke-width:0.7}
+  .slab{fill:#7d848d;stroke:#2b2f36;stroke-width:0.6}
+  .roof{fill:#4a505a;stroke:none}
+  .ground{stroke:#2b2f36;stroke-width:2.2;fill:none}
+  .grid{stroke:#c2c8d0;stroke-width:0.8;stroke-dasharray:9 4 2 4;fill:none}
+  .dim{stroke:#2b2f36;stroke-width:0.7;fill:none}
+  .lead{stroke:#8b929b;stroke-width:0.6;fill:none}
+  .door{stroke:#2b2f36;stroke-width:0.9;fill:none}
+  .frame{fill:none;stroke:#2b2f36;stroke-width:1.2}
+  .thin{fill:none;stroke:#2b2f36;stroke-width:0.8}
+  .hatch{fill:none;stroke:#2b2f36;stroke-width:0.7}
+  text{fill:#20242a}
+  .lbl{font-size:11px}
+  .lblsm{font-size:9px;fill:#5b616a}
+  .lblrm{font-size:11.5px;font-weight:700}
+  .lblar{font-size:9.5px;fill:#4a505a}
+  .ttl{font-size:19px;font-weight:700;letter-spacing:0.2px}
+  .sub{font-size:11px;fill:#5b616a}
+  .axis{font-size:10px;font-weight:700;fill:#2b2f36}
+  .dimt{font-size:9.5px;fill:#2b2f36}
+  .warn{font-size:9.5px;fill:#a3453c}
+</style>
+<rect class="bg" x="0" y="0" width="1017" height="828"/>
+<rect x="663.0" y="92.0" width="32.4" height="486.0" class="room" fill="#f4f5f6"/>
+<rect x="695.4" y="443.0" width="156.6" height="135.0" class="room" fill="#dbe9f7"/>
+<rect x="695.4" y="254.0" width="156.6" height="189.0" class="room" fill="#f3f4f5"/>
+<rect x="695.4" y="92.0" width="156.6" height="162.0" class="room" fill="#e3f0fb"/>
+<rect x="474.0" y="254.0" width="189.0" height="324.0" class="room" fill="#dbf3e1"/>
+<rect x="474.0" y="92.0" width="189.0" height="162.0" class="room" fill="#e8e1f9"/>
+<rect x="285.0" y="92.0" width="189.0" height="81.0" class="room" fill="#fcecf3"/>
+<rect x="96.0" y="92.0" width="189.0" height="135.0" class="room" fill="#f7dce8"/>
+<rect x="285.0" y="92.0" width="189.0" height="486.0" class="void" />
+<rect x="285.0" y="92.0" width="189.0" height="81.0" class="room" fill="#fcecf3"/>
+<text x="379.5" y="518.6" class="lblsm" text-anchor="middle">Jump aréna — otevřeno přes 2 podlaží</text>
+<rect x="96.0" y="227.0" width="189.0" height="351.0" class="void" />
+<text x="190.5" y="518.6" class="lblsm" text-anchor="middle">Sdílená dílna — otevřeno přes 2 podlaží</text>
+<line x1="852.0" y1="60.0" x2="852.0" y2="598.0" class="grid" />
+<circle cx="852.0" cy="50.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="852.0" y="54.0" class="axis" text-anchor="middle">1</text>
+<line x1="663.0" y1="60.0" x2="663.0" y2="598.0" class="grid" />
+<circle cx="663.0" cy="50.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="663.0" y="54.0" class="axis" text-anchor="middle">2</text>
+<line x1="474.0" y1="60.0" x2="474.0" y2="598.0" class="grid" />
+<circle cx="474.0" cy="50.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="474.0" y="54.0" class="axis" text-anchor="middle">3</text>
+<line x1="285.0" y1="60.0" x2="285.0" y2="598.0" class="grid" />
+<circle cx="285.0" cy="50.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="285.0" y="54.0" class="axis" text-anchor="middle">4</text>
+<line x1="96.0" y1="60.0" x2="96.0" y2="598.0" class="grid" />
+<circle cx="96.0" cy="50.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="96.0" y="54.0" class="axis" text-anchor="middle">5</text>
+<circle cx="898.0" cy="578.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="898.0" y="582.0" class="axis" text-anchor="middle">A</text>
+<circle cx="898.0" cy="92.0" r="10.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<text x="898.0" y="96.0" class="axis" text-anchor="middle">B</text>
+<rect x="96.0" y="92.0" width="756.0" height="6.8" class="wall" />
+<rect x="96.0" y="571.3" width="756.0" height="6.8" class="wall" />
+<rect x="845.3" y="92.0" width="6.8" height="486.0" class="glassw" />
+<rect x="96.0" y="92.0" width="6.8" height="486.0" class="walltemp" />
+<line x1="845.3" y1="537.5" x2="852.0" y2="537.5" class="thin" />
+<line x1="845.3" y1="497.0" x2="852.0" y2="497.0" class="thin" />
+<line x1="845.3" y1="456.5" x2="852.0" y2="456.5" class="thin" />
+<line x1="845.3" y1="416.0" x2="852.0" y2="416.0" class="thin" />
+<line x1="845.3" y1="375.5" x2="852.0" y2="375.5" class="thin" />
+<line x1="845.3" y1="335.0" x2="852.0" y2="335.0" class="thin" />
+<line x1="845.3" y1="294.5" x2="852.0" y2="294.5" class="thin" />
+<line x1="845.3" y1="254.0" x2="852.0" y2="254.0" class="thin" />
+<line x1="845.3" y1="213.5" x2="852.0" y2="213.5" class="thin" />
+<line x1="845.3" y1="173.0" x2="852.0" y2="173.0" class="thin" />
+<line x1="845.3" y1="132.5" x2="852.0" y2="132.5" class="thin" />
+<rect x="733.2" y="571.3" width="81.0" height="6.8" class="room" fill="#ffffff"/>
+<line x1="814.2" y1="574.6" x2="733.2" y2="574.6" class="thin" />
+<rect x="522.6" y="571.3" width="91.8" height="6.8" class="room" fill="#ffffff"/>
+<line x1="614.4" y1="574.6" x2="522.6" y2="574.6" class="thin" />
+<rect x="317.4" y="571.3" width="105.3" height="6.8" class="room" fill="#ffffff"/>
+<line x1="422.7" y1="574.6" x2="317.4" y2="574.6" class="thin" />
+<rect x="117.6" y="571.3" width="156.6" height="6.8" class="room" fill="#ffffff"/>
+<line x1="274.2" y1="574.6" x2="117.6" y2="574.6" class="thin" />
+<rect x="282.3" y="227.0" width="5.4" height="343.4" class="partfire" />
+<rect x="472.6" y="254.0" width="2.7" height="316.4" class="part" />
+<rect x="472.6" y="99.6" width="2.7" height="154.4" class="part" />
+<rect x="282.3" y="99.6" width="5.4" height="127.4" class="partfire" />
+<rect x="103.6" y="225.6" width="181.4" height="2.7" class="part" />
+<rect x="694.0" y="484.3" width="2.7" height="86.1" class="part" />
+<rect x="694.0" y="443.0" width="2.7" height="12.7" class="part" />
+<rect x="694.0" y="430.3" width="2.7" height="12.7" class="part" />
+<rect x="694.0" y="254.0" width="2.7" height="147.7" class="part" />
+<rect x="694.0" y="153.6" width="2.7" height="100.4" class="part" />
+<rect x="694.0" y="99.6" width="2.7" height="6.5" class="part" />
+<rect x="660.3" y="461.4" width="5.4" height="109.1" class="partfire" />
+<rect x="660.3" y="254.0" width="5.4" height="159.8" class="partfire" />
+<rect x="660.3" y="99.6" width="5.4" height="154.4" class="partfire" />
+<rect x="695.4" y="441.6" width="149.0" height="2.7" class="part" />
+<rect x="695.4" y="252.6" width="149.0" height="2.7" class="part" />
+<rect x="542.3" y="252.6" width="120.7" height="2.7" class="part" />
+<rect x="474.0" y="252.6" width="39.7" height="2.7" class="part" />
+<rect x="472.6" y="99.6" width="2.7" height="73.4" class="part" />
+<rect x="282.3" y="99.6" width="5.4" height="73.4" class="partfire" />
+<polygon points="700.8,356.6 663.0,356.6 663.0,313.4 700.8,313.4" class="furnkey" />
+<polygon points="626.5,294.5 659.0,294.5 659.0,418.7 626.5,418.7" class="furnkey" />
+<polygon points="321.5,229.7 289.0,229.7 289.0,105.5 321.5,105.5" class="furnkey" />
+<polygon points="131.1,227.0 98.7,227.0 98.7,102.8 131.1,102.8" class="furnkey" />
+<polygon points="214.8,534.8 128.4,534.8 128.4,491.6 214.8,491.6" class="furn" />
+<polygon points="835.8,524.0 792.6,524.0 792.6,502.4 835.8,502.4" class="furn" />
+<polygon points="835.5,520.0 835.5,506.4 849.6,506.4 849.6,520.0" class="furn" />
+<polygon points="792.9,506.4 792.9,520.0 778.8,520.0 778.8,506.4" class="furn" />
+<polygon points="757.5,524.0 714.3,524.0 714.3,502.4 757.5,502.4" class="furn" />
+<polygon points="757.2,520.0 757.2,506.4 771.3,506.4 771.3,520.0" class="furn" />
+<polygon points="714.6,506.4 714.6,520.0 700.5,520.0 700.5,506.4" class="furn" />
+<polygon points="784.5,465.3 762.9,465.3 762.9,453.1 784.5,453.1" class="furn" />
+<polygon points="814.2,194.6 733.2,194.6 733.2,162.2 814.2,162.2" class="furn" />
+<polygon points="802.0,195.7 815.5,195.7 815.5,209.7 802.0,209.7" class="furn" />
+<polygon points="815.5,161.1 802.0,161.1 802.0,147.1 815.5,147.1" class="furn" />
+<polygon points="779.1,195.7 792.6,195.7 792.6,209.7 779.1,209.7" class="furn" />
+<polygon points="792.6,161.1 779.1,161.1 779.1,147.1 792.6,147.1" class="furn" />
+<polygon points="756.1,195.7 769.6,195.7 769.6,209.7 756.1,209.7" class="furn" />
+<polygon points="769.6,161.1 756.1,161.1 756.1,147.1 769.6,147.1" class="furn" />
+<polygon points="733.2,195.7 746.7,195.7 746.7,209.7 733.2,209.7" class="furn" />
+<polygon points="746.7,161.1 733.2,161.1 733.2,147.1 746.7,147.1" class="furn" />
+<polygon points="818.0,185.1 818.0,171.6 832.0,171.6 832.0,185.1" class="furn" />
+<polygon points="729.4,171.6 729.4,185.1 715.4,185.1 715.4,171.6" class="furn" />
+<polygon points="702.8,237.8 702.8,216.2 715.0,216.2 715.0,237.8" class="furn" />
+<polygon points="702.8,213.5 702.8,191.9 715.0,191.9 715.0,213.5" class="furn" />
+<polygon points="627.9,375.5 590.1,375.5 590.1,337.7 627.9,337.7" class="furnkey" />
+<polygon points="625.2,363.4 592.8,363.4 592.8,349.9 625.2,349.9" class="furn" />
+<polygon points="563.1,375.5 525.3,375.5 525.3,337.7 563.1,337.7" class="furnkey" />
+<polygon points="560.4,363.4 528.0,363.4 528.0,349.9 560.4,349.9" class="furn" />
+<polygon points="492.9,416.0 492.9,362.0 509.1,362.0 509.1,416.0" class="furn" />
+<polygon points="528.0,471.4 495.6,471.4 495.6,457.9 528.0,457.9" class="furn" />
+<polygon points="528.0,438.9 495.6,438.9 495.6,425.4 528.0,425.4" class="furn" />
+<polygon points="646.8,537.5 592.8,537.5 592.8,510.5 646.8,510.5" class="furn" />
+<polygon points="587.4,537.5 533.4,537.5 533.4,510.5 587.4,510.5" class="furn" />
+<polygon points="646.8,499.7 592.8,499.7 592.8,472.7 646.8,472.7" class="furn" />
+<polygon points="587.4,499.7 533.4,499.7 533.4,472.7 587.4,472.7" class="furn" />
+<polygon points="492.2,264.8 492.2,281.0 477.4,281.0 477.4,264.8" class="furn" />
+<polygon points="474.3,389.0 474.3,281.0 476.4,281.0 476.4,389.0" class="furn" />
+<polygon points="641.4,170.3 598.2,170.3 598.2,110.9 641.4,110.9" class="furnkey" />
+<polygon points="576.6,170.3 533.4,170.3 533.4,110.9 576.6,110.9" class="furnkey" />
+<polygon points="498.3,124.4 482.1,124.4 482.1,102.8 498.3,102.8" class="furn" />
+<polygon points="619.8,227.0 598.2,227.0 598.2,205.4 619.8,205.4" class="furn" />
+<polygon points="623.0,222.9 623.0,209.4 637.1,209.4 637.1,222.9" class="furn" />
+<polygon points="595.0,209.4 595.0,222.9 580.9,222.9 580.9,209.4" class="furn" />
+<polygon points="498.3,230.4 482.1,230.4 482.1,212.8 498.3,212.8" class="furn" />
+<polygon points="449.7,162.2 390.3,162.2 390.3,102.8 449.7,102.8" class="furn" />
+<polygon points="374.1,162.2 314.7,162.2 314.7,102.8 374.1,102.8" class="furn" />
+<polygon points="460.5,168.7 298.5,168.7 298.5,166.5 460.5,166.5" class="furn" />
+<polygon points="268.8,143.3 187.8,143.3 187.8,100.1 268.8,100.1" class="furnkey" />
+<polygon points="181.0,143.3 100.0,143.3 100.0,100.1 181.0,100.1" class="furnkey" />
+<polygon points="262.0,193.3 227.0,193.3 227.0,174.4 262.0,174.4" class="furn" />
+<polygon points="209.4,194.6 187.8,194.6 187.8,173.0 209.4,173.0" class="furnkey" />
+<polygon points="182.4,194.6 160.8,194.6 160.8,173.0 182.4,173.0" class="furnkey" />
+<polygon points="104.1,197.3 104.1,175.7 114.9,175.7 114.9,197.3" class="furnkey" />
+<polygon points="194.5,156.8 186.5,156.8 186.5,148.7 194.5,148.7" class="furn" />
+<line x1="626.5" y1="303.4" x2="659.0" y2="303.4" class="door" />
+<line x1="626.5" y1="312.2" x2="659.0" y2="312.2" class="door" />
+<line x1="626.5" y1="321.1" x2="659.0" y2="321.1" class="door" />
+<line x1="626.5" y1="330.0" x2="659.0" y2="330.0" class="door" />
+<line x1="626.5" y1="338.9" x2="659.0" y2="338.9" class="door" />
+<line x1="626.5" y1="347.7" x2="659.0" y2="347.7" class="door" />
+<line x1="626.5" y1="356.6" x2="659.0" y2="356.6" class="door" />
+<line x1="626.5" y1="365.5" x2="659.0" y2="365.5" class="door" />
+<line x1="626.5" y1="374.3" x2="659.0" y2="374.3" class="door" />
+<line x1="626.5" y1="383.2" x2="659.0" y2="383.2" class="door" />
+<line x1="626.5" y1="392.1" x2="659.0" y2="392.1" class="door" />
+<line x1="626.5" y1="401.0" x2="659.0" y2="401.0" class="door" />
+<line x1="626.5" y1="409.8" x2="659.0" y2="409.8" class="door" />
+<line x1="321.5" y1="220.8" x2="289.0" y2="220.8" class="door" />
+<line x1="321.5" y1="212.0" x2="289.0" y2="212.0" class="door" />
+<line x1="321.5" y1="203.1" x2="289.0" y2="203.1" class="door" />
+<line x1="321.5" y1="194.2" x2="289.0" y2="194.2" class="door" />
+<line x1="321.5" y1="185.3" x2="289.0" y2="185.3" class="door" />
+<line x1="321.5" y1="176.5" x2="289.0" y2="176.5" class="door" />
+<line x1="321.5" y1="167.6" x2="289.0" y2="167.6" class="door" />
+<line x1="321.5" y1="158.7" x2="289.0" y2="158.7" class="door" />
+<line x1="321.5" y1="149.9" x2="289.0" y2="149.9" class="door" />
+<line x1="321.5" y1="141.0" x2="289.0" y2="141.0" class="door" />
+<line x1="321.5" y1="132.1" x2="289.0" y2="132.1" class="door" />
+<line x1="321.5" y1="123.2" x2="289.0" y2="123.2" class="door" />
+<line x1="321.5" y1="114.4" x2="289.0" y2="114.4" class="door" />
+<line x1="131.1" y1="218.1" x2="98.7" y2="218.1" class="door" />
+<line x1="131.1" y1="209.3" x2="98.7" y2="209.3" class="door" />
+<line x1="131.1" y1="200.4" x2="98.7" y2="200.4" class="door" />
+<line x1="131.1" y1="191.5" x2="98.7" y2="191.5" class="door" />
+<line x1="131.1" y1="182.6" x2="98.7" y2="182.6" class="door" />
+<line x1="131.1" y1="173.8" x2="98.7" y2="173.8" class="door" />
+<line x1="131.1" y1="164.9" x2="98.7" y2="164.9" class="door" />
+<line x1="131.1" y1="156.0" x2="98.7" y2="156.0" class="door" />
+<line x1="131.1" y1="147.2" x2="98.7" y2="147.2" class="door" />
+<line x1="131.1" y1="138.3" x2="98.7" y2="138.3" class="door" />
+<line x1="131.1" y1="129.4" x2="98.7" y2="129.4" class="door" />
+<line x1="131.1" y1="120.5" x2="98.7" y2="120.5" class="door" />
+<line x1="131.1" y1="111.7" x2="98.7" y2="111.7" class="door" />
+<line x1="695.4" y1="482.1" x2="719.7" y2="482.1" class="door" />
+<path d="M 719.7 482.1 A 24.3 24.3 0 0 0 695.4 457.9" class="door" stroke-dasharray="3 2"/>
+<line x1="695.4" y1="428.1" x2="719.7" y2="428.1" class="door" />
+<path d="M 719.7 428.1 A 24.3 24.3 0 0 0 695.4 403.9" class="door" stroke-dasharray="3 2"/>
+<line x1="695.4" y1="151.4" x2="738.6" y2="151.4" class="door" />
+<path d="M 738.6 151.4 A 43.2 43.2 0 0 0 695.4 108.2" class="door" stroke-dasharray="3 2"/>
+<line x1="663.0" y1="459.2" x2="706.2" y2="459.2" class="door" />
+<path d="M 706.2 459.2 A 43.2 43.2 0 0 0 663.0 416.0" class="door" stroke-dasharray="3 2"/>
+<line x1="540.1" y1="254.0" x2="540.1" y2="229.7" class="door" />
+<path d="M 540.1 229.7 A 24.3 24.3 0 0 0 515.9 254.0" class="door" stroke-dasharray="3 2"/>
+<text x="679.2" y="333.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" transform="rotate(-90 679.2 335.0)">Chodba</text>
+<text x="679.2" y="346.5" class="lblar" text-anchor="middle" style="font-size:9.5px" transform="rotate(-90 679.2 335.0)">21,6 m²</text>
+<text x="773.7" y="508.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Klidové místnosti</text>
+<text x="773.7" y="522.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >29,0 m²</text>
+<text x="773.7" y="346.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Rezerva k pronájmu</text>
+<text x="773.7" y="360.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >40,6 m² · shell</text>
+<text x="773.7" y="171.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Zasedačka / školicí</text>
+<text x="773.7" y="184.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >34,8 m²</text>
+<text x="568.5" y="414.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Fitness</text>
+<text x="568.5" y="427.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >84,0 m²</text>
+<text x="568.5" y="171.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Sim racing</text>
+<text x="568.5" y="184.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >42,0 m²</text>
+<text x="379.5" y="130.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Dětské atrakce</text>
+<text x="379.5" y="144.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >21,0 m²</text>
+<text x="190.5" y="157.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Technická místnost</text>
+<text x="190.5" y="171.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >35,0 m²</text>
+<line x1="852.0" y1="634.0" x2="663.0" y2="634.0" class="dim" />
+<line x1="852.0" y1="630.0" x2="852.0" y2="638.0" class="dim" />
+<line x1="663.0" y1="630.0" x2="663.0" y2="638.0" class="dim" />
+<text x="757.5" y="629.0" class="dimt" text-anchor="middle">7,00</text>
+<line x1="663.0" y1="634.0" x2="474.0" y2="634.0" class="dim" />
+<line x1="663.0" y1="630.0" x2="663.0" y2="638.0" class="dim" />
+<line x1="474.0" y1="630.0" x2="474.0" y2="638.0" class="dim" />
+<text x="568.5" y="629.0" class="dimt" text-anchor="middle">7,00</text>
+<line x1="474.0" y1="634.0" x2="285.0" y2="634.0" class="dim" />
+<line x1="474.0" y1="630.0" x2="474.0" y2="638.0" class="dim" />
+<line x1="285.0" y1="630.0" x2="285.0" y2="638.0" class="dim" />
+<text x="379.5" y="629.0" class="dimt" text-anchor="middle">7,00</text>
+<line x1="285.0" y1="634.0" x2="96.0" y2="634.0" class="dim" />
+<line x1="285.0" y1="630.0" x2="285.0" y2="638.0" class="dim" />
+<line x1="96.0" y1="630.0" x2="96.0" y2="638.0" class="dim" />
+<text x="190.5" y="629.0" class="dimt" text-anchor="middle">7,00</text>
+<line x1="852.0" y1="660.0" x2="96.0" y2="660.0" class="dim" />
+<line x1="852.0" y1="656.0" x2="852.0" y2="664.0" class="dim" />
+<line x1="96.0" y1="656.0" x2="96.0" y2="664.0" class="dim" />
+<text x="474.0" y="655.0" class="dimt" text-anchor="middle">28,00</text>
+<line x1="942.0" y1="578.0" x2="942.0" y2="92.0" class="dim" />
+<line x1="938.0" y1="578.0" x2="946.0" y2="578.0" class="dim" />
+<line x1="938.0" y1="92.0" x2="946.0" y2="92.0" class="dim" />
+<text x="936.0" y="335.0" class="dimt" text-anchor="middle" transform="rotate(-90 936.0 335.0)">18,00</text>
+<text x="474.0" y="612.0" class="lblsm" text-anchor="middle">JIH — všechny vstupy a vjezdy</text>
+<text x="474.0" y="80.0" class="lblsm" text-anchor="middle">SEVER — hranice pozemku, slepá stěna bez otvorů</text>
+<text x="860.0" y="80.0" class="lblsm" text-anchor="end">VÝCHOD — prosklené průčelí</text>
+<text x="88.0" y="80.0" class="lblsm" >ZÁPAD — dočasný štít (etapa 2)</text>
+<circle cx="50.0" cy="114.0" r="15.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<polygon points="50.0,94.0 45.5,120.8 50.0,114.8 54.5,120.8" class="wall" />
+<text x="50.0" y="90.0" class="axis" text-anchor="middle">S</text>
+<rect x="96.0" y="694.0" width="16.0" height="9.0" class="wall" />
+<text x="117.0" y="702.0" class="lblsm" >obvodový plášť</text>
+<rect x="207.0" y="694.0" width="16.0" height="9.0" class="part" />
+<text x="228.0" y="702.0" class="lblsm" >příčka</text>
+<rect x="278.0" y="694.0" width="16.0" height="9.0" class="partfire" />
+<text x="299.0" y="702.0" class="lblsm" >požárně dělicí konstrukce</text>
+<rect x="444.0" y="694.0" width="16.0" height="9.0" class="glassw" />
+<text x="465.0" y="702.0" class="lblsm" >prosklení</text>
+<rect x="530.0" y="694.0" width="16.0" height="9.0" class="walltemp" />
+<text x="551.0" y="702.0" class="lblsm" >dočasný štít</text>
+<rect x="631.0" y="694.0" width="16.0" height="9.0" class="void" />
+<text x="652.0" y="702.0" class="lblsm" >prostor přes 2 podlaží</text>
+<line x1="40.0" y1="732.0" x2="977.0" y2="732.0" class="frame" />
+<text x="40.0" y="756.0" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1</text>
+<text x="40.0" y="774.0" class="sub" >PŮDORYS PATRA (+ 3,300) · vodorovný řez v úrovni +4,50 m</text>
+<text x="40.0" y="789.0" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
+<text x="40.0" y="804.0" class="sub" >Generováno ze src/spec.js · 16. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>
+<text x="40.0" y="819.0" class="warn" >NENÍ projektová dokumentace — nástroj na hledání poměrů ploch před zadáním projektantovi.</text>
+<text x="977.0" y="756.0" class="sub" text-anchor="end">patro 308 m² · světlá výška 2,70 m</text>
+<rect x="707.0" y="794.0" width="67.5" height="6.0" class="frame" />
+<rect x="774.5" y="794.0" width="67.5" height="6.0" class="wall" />
+<rect x="842.0" y="794.0" width="67.5" height="6.0" class="frame" />
+<rect x="909.5" y="794.0" width="67.5" height="6.0" class="wall" />
+<text x="707.0" y="811.0" class="dimt" >0</text>
+<text x="977.0" y="811.0" class="dimt" text-anchor="end">10 m</text>
+</svg>
