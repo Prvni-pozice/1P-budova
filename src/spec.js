@@ -49,19 +49,25 @@ export const SPEC = {
   // odolností (v modelu tlustší, tónované). Technická zóna je vlastní úsek,
   // aréna s lobby je shromažďovací prostor, kanceláře třetí úsek.
   compartments: {
-    office: ['office-gf', 'commons', 'wc-gf', 'office-1f', 'meeting', 'reserve', 'corridor'],
-    public: ['arena', 'lobby', 'wetcore', 'play', 'gym', 'sim'],
+    office: ['office-gf', 'commons', 'wc-gf', 'office-1f', 'meeting', 'reserve',
+             'corridor', 'core', 'wc-1f-w', 'wc-1f-m'],
+    public: ['arena', 'lobby', 'wc-men', 'wc-women', 'play', 'gym', 'gym-n', 'sim'],
     tech:   ['workshop', 'plant', 'store-gf'],
   },
 
-  // Otvory v příčkách mimo dveře (výtahová šachta prochází stěnou office–lobby)
+  // Otvory v příčkách mimo dveře — plná výška, žádné dveře.
   wallGaps: [
-    { a: 'office-gf', b: 'lobby', from: 8.1, to: 9.9, note: 'výtah — kabina ústí do lobby' },
+    // Vstup do arény ze severního pruhu lobby, podél stěny šaten. Není to
+    // dveřní otvor, ale vynechaná stěna: z kavárny se ke skokům jde volně
+    // a vzadu v lobby tím vzniká přirozený koridor kavárna → šatny → aréna.
+    { a: 'lobby', b: 'arena', from: 8.0, to: 12.0, note: 'otevřený vstup do arény' },
   ],
 
   // Dvojice bloků BEZ příčky — jeden souvislý prostor rozdělený jen v datech.
   // Komunitní koncept přízemí: pracovní část a kuchyňský kout tečou do sebe.
-  openPairs: [['office-gf', 'commons']],
+  // Chodba + jádro = jeden prostor, aby schodiště ústilo do chodby.
+  // Fitness je do L, obě části jsou jedna místnost.
+  openPairs: [['office-gf', 'commons'], ['corridor', 'core'], ['gym', 'gym-n']],
 
   // Vnitřní dveře. Co tu není, není propojené — DÍLNA JE ZÁMĚRNĚ ODDĚLENÁ:
   // technická zóna (dílna + strojovna + sklad) se vstupuje jen vlastními
@@ -69,15 +75,17 @@ export const SPEC = {
   //   at = poloha po délce společné hrany (jinak střed)
   links: [
     { a: 'office-gf', b: 'wc-gf',    type: 'door',    at: 5.0,  note: 'jediné uzavřené dveře v komunitní zóně' },
-    { a: 'office-gf', b: 'lobby',    type: 'door',    at: 11.4, note: 'kanceláře do lobby' },
-    { a: 'lobby',     b: 'wetcore',  type: 'double',  at: 8.5,  note: 'veřejnost na WC' },
-    { a: 'lobby',     b: 'arena',    type: 'glazed',  at: 1.5,  note: 'vstup do arény, do vstupní uličky' },
+    { a: 'office-gf', b: 'lobby',    type: 'door',    at: 3.0,  note: 'komunitní prostor do lobby; severněji stojí schodišťové jádro' },
+    { a: 'lobby',     b: 'wc-men',   type: 'double',  at: 8.5,  note: 'pánská šatna ze severního pruhu lobby' },
+    { a: 'lobby',     b: 'wc-women', type: 'double',  at: 11.0, note: 'dámská šatna ze severního pruhu lobby' },
     { a: 'workshop',  b: 'store-gf', type: 'service', at: 24.0, note: 'jediné vnitřní propojení technické zóny' },
     { a: 'corridor',  b: 'office-1f', type: 'door',   at: 4.0 },
     { a: 'corridor',  b: 'reserve',  type: 'door',    at: 6.0,  note: 'samostatný vstup do pronájmu' },
     { a: 'corridor',  b: 'meeting',  type: 'double',  at: 16.6 },
-    { a: 'corridor',  b: 'gym',      type: 'double',  at: 5.2,  note: 'vstup do chodby přímo u výstupu schodiště; slouží i jako úniková' },
-    { a: 'gym',       b: 'sim',      type: 'door',    at: 12.0 },
+    { a: 'corridor',  b: 'gym',      type: 'double',  at: 2.5,  note: 'z chodby do fitness; slouží i jako úniková' },
+    { a: 'corridor',  b: 'wc-1f-w',  type: 'door',    at: 13.5, note: 'sanita patra visí na chodbě, ne na fitness' },
+    { a: 'corridor',  b: 'wc-1f-m',  type: 'door',    at: 16.5 },
+    { a: 'gym-n',     b: 'sim',      type: 'door',    at: 12.0 },
   ],
 
   // Ekonomika provozu — z rozvahy 8/2026 (základní scénář, Pelhřimov):
@@ -87,7 +95,8 @@ export const SPEC = {
     costsTotal: 2970000,
     revenue: {
       arena: 2400000, lobby: 750000,        // aréna + bar = 3,15 mil.
-      gym: 330000, sim: 300000,
+      gym: 185000, 'gym-n': 145000,         // fitness dohromady 330 tis., rozdělené podle plochy
+      sim: 300000,
       workshop: 200000, 'store-gf': 50000,  // dílna vč. skladu = 0,25 mil.
       'office-gf': 120000, 'office-1f': 60000, meeting: 60000, commons: 32000,
       reserve: 74000,
@@ -103,7 +112,12 @@ export const SPEC = {
     { id: 'office-gf', name: 'Komunitní prostor',   type: 'office',   level: 0, x0: 0,  x1: 7,  z0: 0,    z1: 14.6 },
     { id: 'commons',   name: 'Kuchyňský kout',      type: 'lobby',    level: 0, x0: 0,  x1: 4,  z0: 14.6, z1: 18 },
     { id: 'wc-gf',     name: 'WC',                  type: 'wet',      level: 0, x0: 4,  x1: 7,  z0: 14.6, z1: 18 },
-    { id: 'wetcore',   name: 'Šatny + sprchy + WC', type: 'wet',      level: 0, x0: 7,  x1: 14, z0: 12, z1: 18 },
+    // Šatny se dělí na pánské a dámské (rozhodnutí 16. 8.) — jeden společný
+    // mokrý blok nešel provozovat. Obě poloviny se vstupuje ze severního
+    // pruhu lobby, který je zároveň cestou do arény.
+    // Dámská je širší, protože nese bezbariérovou kabinu a přebalovací pult.
+    { id: 'wc-men',    name: 'Šatna + sprchy — páni', type: 'wet', level: 0, x0: 7,  x1: 10, z0: 12, z1: 18 },
+    { id: 'wc-women',  name: 'Šatna + sprchy — dámy', type: 'wet', level: 0, x0: 10, x1: 14, z0: 12, z1: 18 },
     { id: 'lobby',     name: 'Lobby / recepce / bar', type: 'lobby',  level: 0, x0: 7,  x1: 14, z0: 0,  z1: 12 },
     { id: 'arena',     name: 'Jump aréna',          type: 'arena',    level: 'full', x0: 14, x1: 21, z0: 0, z1: 18 },
     { id: 'store-gf',  name: 'Sklad',               type: 'storage',  level: 0, x0: 21, x1: 28, z0: 13, z1: 18 },
@@ -120,8 +134,21 @@ export const SPEC = {
     // z východního štítu a vlastní dveře z chodby, takže jde oddělit.
     { id: 'reserve',   name: 'Rezerva k pronájmu',  type: 'reserve',  level: 1, x0: 0,  x1: 5.8, z0: 5,  z1: 12, fitout: 'shell' },
     { id: 'meeting',   name: 'Zasedačka / školicí', type: 'meeting',  level: 1, x0: 0,  x1: 5.8, z0: 12, z1: 18 },
-    { id: 'gym',       name: 'Fitness',             type: 'gym',      level: 1, x0: 7,  x1: 14, z0: 0,  z1: 12 },
-    { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 7,  x1: 14, z0: 12, z1: 18 },
+    // Schodišťové jádro (16. 8.): schodiště i výtah stojí v jednom bloku,
+    // který je BEZ příčky napojený na chodbu — nahoře se tedy vystupuje do
+    // chodby a z ní do místností, ne rovnou do fitness. Dole jádro dosedá
+    // do lobby, takže se nahoru jde ze společného prostoru.
+    // Předtím výtah stál v šachtě přes celou šířku 1,2m chodby a chodbu
+    // rozřízl — do zasedačky se tudy nedalo projít.
+    { id: 'core',      name: 'Schodiště a výtah',   type: 'circ',     level: 1, x0: 7,  x1: 10, z0: 5,  z1: 12 },
+    // Fitness je do L kolem jádra — dva bloky bez příčky mezi sebou.
+    { id: 'gym',       name: 'Fitness',             type: 'gym',      level: 1, x0: 7,  x1: 14, z0: 0,  z1: 5 },
+    { id: 'gym-n',     name: 'Fitness — volné váhy', type: 'gym',     level: 1, x0: 10, x1: 14, z0: 5,  z1: 12 },
+    // Sanita patra na chodbě: dostupná z kanceláří i z fitness, každá
+    // polovina má WC i sprchu.
+    { id: 'wc-1f-w',   name: 'WC + sprcha — dámy',  type: 'wet',      level: 1, x0: 7,  x1: 10, z0: 12, z1: 15 },
+    { id: 'wc-1f-m',   name: 'WC + sprcha — páni',  type: 'wet',      level: 1, x0: 7,  x1: 10, z0: 15, z1: 18 },
+    { id: 'sim',       name: 'Sim racing',          type: 'sim',      level: 1, x0: 10, x1: 14, z0: 12, z1: 18 },
     { id: 'play',      name: 'Dětské atrakce',      type: 'play',     level: 1, x0: 14, x1: 21, z0: 15, z1: 18 },
     { id: 'plant',     name: 'Technická místnost',  type: 'plant',    level: 1, x0: 21, x1: 28, z0: 13, z1: 18 },
   ],

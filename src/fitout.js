@@ -255,11 +255,10 @@ const LAYOUTS = {
     put('rtable', 2.2, 12.9)
     // vybavení volně při stěnách, ať prostor působí společně
     row('sideboard', 1.2, 0.35, 4, 0.9)
-    row('cabinet', 6.55, 1.6, 3, 0.9, { along: 'v', rot: 90 })
+    row('cabinet', 6.55, 6.4, 3, 0.9, { along: 'v', rot: 90 })
     put('pod', 5.7, 5.7, { note: 'akustická budka na hovory' })
-    put('rack19', 6.55, 4.1, { rot: 90, note: 'uzamykatelná serverová skříň' })
+    put('rack19', 6.55, 11.5, { rot: 90, note: 'uzamykatelná serverová skříň' })
     put('printer3d', 6.55, 12.6, { rot: 90, note: 'sdílená tiskárna' })
-    put('elevator', 6.3, 9.0, { note: 'bezbariérový přístup do patra' })
     return items
   },
   'office-1f': (S, b) => {                                     // klidové místnosti
@@ -341,51 +340,99 @@ const LAYOUTS = {
     put('bench', 5.6, 3.0)
     put('shoerack', 6.6, 4.6, { rot: 90 })
     // 3 patra po 10 sloupcích; rodiny sdílejí, na 40 lidí ve špičce to stačí
-    row('valuebox', 6.6, 6.0, 10, 0.32, { along: 'v', rot: 90, note: 'cennosti, 3 patra' })
-    // schodiště podél západní stěny — přes severní konec se to nemačká
-    put('stairs', 0.75, 8.2, { rot: 180, note: 'výstup na jih — přímo u dveří do chodby' })
-    put('cleaning', 0.75, 6.4, { note: 'úklidová komora pod vysokým koncem schodiště' })
+    row('valuebox', 6.6, 6.0, 8, 0.32, { along: 'v', rot: 90, note: 'cennosti, 3 patra' })
+    // Schodišťové jádro u západní stěny: schodiště stoupá na SEVER a ústí
+    // nahoře do chodby, výtah stojí vedle něj. Obojí stojí v lobby, takže
+    // se nahoru jde ze společného prostoru; nahoře oba vyústí v bloku 'core',
+    // který je bez příčky spojený s chodbou.
+    put('stairs', 0.6, 8.5, { rot: 180, note: 'výstup na jih, do jádra a odtud do chodby' })
+    put('elevator', 2.1, 8.5, { note: 'bezbariérový přístup do patra, u schodiště' })
+    put('cleaning', 2.6, 10.4, { note: 'úklidová komora pod mezipatrem' })
     // dva sloupce; řady 2,4 m od sebe, jinak židle zády k sobě kolidují.
     // U řady u příčky se severní židle vynechává.
-    for (const u of [2.7, 5.1]) {
-      put('rtable', u, 6.6)
-      around(u, 6.6, [[-0.75, 0], [0.75, 0], [0, -0.75], [0, 0.75]])
-      put('rtable', u, 9.0)
-      around(u, 9.0, [[-0.75, 0], [0.75, 0], [0, -0.75]])
-    }
-    put('partyTable', 4.0, 11.0, { note: 'vyhrazený stůl pro oslavy' })
-    put('partition', 4.0, 9.9, { note: 'oddělí párty kout, jinak splyne s barem' })
+    // sloupce sezení jsou na východ od jádra — pod mezipatrem u schodiště
+    // stojí schodiště, výtah a úklidová komora
+    put('rtable', 4.0, 6.6)
+    around(4.0, 6.6, [[-0.75, 0], [0.75, 0], [0, -0.75], [0, 0.75]])
+    // u schránek na cennosti se východní židle vynechává, jinak si sednou na sebe
+    put('rtable', 6.0, 6.6)
+    around(6.0, 6.6, [[-0.75, 0], [0, -0.75], [0, 0.75]])
+    // Vyhrazený stůl pro oslavy (party místnost se nestaví — jen stůl u baru).
+    // SEVERNÍ PRUH LOBBY (v > 10) MUSÍ ZŮSTAT PRÁZDNÝ: je to cesta
+    // kavárna → šatny → aréna, kterou si Zdeněk vyžádal.
+    put('partyTable', 4.9, 9.0, { note: 'vyhrazený stůl pro oslavy' })
     for (let i = 0; i < 4; i++) {
-      const u = 3.1 + i * 0.6
-      seat(u, 10.35, u, 11.0)
-      seat(u, 11.65, u, 11.0)
+      const u = 4.3 + i * 0.6
+      seat(u, 8.25, u, 9.0)
+      seat(u, 9.75, u, 9.0)
     }
-    put('glass', 6.95, 8.5, { rot: 90, note: 'výhled do arény' })
+    // prosklení do arény zůstává v JIŽNÍ části stěny — severní část stěny
+    // (v 8–12) je vynechaná, tudy se do arény vchází
+    put('glass', 6.95, 4.5, { rot: 90, note: 'výhled do arény' })
     put('hydrant', 0.4, 2.6, { rot: 90, dy: 0.6 })
     put('firstaid', 0.15, 4.6, { rot: 90, note: 'lékárnička + AED u recepce' })
     return items
   },
 
   // ------------------------------------------------------- šatny a WC
-  wetcore: (S, b, P) => {
+  // Dělené šatny (16. 8.). Obě mají stejnou logiku: od vstupu (v = 0, ze
+  // severního pruhu lobby) šatnová část se skříňkami a lavicí, vzadu mokrá
+  // část — 2 sprchy, umyvadla, kabiny. Pánská má navíc 2 pisoáry, dámská
+  // nese bezbariérovou kabinu a přebalovací pult (jsou jen jednou v domě).
+  // Počty kabin z normy na POLOVINU špičky, protože blok obsluhuje jedno pohlaví.
+  // Pánská 3 × 6 m. Vstup v u = 1,5 od severního pruhu lobby, před dveřmi
+  // musí zůstat 0,85 m volných — proto šatnová část začíná až na v = 1,0
+  // a kabiny na v = 1,6. Kabiny jdou na východ HLOUBKOU (rot 90), jinak se
+  // do 3 m šířky nevejdou.
+  'wc-men': (S, b, P) => {
     const { items, put, row } = maker(S, b)
-    const sPub = sanitaryFor(P.arena.peak, { publicUse: true })
-    // Šatna fitness: západní pás (skříňky, lavice) + severní pás (sprchy,
-    // umyvadla, kabinky). Veřejné WC: kabiny podél východní stěny, rozteč
-    // 1,0 m — kabina je hluboká 1,5, takže jde na východ hloubkou, ne šířkou.
-    row('locker', 0.4, 0.9, Math.ceil(Math.ceil(P.gym.users * 1.5) / 2), 0.32, { along: 'v', rot: 90 })
-    put('bench', 1.6, 2.6, { rot: 90 })
-    row('shower', 0.65, 5.5, 2, 0.95)
-    row('basin', 2.45, 5.55, 2, 0.65)
-    row('changing', 3.85, 5.45, 2, 1.05)
-    row('wc', 6.25, 0.8, sPub.wcW + sPub.wcM, 1.0, { along: 'v', rot: 90 })
-    row('urinal', 0.35, 3.3, sPub.urinals, 0.5, { along: 'v', rot: 90 })
-    row('basin', 2.9, 0.55, sPub.basins, 0.7)
-    put('wcBF', 3.4, 3.6)
-    put('babychange', 5.0, 3.5, { note: 'v rodinném provozu povinná výbava' })
-    put('mirror', 4.3, 0.12, { dy: 1.35, note: 'nad umyvadly' })
+    const s = sanitaryFor(P.arena.peak, { publicUse: true })
+    row('locker', 0.25, 1.2, Math.ceil(Math.ceil(P.gym.users * 1.5) / 4) * 2, 0.32, { along: 'v', rot: 90 })
+    put('bench', 0.9, 2.2, { rot: 90 })
+    row('wc', 2.25, 1.6, s.wcM, 1.0, { along: 'v', rot: 90 })
+    row('urinal', 2.8, 3.4, 2, 0.55, { along: 'v', rot: 90 })
+    row('shower', 0.7, 5.3, 2, 1.0)
+    row('basin', 2.7, 4.85, Math.floor(s.basins / 2), 0.7, { along: 'v', rot: 90 })
     return items
   },
+  // Dámská 4 × 6 m — nese bezbariérovou kabinu (v domě jediná veřejná) a
+  // přebalovací pult, proto je o metr širší než pánská.
+  'wc-women': (S, b, P) => {
+    const { items, put, row } = maker(S, b)
+    const s = sanitaryFor(P.arena.peak, { publicUse: true })
+    row('wc', 3.25, 1.0, s.wcW, 1.0, { along: 'v', rot: 90 })
+    put('wcBF', 1.4, 2.2, { note: 'bezbariérová kabina — v domě jediná veřejná' })
+    row('locker', 0.25, 4.2, Math.ceil(Math.ceil(P.gym.users * 1.5) / 4) * 2, 0.32, { along: 'v', rot: 90 })
+    put('bench', 0.9, 4.8, { rot: 90 })
+    row('shower', 2.55, 4.9, 2, 0.95)
+    row('basin', 2.5, 5.7, Math.ceil(s.basins / 2), 0.7)
+    put('babychange', 1.7, 5.6, { rot: 180, note: 'v rodinném provozu povinná výbava' })
+    return items
+  },
+
+  // Sanita patra 3 × 3 m — malá, ale úplná: kabina, sprcha, umyvadlo.
+  // Visí na CHODBĚ, takže na ni dosáhne kancelář i zasedačka, nejen fitness.
+  // Dveře jsou u jižního rohu (v = 0,6), aby před nimi zbylo volné místo.
+  'wc-1f-w': (S, b) => {
+    const { items, put, row } = maker(S, b)
+    row('wc', 2.25, 0.55, 2, 1.0, { along: 'v', rot: 90 })
+    put('shower', 1.5, 2.5)
+    put('basin', 2.75, 2.6, { rot: 90 })
+    return items
+  },
+  'wc-1f-m': (S, b) => {
+    const { items, put, row } = maker(S, b)
+    put('wc', 2.25, 0.55, { rot: 90 })
+    row('urinal', 2.8, 1.6, 2, 0.55, { along: 'v', rot: 90 })
+    put('shower', 1.5, 2.5)
+    put('basin', 0.8, 0.5)
+    return items
+  },
+
+  // Jádro samo nic nenese — schodiště a výtah stojí PŘÍZEMÍM v lobby
+  // (odtud se do nich vstupuje) a jen prorážejí strop do tohoto bloku.
+  // Kdyby seděly v bloku patra, měly by patu ve výšce 3,3 m.
+  core: () => [],
 
   // -------------------------------------------------------------- aréna
   arena: (S, b, P) => {
@@ -421,37 +468,45 @@ const LAYOUTS = {
   },
 
   // ------------------------------------------------------ fitness a sim
+  // Fitness je po vestavbě sanity a jádra do L: jižní pás (7×6,6) nese
+  // stroje a rozcvičovnu, severní výběžek (4×5,4) volné váhy u prosklení
+  // do arény. Mezi nimi není příčka, je to jedna místnost.
   gym: (S, b, P) => {
     const { items, put, row } = maker(S, b)
     for (let i = 0; i < P.gym.cages; i++) {
-      const u = 2.0 + i * 2.4
-      put('cage', u, 8.2)
-      put('gymbench', u, 8.2)                                  // lavička v kleci
+      const u = 2.2 + i * 1.8
+      put('cage', u, 4.0)
+      put('gymbench', u, 4.0)                                  // lavička v kleci
     }
-    put('dumbbells', 6.0, 7.0, { rot: 90 })
-    row('gymbench', 5.6, 4.2, 2, 1.2, { along: 'v' })
-    row('mat', 1.6, 2.0, 2, 2.2)
-    row('mat', 1.6, 3.4, 2, 2.2)
+    row('mat', 1.7, 1.0, 2, 2.2)
+    row('gymbench', 5.9, 1.2, 2, 1.2, { along: 'v' })
     put('mirror', 3.5, 0.35)
-    put('picture', 0.15, 2.6, { rot: 270, img: '/art/posilka1.jpg', pw: 1.5, ph: 0.85, py: 1.6 })
-    put('picture', 0.15, 4.6, { rot: 270, img: '/art/posilka2.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
-    put('picture', 0.15, 6.6, { rot: 270, img: '/art/posilka3.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
-    put('cleansink', 6.6, 11.3, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
-    put('exitsign', 0.35, 5.2, { rot: 90, dy: 2.3, note: 'směr úniku na chodbu' })
-    put('glass', 6.95, 9.0, { rot: 90, note: 'výhled do arény' })
-    put('co2', 0.15, 6.0, { rot: 90, dy: 1.6 })
+    put('picture', 0.15, 1.0, { rot: 270, img: '/art/posilka1.jpg', pw: 1.5, ph: 0.85, py: 1.6 })
+    put('picture', 0.15, 2.5, { rot: 270, img: '/art/posilka2.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
+    put('picture', 0.15, 4.0, { rot: 270, img: '/art/posilka3.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
+    put('cleansink', 6.6, 4.65, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
+    put('exitsign', 0.35, 2.5, { rot: 90, dy: 2.3, note: 'směr úniku na chodbu' })
+    put('co2', 0.15, 4.4, { rot: 90, dy: 1.6 })
+    return items
+  },
+  'gym-n': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('dumbbells', 2.0, 1.0, { rot: 180 })
+    put('gymbench', 2.0, 2.2)
+    put('mat', 2.0, 4.0)
+    put('glass', 3.95, 3.5, { rot: 90, note: 'výhled do arény' })
     return items
   },
   sim: (S, b, P) => {
     const { items, put, row, around } = maker(S, b)
-    for (let i = 0; i < P.sim.rigs; i++) put('simrig', 1.6 + i * 2.4, 4.2)
-    put('picture', 3.2, 5.68, { rot: 180, img: '/art/sim.jpg', pw: 1.0, ph: 1.3, py: 1.45,
+    for (let i = 0; i < P.sim.rigs; i++) put('simrig', 1.0 + i * 2.0, 4.5)
+    put('picture', 2.0, 5.68, { rot: 180, img: '/art/sim.jpg', pw: 1.0, ph: 1.3, py: 1.45,
       note: 'foto ze závodů' })
-    put('rack19', 6.4, 5.2)
-    row('acpanel', 2.0, 5.87, 3, 2.0, { rot: 180, dy: 1.3 })
-    put('rtable', 2.0, 1.4)
-    around(2.0, 1.4, [[-0.78, 0], [0.78, 0]])
-    put('fridge', 6.4, 1.2)
+    put('rack19', 3.6, 0.6)
+    row('acpanel', 1.2, 5.87, 2, 1.6, { rot: 180, dy: 1.3 })
+    put('rtable', 1.1, 1.3)
+    around(1.1, 1.3, [[-0.78, 0], [0.78, 0]])
+    put('fridge', 3.6, 1.9)
     return items
   },
 

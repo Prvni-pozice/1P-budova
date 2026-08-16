@@ -150,16 +150,29 @@ function dimChain(d, vals, map, fixed, horizontal) {
   }
 }
 
-/** Popisek místnosti — zmenší se, a v úzké místnosti se otočí na výšku. */
+/**
+ * Popisek místnosti. Zmenší se, když se do místnosti nevejde; když ani to
+ * nestačí, zalomí se na pomlčce (Šatna + sprchy — dámy). V úzké místnosti
+ * se celý otočí na výšku.
+ */
 function roomLabel(d, cx, cy, name, sub, wpx) {
   const rot = wpx < 70 ? `transform="rotate(-90 ${co(cx)} ${co(cy)})"` : ''
+  let lines = [name]
   let fs = 11.5
   if (!rot) {
     if (name.length * 7.0 > wpx) fs = 9.5
-    if (name.length * 5.6 > wpx) fs = 8
+    if (name.length * 5.6 > wpx && name.includes(' — ')) {
+      lines = name.split(' — ')
+      fs = Math.max(...lines.map((l) => l.length)) * 7.0 > wpx ? 9.5 : 11.5
+    } else if (name.length * 5.6 > wpx) fs = 8
   }
-  d.text(cx, cy - 2, name, 'lblrm', `text-anchor="middle" style="font-size:${fs}px" ${rot}`)
-  if (sub) d.text(cx, cy + fs, sub, 'lblar', `text-anchor="middle" style="font-size:${Math.max(7.5, fs - 2)}px" ${rot}`)
+  const top = cy - 2 - (lines.length - 1) * fs * 0.55
+  lines.forEach((l, i) => d.text(cx, top + i * fs * 1.1, l, 'lblrm',
+    `text-anchor="middle" style="font-size:${fs}px" ${rot}`))
+  if (sub) {
+    d.text(cx, top + (lines.length - 1) * fs * 1.1 + fs, sub, 'lblar',
+      `text-anchor="middle" style="font-size:${Math.max(7.5, fs - 2)}px" ${rot}`)
+  }
 }
 
 /** Vysvětlivky — jeden řádek pod výkresem. */
@@ -407,7 +420,8 @@ function sectionA() {
   label(17.5, 2.4, 'Jump aréna', 'přes 2 podlaží · 6,00–7,06')
   label(24.5, 2.4, 'Sdílená dílna', 'přes 2 podlaží · 6,00–7,06')
   label(2.9, 4.5, 'Rezerva k pronájmu', 'shell · sv. v. 2,70')
-  label(10.5, 4.5, 'Fitness', 'plovoucí podlaha · sv. v. 2,70')
+  label(8.5, 4.5, 'Schodišťové jádro', 'výstup do chodby')
+  label(12.0, 4.5, 'Fitness', 'volné váhy · sv. v. 2,70')
   d.text(X(6.4), Yp(5.4), 'chodba', 'lblar', 'text-anchor="middle"')
 
   // výškové kóty vpravo

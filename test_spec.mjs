@@ -1,6 +1,6 @@
 // test_spec.mjs — kontrola, že se plochy i rozvody počítají ze spec.
 // Spouštět: node test_spec.mjs
-import { SPEC, areaTotals, area, roofY, ridgeY } from './src/spec.js'
+import { SPEC, areaTotals, area, levelBase, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
 import { openingsFor, pvLayout, stairOpening, openEdges, roofSlope, partitionsFor } from './src/building.js'
 import { fitoutAll, fitoutFor, sanitaryFor, SVC, FURN, doorsFor, sharedEdge } from './src/fitout.js'
@@ -100,7 +100,8 @@ ok(mep.routes.length > 0, 'trasy se vygenerovaly', `${mep.routes.length} úseků
 ok(t.vzt > 8000 && t.vzt < 14000, 'VZT celkem v řádu 8–14 tis. m³/h', `${Math.round(t.vzt)} m³/h`)
 ok(t.heat > 20 && t.heat < 60, 'tepelná ztráta 20–60 kW', `${t.heat.toFixed(1)} kW`)
 ok(t.breaker > 40 && t.breaker < 200, 'hlavní jistič v rozumném rozsahu', `${t.breaker.toFixed(0)} A`)
-ok(Math.abs(t.wetArea - 52.2) < 0.01, 'mokré provozy = šatny 42 + WC 10,2 m²', `${t.wetArea} m²`)
+ok(Math.abs(t.wetArea - 70.2) < 0.01,
+  'mokré provozy = dělené šatny 42 + WC přízemí 10,2 + sanita patra 18 m²', `${t.wetArea} m²`)
 ok(t.tuv > 1000 && t.tuv < 6000, 'špička TUV počítaná ze sprch a dřezů, ne paušálem', `${Math.round(t.tuv)} l/h`)
 
 // každá páteř končí zaslepená na hranici etapy 2
@@ -145,10 +146,24 @@ ok(fit.counts.wcBF === 1, 'bezbariérové WC je právě jedno (vyhl. 398/2009)')
 
 const sPub = sanitaryFor(SPEC.program.arena.peak, { publicUse: true })
 const sOff = sanitaryFor(SPEC.program.office.staffTarget)
-ok(fit.counts.wc === sPub.wcW + sPub.wcM + sOff.wcW + sOff.wcM,
-  'počet WC kabin odpovídá normě', `${fit.counts.wc} (veřejnost ${sPub.wcW + sPub.wcM} + kanceláře ${sOff.wcW + sOff.wcM})`)
+// veřejná sanita je rozdělená na pánskou a dámskou, ale součet drží normu;
+// k tomu kanceláře v přízemí a nová sanita patra (2 kabiny dámy + 1 páni)
+const WC_1F = 3
+ok(fit.counts.wc === sPub.wcW + sPub.wcM + sOff.wcW + sOff.wcM + WC_1F,
+  'počet WC kabin odpovídá normě',
+  `${fit.counts.wc} (veřejnost ${sPub.wcW + sPub.wcM} + kanceláře ${sOff.wcW + sOff.wcM} + patro ${WC_1F})`)
 ok(fit.counts.basin === sPub.basins + sOff.basins + 2,
-  'počet umyvadel odpovídá normě + 2 v šatně', `${fit.counts.basin}`)
+  'počet umyvadel odpovídá normě + 2 v patře', `${fit.counts.basin}`)
+// každá šatna i sanita patra má obě pohlaví oddělená a po dvou sprchách dole
+for (const [id, n] of [['wc-men', 2], ['wc-women', 2], ['wc-1f-w', 1], ['wc-1f-m', 1]]) {
+  ok(fit.items.filter((it) => it.block === id && it.kind === 'shower').length === n,
+    `${id}: ${n}× sprcha`, `${fit.items.filter((it) => it.block === id && it.kind === 'shower').length}`)
+}
+ok(fit.items.filter((it) => it.block === 'wc-men' && it.kind === 'urinal').length === 2,
+  'pánská šatna má 2 pisoáry')
+ok(['wc-1f-w', 'wc-1f-m'].every((id) => SPEC.links.some((l) =>
+  (l.a === 'corridor' && l.b === id) || (l.b === 'corridor' && l.a === id))),
+  'sanita patra visí na chodbě, dosáhne na ni kancelář i fitness')
 
 // v hrubé rezervě nesmí být nic vybaveno
 ok(fit.items.every((it) => it.block !== 'reserve'), 'hrubá rezerva je prázdná')
@@ -352,9 +367,30 @@ const doorless = SPEC.links.filter((l) => !parts.some((p2) =>
   p2.blocks.includes(l.a) && p2.blocks.includes(l.b) && p2.gaps.length > 0))
 ok(doorless.length === 0, 'každé dveře mají otvor v příčce',
   doorless.map((l) => `${l.a}–${l.b}`).join(', ') || `${SPEC.links.length} dveří`)
-// výtah má otvor ve stěně office–lobby
-ok(parts.some((p2) => p2.blocks.includes('office-gf') && p2.blocks.includes('lobby')
-  && p2.gaps.some(([g0, g1]) => g0 <= 8.2 && g1 >= 9.8)), 'výtahová šachta má průchod stěnou do lobby')
+// schodiště i výtah stojí v lobby a ústí do bloku 'core', který je BEZ příčky
+// spojený s chodbou — nahoře se tedy vystupuje do chodby, ne do fitness
+const coreB = SPEC.blocks.find((b) => b.id === 'core')
+const elevIt = fit.items.find((it) => it.kind === 'elevator')
+const stairIt = fit.items.find((it) => it.kind === 'stairs' && it.x < 14)
+ok([elevIt, stairIt].every((it) => it.x > coreB.x0 && it.x < coreB.x1
+  && it.z > coreB.z0 && it.z < coreB.z1), 'schodiště i výtah ústí do schodišťového jádra')
+ok((SPEC.openPairs ?? []).some((p2) => p2.includes('corridor') && p2.includes('core')),
+  'jádro je bez příčky spojené s chodbou')
+ok(!parts.some((p2) => p2.blocks.includes('corridor') && p2.blocks.includes('core')),
+  'mezi chodbou a jádrem se opravdu negeneruje příčka')
+// a chodba musí zůstat průchozí — výtah v ní dřív stál přes celou šířku
+const corrB = SPEC.blocks.find((b) => b.id === 'corridor')
+const corrY = levelBase(SPEC, 1)
+const acrossCorridor = fit.items.filter((it) => {
+  const f = FURN[it.kind]
+  if (!f || it.link || f.h < 1.0 || it.y !== corrY) return false
+  const turned = it.rot === 90 || it.rot === 270
+  const rx = (turned ? f.d : f.w) / 2
+  return it.x - rx < corrB.x1 - 0.1 && it.x + rx > corrB.x0 + 0.1
+      && it.z > corrB.z0 && it.z < corrB.z1
+})
+ok(acrossCorridor.length === 0, 'chodba není nikde přehrazená napříč',
+  acrossCorridor.map((it) => `${it.kind} v ${it.block}`).join(', ') || 'průchozí po celé délce')
 
 console.log('\nSTATIKA A TZB')
 // páteř rozvodů v patře musí projít pod spodní pásnicí vazníků (5,75 m)

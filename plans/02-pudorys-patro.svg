@@ -37,8 +37,12 @@
 <rect x="695.4" y="443.0" width="156.6" height="135.0" class="room" fill="#dbe9f7"/>
 <rect x="695.4" y="254.0" width="156.6" height="189.0" class="room" fill="#f3f4f5"/>
 <rect x="695.4" y="92.0" width="156.6" height="162.0" class="room" fill="#e3f0fb"/>
-<rect x="474.0" y="254.0" width="189.0" height="324.0" class="room" fill="#dbf3e1"/>
-<rect x="474.0" y="92.0" width="189.0" height="162.0" class="room" fill="#e8e1f9"/>
+<rect x="582.0" y="254.0" width="81.0" height="189.0" class="room" fill="#f4f5f6"/>
+<rect x="474.0" y="443.0" width="189.0" height="135.0" class="room" fill="#dbf3e1"/>
+<rect x="474.0" y="254.0" width="108.0" height="189.0" class="room" fill="#dbf3e1"/>
+<rect x="582.0" y="173.0" width="81.0" height="81.0" class="room" fill="#d7efee"/>
+<rect x="582.0" y="92.0" width="81.0" height="81.0" class="room" fill="#d7efee"/>
+<rect x="474.0" y="92.0" width="108.0" height="162.0" class="room" fill="#e8e1f9"/>
 <rect x="285.0" y="92.0" width="189.0" height="81.0" class="room" fill="#fcecf3"/>
 <rect x="96.0" y="92.0" width="189.0" height="135.0" class="room" fill="#f7dce8"/>
 <rect x="285.0" y="92.0" width="189.0" height="486.0" class="void" />
@@ -89,7 +93,8 @@
 <rect x="117.6" y="571.3" width="156.6" height="6.8" class="room" fill="#ffffff"/>
 <line x1="274.2" y1="574.6" x2="117.6" y2="574.6" class="thin" />
 <rect x="282.3" y="227.0" width="5.4" height="343.4" class="partfire" />
-<rect x="472.6" y="254.0" width="2.7" height="316.4" class="part" />
+<rect x="472.6" y="443.0" width="2.7" height="127.4" class="part" />
+<rect x="472.6" y="254.0" width="2.7" height="189.0" class="part" />
 <rect x="472.6" y="99.6" width="2.7" height="154.4" class="part" />
 <rect x="282.3" y="99.6" width="5.4" height="127.4" class="partfire" />
 <rect x="103.6" y="225.6" width="181.4" height="2.7" class="part" />
@@ -99,17 +104,26 @@
 <rect x="694.0" y="254.0" width="2.7" height="147.7" class="part" />
 <rect x="694.0" y="153.6" width="2.7" height="100.4" class="part" />
 <rect x="694.0" y="99.6" width="2.7" height="6.5" class="part" />
-<rect x="660.3" y="461.4" width="5.4" height="109.1" class="partfire" />
-<rect x="660.3" y="254.0" width="5.4" height="159.8" class="partfire" />
-<rect x="660.3" y="99.6" width="5.4" height="154.4" class="partfire" />
+<rect x="660.3" y="534.3" width="5.4" height="36.2" class="partfire" />
+<rect x="660.3" y="443.0" width="5.4" height="43.7" class="partfire" />
+<rect x="661.6" y="227.8" width="2.7" height="26.2" class="part" />
+<rect x="661.6" y="173.0" width="2.7" height="26.2" class="part" />
+<rect x="661.6" y="146.8" width="2.7" height="26.2" class="part" />
+<rect x="661.6" y="99.6" width="2.7" height="18.6" class="part" />
 <rect x="695.4" y="441.6" width="149.0" height="2.7" class="part" />
 <rect x="695.4" y="252.6" width="149.0" height="2.7" class="part" />
-<rect x="542.3" y="252.6" width="120.7" height="2.7" class="part" />
+<rect x="582.0" y="440.3" width="81.0" height="5.4" class="partfire" />
+<rect x="579.3" y="254.0" width="5.4" height="189.0" class="partfire" />
+<rect x="582.0" y="252.6" width="81.0" height="2.7" class="part" />
+<rect x="542.3" y="252.6" width="39.7" height="2.7" class="part" />
 <rect x="474.0" y="252.6" width="39.7" height="2.7" class="part" />
+<rect x="582.0" y="171.6" width="81.0" height="2.7" class="part" />
+<rect x="579.3" y="173.0" width="5.4" height="81.0" class="partfire" />
+<rect x="579.3" y="99.6" width="5.4" height="73.4" class="partfire" />
 <rect x="472.6" y="99.6" width="2.7" height="73.4" class="part" />
 <rect x="282.3" y="99.6" width="5.4" height="73.4" class="partfire" />
-<polygon points="700.8,356.6 663.0,356.6 663.0,313.4 700.8,313.4" class="furnkey" />
-<polygon points="626.5,294.5 659.0,294.5 659.0,418.7 626.5,418.7" class="furnkey" />
+<polygon points="630.6,286.4 663.0,286.4 663.0,410.6 630.6,410.6" class="furnkey" />
+<polygon points="625.2,370.1 587.4,370.1 587.4,326.9 625.2,326.9" class="furnkey" />
 <polygon points="321.5,229.7 289.0,229.7 289.0,105.5 321.5,105.5" class="furnkey" />
 <polygon points="131.1,227.0 98.7,227.0 98.7,102.8 131.1,102.8" class="furnkey" />
 <polygon points="214.8,534.8 128.4,534.8 128.4,491.6 214.8,491.6" class="furn" />
@@ -133,26 +147,39 @@
 <polygon points="729.4,171.6 729.4,185.1 715.4,185.1 715.4,171.6" class="furn" />
 <polygon points="702.8,237.8 702.8,216.2 715.0,216.2 715.0,237.8" class="furn" />
 <polygon points="702.8,213.5 702.8,191.9 715.0,191.9 715.0,213.5" class="furn" />
-<polygon points="627.9,375.5 590.1,375.5 590.1,337.7 627.9,337.7" class="furnkey" />
-<polygon points="625.2,363.4 592.8,363.4 592.8,349.9 625.2,349.9" class="furn" />
-<polygon points="563.1,375.5 525.3,375.5 525.3,337.7 563.1,337.7" class="furnkey" />
-<polygon points="560.4,363.4 528.0,363.4 528.0,349.9 560.4,349.9" class="furn" />
-<polygon points="492.9,416.0 492.9,362.0 509.1,362.0 509.1,416.0" class="furn" />
-<polygon points="528.0,471.4 495.6,471.4 495.6,457.9 528.0,457.9" class="furn" />
-<polygon points="528.0,438.9 495.6,438.9 495.6,425.4 528.0,425.4" class="furn" />
-<polygon points="646.8,537.5 592.8,537.5 592.8,510.5 646.8,510.5" class="furn" />
-<polygon points="587.4,537.5 533.4,537.5 533.4,510.5 587.4,510.5" class="furn" />
-<polygon points="646.8,499.7 592.8,499.7 592.8,472.7 646.8,472.7" class="furn" />
-<polygon points="587.4,499.7 533.4,499.7 533.4,472.7 587.4,472.7" class="furn" />
-<polygon points="492.2,264.8 492.2,281.0 477.4,281.0 477.4,264.8" class="furn" />
-<polygon points="474.3,389.0 474.3,281.0 476.4,281.0 476.4,389.0" class="furn" />
-<polygon points="641.4,170.3 598.2,170.3 598.2,110.9 641.4,110.9" class="furnkey" />
-<polygon points="576.6,170.3 533.4,170.3 533.4,110.9 576.6,110.9" class="furnkey" />
-<polygon points="498.3,124.4 482.1,124.4 482.1,102.8 498.3,102.8" class="furn" />
-<polygon points="619.8,227.0 598.2,227.0 598.2,205.4 619.8,205.4" class="furn" />
-<polygon points="623.0,222.9 623.0,209.4 637.1,209.4 637.1,222.9" class="furn" />
-<polygon points="595.0,209.4 595.0,222.9 580.9,222.9 580.9,209.4" class="furn" />
-<polygon points="498.3,230.4 482.1,230.4 482.1,212.8 498.3,212.8" class="furn" />
+<polygon points="622.5,488.9 584.7,488.9 584.7,451.1 622.5,451.1" class="furnkey" />
+<polygon points="619.8,476.8 587.4,476.8 587.4,463.3 619.8,463.3" class="furn" />
+<polygon points="573.9,488.9 536.1,488.9 536.1,451.1 573.9,451.1" class="furnkey" />
+<polygon points="571.2,476.8 538.8,476.8 538.8,463.3 571.2,463.3" class="furn" />
+<polygon points="644.1,564.5 590.1,564.5 590.1,537.5 644.1,537.5" class="furn" />
+<polygon points="584.7,564.5 530.7,564.5 530.7,537.5 584.7,537.5" class="furn" />
+<polygon points="519.9,552.4 487.5,552.4 487.5,538.9 519.9,538.9" class="furn" />
+<polygon points="519.9,520.0 487.5,520.0 487.5,506.4 519.9,506.4" class="furn" />
+<polygon points="492.2,444.4 492.2,460.5 477.4,460.5 477.4,444.4" class="furn" />
+<polygon points="501.0,407.9 555.0,407.9 555.0,424.1 501.0,424.1" class="furn" />
+<polygon points="544.2,390.4 511.8,390.4 511.8,376.9 544.2,376.9" class="furn" />
+<polygon points="555.0,348.5 501.0,348.5 501.0,321.5 555.0,321.5" class="furn" />
+<polygon points="474.3,402.5 474.3,294.5 476.4,294.5 476.4,402.5" class="furn" />
+<polygon points="582.0,251.3 582.0,227.0 622.5,227.0 622.5,251.3" class="furn" />
+<polygon points="582.0,224.3 582.0,200.0 622.5,200.0 622.5,224.3" class="furn" />
+<polygon points="634.6,198.6 610.4,198.6 610.4,174.4 634.6,174.4" class="furn" />
+<polygon points="582.7,191.9 582.7,175.7 594.8,175.7 594.8,191.9" class="furn" />
+<polygon points="646.8,213.5 638.7,213.5 638.7,205.4 646.8,205.4" class="furn" />
+<polygon points="606.3,213.5 598.2,213.5 598.2,205.4 606.3,205.4" class="furn" />
+<polygon points="582.0,170.3 582.0,146.0 622.5,146.0 622.5,170.3" class="furn" />
+<polygon points="582.7,135.9 582.7,123.7 592.1,123.7 592.1,135.9" class="furn" />
+<polygon points="582.7,121.0 582.7,108.9 592.1,108.9 592.1,121.0" class="furn" />
+<polygon points="634.6,117.6 610.4,117.6 610.4,93.4 634.6,93.4" class="furn" />
+<polygon points="649.5,165.6 633.3,165.6 633.3,153.4 649.5,153.4" class="furn" />
+<polygon points="646.8,132.5 638.7,132.5 638.7,124.4 646.8,124.4" class="furn" />
+<polygon points="606.3,132.5 598.2,132.5 598.2,124.4 606.3,124.4" class="furn" />
+<polygon points="576.6,162.2 533.4,162.2 533.4,102.8 576.6,102.8" class="furnkey" />
+<polygon points="522.6,162.2 479.4,162.2 479.4,102.8 522.6,102.8" class="furnkey" />
+<polygon points="492.9,248.6 476.7,248.6 476.7,227.0 492.9,227.0" class="furn" />
+<polygon points="563.1,229.7 541.5,229.7 541.5,208.1 563.1,208.1" class="furn" />
+<polygon points="566.3,225.6 566.3,212.1 580.4,212.1 580.4,225.6" class="furn" />
+<polygon points="538.3,212.1 538.3,225.6 524.2,225.6 524.2,212.1" class="furn" />
+<polygon points="492.9,211.5 476.7,211.5 476.7,193.9 492.9,193.9" class="furn" />
 <polygon points="449.7,162.2 390.3,162.2 390.3,102.8 449.7,102.8" class="furn" />
 <polygon points="374.1,162.2 314.7,162.2 314.7,102.8 374.1,102.8" class="furn" />
 <polygon points="460.5,168.7 298.5,168.7 298.5,166.5 460.5,166.5" class="furn" />
@@ -163,19 +190,19 @@
 <polygon points="182.4,194.6 160.8,194.6 160.8,173.0 182.4,173.0" class="furnkey" />
 <polygon points="104.1,197.3 104.1,175.7 114.9,175.7 114.9,197.3" class="furnkey" />
 <polygon points="194.5,156.8 186.5,156.8 186.5,148.7 194.5,148.7" class="furn" />
-<line x1="626.5" y1="303.4" x2="659.0" y2="303.4" class="door" />
-<line x1="626.5" y1="312.2" x2="659.0" y2="312.2" class="door" />
-<line x1="626.5" y1="321.1" x2="659.0" y2="321.1" class="door" />
-<line x1="626.5" y1="330.0" x2="659.0" y2="330.0" class="door" />
-<line x1="626.5" y1="338.9" x2="659.0" y2="338.9" class="door" />
-<line x1="626.5" y1="347.7" x2="659.0" y2="347.7" class="door" />
-<line x1="626.5" y1="356.6" x2="659.0" y2="356.6" class="door" />
-<line x1="626.5" y1="365.5" x2="659.0" y2="365.5" class="door" />
-<line x1="626.5" y1="374.3" x2="659.0" y2="374.3" class="door" />
-<line x1="626.5" y1="383.2" x2="659.0" y2="383.2" class="door" />
-<line x1="626.5" y1="392.1" x2="659.0" y2="392.1" class="door" />
-<line x1="626.5" y1="401.0" x2="659.0" y2="401.0" class="door" />
-<line x1="626.5" y1="409.8" x2="659.0" y2="409.8" class="door" />
+<line x1="630.6" y1="295.3" x2="663.0" y2="295.3" class="door" />
+<line x1="630.6" y1="304.1" x2="663.0" y2="304.1" class="door" />
+<line x1="630.6" y1="313.0" x2="663.0" y2="313.0" class="door" />
+<line x1="630.6" y1="321.9" x2="663.0" y2="321.9" class="door" />
+<line x1="630.6" y1="330.8" x2="663.0" y2="330.8" class="door" />
+<line x1="630.6" y1="339.6" x2="663.0" y2="339.6" class="door" />
+<line x1="630.6" y1="348.5" x2="663.0" y2="348.5" class="door" />
+<line x1="630.6" y1="357.4" x2="663.0" y2="357.4" class="door" />
+<line x1="630.6" y1="366.2" x2="663.0" y2="366.2" class="door" />
+<line x1="630.6" y1="375.1" x2="663.0" y2="375.1" class="door" />
+<line x1="630.6" y1="384.0" x2="663.0" y2="384.0" class="door" />
+<line x1="630.6" y1="392.9" x2="663.0" y2="392.9" class="door" />
+<line x1="630.6" y1="401.7" x2="663.0" y2="401.7" class="door" />
 <line x1="321.5" y1="220.8" x2="289.0" y2="220.8" class="door" />
 <line x1="321.5" y1="212.0" x2="289.0" y2="212.0" class="door" />
 <line x1="321.5" y1="203.1" x2="289.0" y2="203.1" class="door" />
@@ -208,26 +235,41 @@
 <path d="M 719.7 428.1 A 24.3 24.3 0 0 0 695.4 403.9" class="door" stroke-dasharray="3 2"/>
 <line x1="695.4" y1="151.4" x2="738.6" y2="151.4" class="door" />
 <path d="M 738.6 151.4 A 43.2 43.2 0 0 0 695.4 108.2" class="door" stroke-dasharray="3 2"/>
-<line x1="663.0" y1="459.2" x2="706.2" y2="459.2" class="door" />
-<path d="M 706.2 459.2 A 43.2 43.2 0 0 0 663.0 416.0" class="door" stroke-dasharray="3 2"/>
+<line x1="663.0" y1="532.1" x2="706.2" y2="532.1" class="door" />
+<path d="M 706.2 532.1 A 43.2 43.2 0 0 0 663.0 488.9" class="door" stroke-dasharray="3 2"/>
+<line x1="663.0" y1="225.6" x2="687.3" y2="225.6" class="door" />
+<path d="M 687.3 225.6 A 24.3 24.3 0 0 0 663.0 201.4" class="door" stroke-dasharray="3 2"/>
+<line x1="663.0" y1="144.6" x2="687.3" y2="144.6" class="door" />
+<path d="M 687.3 144.6 A 24.3 24.3 0 0 0 663.0 120.4" class="door" stroke-dasharray="3 2"/>
 <line x1="540.1" y1="254.0" x2="540.1" y2="229.7" class="door" />
 <path d="M 540.1 229.7 A 24.3 24.3 0 0 0 515.9 254.0" class="door" stroke-dasharray="3 2"/>
 <text x="679.2" y="333.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" transform="rotate(-90 679.2 335.0)">Chodba</text>
-<text x="679.2" y="346.5" class="lblar" text-anchor="middle" style="font-size:9.5px" transform="rotate(-90 679.2 335.0)">21,6 m²</text>
+<text x="679.2" y="344.5" class="lblar" text-anchor="middle" style="font-size:9.5px" transform="rotate(-90 679.2 335.0)">21,6 m²</text>
 <text x="773.7" y="508.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Klidové místnosti</text>
-<text x="773.7" y="522.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >29,0 m²</text>
+<text x="773.7" y="520.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >29,0 m²</text>
 <text x="773.7" y="346.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Rezerva k pronájmu</text>
-<text x="773.7" y="360.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >40,6 m² · shell</text>
+<text x="773.7" y="358.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >40,6 m² · shell</text>
 <text x="773.7" y="171.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Zasedačka / školicí</text>
-<text x="773.7" y="184.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >34,8 m²</text>
-<text x="568.5" y="414.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Fitness</text>
-<text x="568.5" y="427.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >84,0 m²</text>
-<text x="568.5" y="171.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Sim racing</text>
-<text x="568.5" y="184.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >42,0 m²</text>
+<text x="773.7" y="182.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >34,8 m²</text>
+<text x="622.5" y="346.5" class="lblrm" text-anchor="middle" style="font-size:8px" >Schodiště a výtah</text>
+<text x="622.5" y="354.5" class="lblar" text-anchor="middle" style="font-size:7.5px" >21,0 m²</text>
+<text x="568.5" y="508.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Fitness</text>
+<text x="568.5" y="520.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >35,0 m²</text>
+<text x="528.0" y="340.2" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Fitness</text>
+<text x="528.0" y="352.8" class="lblrm" text-anchor="middle" style="font-size:11.5px" >volné váhy</text>
+<text x="528.0" y="364.3" class="lblar" text-anchor="middle" style="font-size:9.5px" >28,0 m²</text>
+<text x="622.5" y="205.2" class="lblrm" text-anchor="middle" style="font-size:11.5px" >WC + sprcha</text>
+<text x="622.5" y="217.8" class="lblrm" text-anchor="middle" style="font-size:11.5px" >dámy</text>
+<text x="622.5" y="229.3" class="lblar" text-anchor="middle" style="font-size:9.5px" >9,0 m²</text>
+<text x="622.5" y="124.2" class="lblrm" text-anchor="middle" style="font-size:11.5px" >WC + sprcha</text>
+<text x="622.5" y="136.8" class="lblrm" text-anchor="middle" style="font-size:11.5px" >páni</text>
+<text x="622.5" y="148.3" class="lblar" text-anchor="middle" style="font-size:9.5px" >9,0 m²</text>
+<text x="528.0" y="171.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Sim racing</text>
+<text x="528.0" y="182.5" class="lblar" text-anchor="middle" style="font-size:9.5px" >24,0 m²</text>
 <text x="379.5" y="130.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Dětské atrakce</text>
-<text x="379.5" y="144.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >21,0 m²</text>
+<text x="379.5" y="142.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >21,0 m²</text>
 <text x="190.5" y="157.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Technická místnost</text>
-<text x="190.5" y="171.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >35,0 m²</text>
+<text x="190.5" y="169.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >35,0 m²</text>
 <line x1="852.0" y1="634.0" x2="663.0" y2="634.0" class="dim" />
 <line x1="852.0" y1="630.0" x2="852.0" y2="638.0" class="dim" />
 <line x1="663.0" y1="630.0" x2="663.0" y2="638.0" class="dim" />
