@@ -30,7 +30,7 @@ const FLAT = new Set(['mat', 'entrymat', 'floordrain', 'pram'])
 const CEIL = new Set(['diffuser', 'light', 'smoke'])
 const WALLMOUNT = new Set(['picture', 'mirror', 'screen', 'emlight', 'exitsign',
   'co2', 'firstaid', 'airreel', 'hydrant', 'subboard', 'board', 'aircurtain', 'babychange',
-  'sidelight', 'acpanel'])
+  'sidelight', 'acpanel', 'louvre'])
 const pairKey = (a, b) => [a, b].sort().join('|')
 
 const items = fit.items

@@ -47,6 +47,8 @@
 <rect x="593.0" y="193.0" width="48.0" height="60.0" class="beyond" />
 <rect x="536.0" y="196.0" width="24.0" height="57.0" class="beyond" />
 <rect x="533.0" y="205.0" width="24.0" height="48.0" class="beyond" />
+<rect x="513.5" y="169.0" width="45.0" height="36.0" class="beyond" />
+<rect x="579.5" y="169.0" width="45.0" height="36.0" class="beyond" />
 <polygon points="110.0,172.0 380.0,124.4 650.0,172.0 650.0,352.0 110.0,352.0" class="beyond" fill-opacity="0.2"/>
 <rect x="110.0" y="352.0" width="540.0" height="6.0" class="slab" />
 <line x1="70.0" y1="358.0" x2="690.0" y2="358.0" class="ground" />

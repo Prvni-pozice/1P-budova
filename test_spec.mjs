@@ -1,9 +1,10 @@
 // test_spec.mjs — kontrola, že se plochy i rozvody počítají ze spec.
 // Spouštět: node test_spec.mjs
-import { SPEC, areaTotals, area, levelBase, roofY, ridgeY } from './src/spec.js'
+import { SPEC, TYPES, areaTotals, area, levelBase, roofY, ridgeY } from './src/spec.js'
 import { computeMEP, blockDemand, ductRadius } from './src/mep.js'
 import { openingsFor, pvLayout, stairOpening, openEdges, roofSlope, partitionsFor } from './src/building.js'
 import { fitoutAll, fitoutFor, sanitaryFor, SVC, FURN, doorsFor, sharedEdge } from './src/fitout.js'
+import { walkGrid, findPath } from './src/walk.js'
 
 let fail = 0
 const ok = (cond, msg, extra = '') => {
@@ -142,18 +143,30 @@ ok(fit.counts.diffuser > 20, 'vyústky VZT odvozené z průtoku', `${fit.counts.
 ok(fit.counts.extinguisher > 8, 'hasicí přístroje odvozené z plochy', `${fit.counts.extinguisher}`)
 ok(fit.counts.subboard === 4, 'podružný rozvaděč na každou provozní zónu')
 ok(fit.counts.carlift === 1, 'zvedák v dílně')
-ok(fit.counts.wcBF === 1, 'bezbariérové WC je právě jedno (vyhl. 398/2009)')
+// bezbariérové WC je samostatná místnost s dveřmi přímo z lobby — kabina
+// uvnitř dámské šatny nesplňovala přístup dle vyhl. 398/2009
+const bfBlock = SPEC.blocks.find((b) => b.id === 'wc-bf')
+ok(!!bfBlock && fit.items.some((it) => it.block === 'wc-bf' && it.kind === 'toilet')
+  && fit.items.some((it) => it.block === 'wc-bf' && it.kind === 'basin'),
+  'bezbariérové WC je samostatná místnost s mísou a umyvadlem')
+ok(SPEC.links.some((l) => (l.a === 'lobby' && l.b === 'wc-bf') || (l.b === 'lobby' && l.a === 'wc-bf')),
+  'bezbariérové WC má dveře přímo z lobby, ne přes šatnu')
+ok((bfBlock.x1 - bfBlock.x0) >= 2.2 && (bfBlock.z1 - bfBlock.z0) >= 2.6,
+  'bezbariérová místnost má min. 2,2 × 2,6 m',
+  `${(bfBlock.x1 - bfBlock.x0).toFixed(1)} × ${(bfBlock.z1 - bfBlock.z0).toFixed(1)} m`)
 
 const sPub = sanitaryFor(SPEC.program.arena.peak, { publicUse: true })
 const sOff = sanitaryFor(SPEC.program.office.staffTarget)
 // veřejná sanita je rozdělená na pánskou a dámskou, ale součet drží normu;
 // k tomu kanceláře v přízemí a nová sanita patra (2 kabiny dámy + 1 páni)
 const WC_1F = 3
-ok(fit.counts.wc === sPub.wcW + sPub.wcM + sOff.wcW + sOff.wcM + WC_1F,
-  'počet WC kabin odpovídá normě',
-  `${fit.counts.wc} (veřejnost ${sPub.wcW + sPub.wcM} + kanceláře ${sOff.wcW + sOff.wcM} + patro ${WC_1F})`)
-ok(fit.counts.basin === sPub.basins + sOff.basins + 2,
-  'počet umyvadel odpovídá normě + 2 v patře', `${fit.counts.basin}`)
+// třetí dámskou kabinu dle normy plní bezbariérová místnost wc-bf (mísa
+// se do počtu počítá, vyhl. 398/2009) — proto −1 kabina a +1 mísa
+ok(fit.counts.wc + fit.counts.toilet === sPub.wcW + sPub.wcM + sOff.wcW + sOff.wcM + WC_1F,
+  'počet WC kabin + bezbar. mísa odpovídá normě',
+  `${fit.counts.wc}+${fit.counts.toilet} (veřejnost ${sPub.wcW + sPub.wcM} + kanceláře ${sOff.wcW + sOff.wcM} + patro ${WC_1F})`)
+ok(fit.counts.basin === sPub.basins + sOff.basins + 2 + 1,
+  'počet umyvadel odpovídá normě + 2 v patře + 1 v bezbar. WC', `${fit.counts.basin}`)
 // každá šatna i sanita patra má obě pohlaví oddělená a po dvou sprchách dole
 for (const [id, n] of [['wc-men', 2], ['wc-women', 2], ['wc-1f-w', 1], ['wc-1f-m', 1]]) {
   ok(fit.items.filter((it) => it.block === id && it.kind === 'shower').length === n,
@@ -280,7 +293,7 @@ ok(doors.some((h) => h.x0 >= arenaB.x0 - 0.1 && h.x1 <= arenaB.x1 + 0.1),
 const lobbyB = SPEC.blocks.find((b) => b.id === 'lobby')
 ok(doors.filter((h) => h.x0 >= lobbyB.x0 - 0.1 && h.x1 <= lobbyB.x1 + 0.1).length === 1,
   'lobby má jen hlavní vchod (zásobování zrušeno 9. 8.)')
-ok(fit.items.some((it) => it.kind === 'cleansink' && it.block === 'gym'),
+ok(fit.items.some((it) => it.kind === 'cleansink' && ['gym', 'gym-n'].includes(it.block)),
   'úklidová výlevka je i v patře')
 
 // v západní (1P) části smí být jen JEDNO schodiště — bývala tam dvě 1,3 m
@@ -496,6 +509,89 @@ const noFixtures = structuredClone(SPEC)
 noFixtures.blocks = noFixtures.blocks.filter((b) => ['arena', 'storage'].includes(b.id))
 ok(computeMEP(noFixtures).routes.filter((r) => r.service === 'water').length === 0,
   'bez jediného vodovodního předmětu rozvod vody zmizí')
+
+console.log('\nPROFESNÍ REVIZE (17. 8.)')
+// ZTI: kanalizace patra musí mít páteř V PATŘE a stoupačku s reálnou délkou —
+// dřív obě páteře ležely na y 0,12 a „stoupačka" měla nulovou délku, takže
+// sanita patra neměla svod
+const drain1 = mep.routes.find((r) => r.service === 'drain' && r.kind === 'spine' && r.points[0].y > 3)
+ok(!!drain1, 'kanalizace patra běží v podlaze patra', drain1 ? `y ${drain1.points[0].y.toFixed(2)}` : 'chybí')
+const drainRiser = mep.routes.find((r) => r.service === 'drain' && r.kind === 'riser')
+ok(!!drainRiser && Math.abs(drainRiser.points[0].y - drainRiser.points[1].y) > 2,
+  'svod kanalizace z patra má reálnou délku',
+  drainRiser ? `${Math.abs(drainRiser.points[0].y - drainRiser.points[1].y).toFixed(2)} m` : 'chybí')
+// a klesá u mokrých bloků patra, ne u strojovny přes půl budovy
+const wet1f = SPEC.blocks.filter((b) => b.level === 1 && TYPES[b.type].wet)
+ok(!!drainRiser && wet1f.some((b) => drainRiser.points[0].x >= b.x0 - 1 && drainRiser.points[0].x <= b.x1 + 1),
+  'svod kanalizace jde u mokrých bloků patra', `x ${drainRiser?.points[0].x.toFixed(1)}`)
+
+// každý sanitární kus má v SVC vodu i kanalizaci — bezbariérová kabina
+// (wcBF) je dřív neměla vůbec a rozvody ji míjely
+for (const kind of ['wc', 'wcBF', 'toilet', 'basin', 'urinal', 'shower', 'cleansink', 'cleaning', 'kitchen', 'bar']) {
+  ok(SVC[kind] && SVC[kind].svc.includes('water') && SVC[kind].svc.includes('drain'),
+    `SVC: ${kind} má vodu i kanalizaci`)
+}
+
+// VZT strojovny potřebuje sání a výfuk — severní stěna je slepá a jižní
+// hrana bloku je vnitřní, žaluzie proto sedí v západním štítu etapy 1
+const louvres = fit.items.filter((it) => it.kind === 'louvre' && it.block === 'plant')
+ok(louvres.length === 2, 'strojovna má sání i výfuk (žaluzie ve štítu etapy 1)', `${louvres.length}`)
+const plantB = SPEC.blocks.find((b) => b.id === 'plant')
+ok(louvres.every((l) => Math.abs(l.x - plantB.x1) < 0.5), 'žaluzie sedí u západního štítu')
+
+// požární voda: hydrant na každém podlaží
+ok(fit.items.some((it) => it.kind === 'hydrant' && it.y < 1), 'hydrant v přízemí')
+ok(fit.items.some((it) => it.kind === 'hydrant' && it.y > 3), 'hydrant v patře')
+
+// rozhodnutí o přípojkách (17. 8.) je ve spec, ne jen v hlavě
+ok(SPEC.utilities?.elecConnectionArea === 1008,
+  'přípojka elektro dimenzovaná na obě etapy (1 008 m²)')
+ok(SPEC.utilities?.mainBreaker === 'stage' && SPEC.utilities?.retention === 'stage',
+  'hlavní jistič i retence per etapa')
+
+console.log('\nPRŮCHODNOST NÁVŠTĚVNÍKA (walk test)')
+// Mřížkový pathfinder přes plášť, příčky a nábytek — na rozdíl od
+// topologického BFS přes links chytí i skříň postavenou napříč cestou.
+// Před revizí 17. 8. se návštěvník od vstupu nedostal ke schodišti,
+// šatnám ani do arény (barová linie přehradila lobby).
+const wg0 = walkGrid(SPEC, 0, 0.3)
+const vstup = { x: 10.5, z: 0.6 }
+const cileGF = {
+  'pata schodiště': { x: 7.6, z: 11.0 },
+  'výtah': { x: 9.1, z: 7.0 },
+  'šatna páni (sprchy)': { x: 7.75, z: 16.8 },
+  'šatna dámy (sprchy)': { x: 12.7, z: 16.5 },
+  'WC bezbariérové': { x: 10.65, z: 14.0 },
+  'vstup do arény': { x: 14.6, z: 10.0 },
+  'bar': { x: 11.2, z: 3.0 },
+  'párty stůl': { x: 12.4, z: 9.0 },
+  'komunitní prostor': { x: 6.7, z: 11.7 },
+  'WC kanceláří': { x: 5.0, z: 16.0 },
+  'kuchyňský kout': { x: 2.15, z: 17.3 },
+}
+for (const [name, c] of Object.entries(cileGF)) {
+  const d = findPath(wg0, vstup, c)
+  ok(d !== null, `od vstupu: ${name}`, d !== null ? `${d.toFixed(1)} m` : 'CESTA NEEXISTUJE')
+}
+const wg1 = walkGrid(SPEC, 1, 0.3)
+const jadro = { x: 8.8, z: 8.5 }
+const cile1F = {
+  'klidové místnosti': { x: 2.9, z: 2.5 },
+  'zasedačka': { x: 2.9, z: 16.5 },
+  'dveře rezervy': { x: 5.8, z: 6.0 },
+  'fitness': { x: 10.5, z: 2.5 },
+  'volné váhy': { x: 12.0, z: 9.5 },
+  'sim racing': { x: 12.0, z: 15.0 },
+  'WC patra ženy': { x: 8.5, z: 13.5 },
+  'WC patra muži': { x: 8.5, z: 16.5 },
+}
+for (const [name, c] of Object.entries(cile1F)) {
+  const d = findPath(wg1, jadro, c)
+  ok(d !== null, `z jádra patra: ${name}`, d !== null ? `${d.toFixed(1)} m` : 'CESTA NEEXISTUJE')
+}
+// technická zóna zůstává oddělená — z lobby se do dílny dojít NEDÁ
+ok(findPath(wg0, vstup, { x: 24.5, z: 6.0 }) === null,
+  'do dílny se z lobby vnitřkem nedá (technická zóna má vlastní vstup)')
 
 console.log(fail === 0 ? '\n✓ vše prošlo\n' : `\n✗ ${fail} selhalo\n`)
 process.exit(fail ? 1 : 0)

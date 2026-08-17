@@ -31,6 +31,8 @@ export const FURN = {
   changing:   { w: 1.00, d: 1.00, h: 2.10, color: 0xe3e0d8, shape: 'cubicle', solid: true, fix: 'bench', label: 'Převlékací kabinka' },
 
   wc:         { w: 0.90, d: 1.50, h: 2.10, color: 0xe8ebee, shape: 'cubicle', solid: true, fix: 'wc', label: 'WC kabina' },
+  // mísa bez kabiny — do samostatné bezbariérové místnosti (stěny má vlastní)
+  toilet:     { w: 0.45, d: 0.70, h: 0.80, color: 0xeef2f5, shape: 'box',     label: 'WC mísa (bezbariérová, s madly)' },
   wcBF:       { w: 2.20, d: 2.40, h: 2.10, color: 0xdde8ee, shape: 'cubicle', solid: true, fix: 'wc', label: 'WC bezbariérové' },
   urinal:     { w: 0.45, d: 0.35, h: 1.20, color: 0xeef2f5, shape: 'box',     label: 'Pisoár' },
   basin:      { w: 0.60, d: 0.45, h: 0.85, color: 0xd9dde1, shape: 'basin',   label: 'Umyvadlo' },
@@ -113,6 +115,7 @@ export const FURN = {
   glass:      { w: 4.00, d: 0.08, h: 3.00, color: 0x9fd4e8, shape: 'net',     label: 'Prosklená příčka' },
   sidelight:  { w: 1.90, d: 0.08, h: 2.60, color: 0x9fd4e8, shape: 'net',     label: 'Boční sklo zádveří' },
   acpanel:    { w: 1.20, d: 0.06, h: 1.00, color: 0x3a3f47, shape: 'box',     label: 'Akustický panel' },
+  louvre:     { w: 1.50, d: 0.15, h: 1.20, color: 0x8a9199, shape: 'box',     label: 'Protidešťová žaluzie VZT' },
 }
 
 /**
@@ -123,6 +126,9 @@ export const FURN = {
 export const SVC = {
   basin:      { svc: ['water', 'drain'], conn: 0.55 },
   wc:         { svc: ['water', 'drain'], conn: 0.30 },
+  toilet:     { svc: ['water', 'drain'], conn: 0.30 },
+  wcBF:       { svc: ['water', 'drain'], conn: 0.30 },   // chybělo — bezbar. kabina byla bez vody
+  cleaning:   { svc: ['water', 'drain'], conn: 0.50 },   // úklidová komora má výlevku uvnitř
   urinal:     { svc: ['water', 'drain'], conn: 0.60 },
   shower:     { svc: ['water', 'drain'], conn: 0.20 },
   cleansink:  { svc: ['water', 'drain'], conn: 0.50 },
@@ -249,16 +255,18 @@ const LAYOUTS = {
       seat(2.2 + du, 10.4, 2.2 + du, 9.7)
       seat(2.2 + du, 9.0, 2.2 + du, 9.7)
     }
-    // typ 3: lounge — pohovky se stolkem
+    // typ 3: lounge — pohovky se stolkem; jižněji od hrany kuchyňského
+    // koutu, aby zůstal průchod do commons (openPair, žádné dveře)
     put('sofa', 0.95, 12.9, { rot: 90 })
-    put('sofa', 2.55, 14.05, { rot: 180 })
-    put('rtable', 2.2, 12.9)
+    put('sofa', 2.3, 13.55, { rot: 180 })
+    put('rtable', 2.2, 12.6)
     // vybavení volně při stěnách, ať prostor působí společně
     row('sideboard', 1.2, 0.35, 4, 0.9)
     row('cabinet', 6.55, 6.4, 3, 0.9, { along: 'v', rot: 90 })
     put('pod', 5.7, 5.7, { note: 'akustická budka na hovory' })
-    put('rack19', 6.55, 11.5, { rot: 90, note: 'uzamykatelná serverová skříň' })
-    put('printer3d', 6.55, 12.6, { rot: 90, note: 'sdílená tiskárna' })
+    // u v 11,7 jsou dveře do lobby — skříň a tiskárna jim uhýbají
+    put('rack19', 6.55, 9.8, { rot: 90, note: 'uzamykatelná serverová skříň' })
+    put('printer3d', 6.55, 13.6, { rot: 90, note: 'sdílená tiskárna' })
     return items
   },
   'office-1f': (S, b) => {                                     // klidové místnosti
@@ -313,7 +321,10 @@ const LAYOUTS = {
   reserve: () => [],  reserve: () => [],                                           // hrubá stavba
   corridor: (S, b) => {
     const { items, put } = maker(S, b)
-    put('extinguisher', 0.6, 4.0)
+    // ke stěně, ne do osy chodby — chodba má jen 1,2 m; a dál od dveří
+    // (na z 4,0 stál přímo v otvoru dveří klidových místností)
+    put('extinguisher', 0.16, 10.0)
+    put('hydrant', 0.15, 8.0, { rot: 270, dy: 0.6, note: 'hydrant patra — dole je jen v lobby' })
     return items
   },
 
@@ -330,47 +341,49 @@ const LAYOUTS = {
     put('glazed', 3.5, 2.1, { note: 'vnitřní dveře zádveří' })
     put('sidelight', 2.62, 1.1, { rot: 90 })
     put('sidelight', 4.38, 1.1, { rot: 90 })
-    put('reception', 2.4, 3.7)
-    put('bar', 4.5, 3.7)
-    row('backbar', 1.4, 4.8, 3, 1.05)
-    put('fridge', 4.35, 4.8)
-    put('barstore', 5.5, 4.8, { note: 'zásoba baru — bez ní se doplňuje z auta' })
-    // zouvací kout: do arény jen v protiskluzových ponožkách
+    // Rozložení lobby stojí na jednom pravidle: západ patří jádru a baru,
+    // střed a východ zůstávají volné pro hlavní trasu vstup → posezení →
+    // severní pruh (šatny, aréna, schodiště). Ověřuje to walk test —
+    // původní rozložení přehradilo lobby barovou linií po celé šířce
+    // a návštěvník se od vstupu nedostal ani ke schodišti, ani do arény.
+    put('reception', 1.8, 3.7)
+    put('bar', 5.1, 3.7)
+    // zadní bar podél západní stěny (ne za barmanem — tam vede přístup
+    // ke kapse výtahu), zásoba a úklid pod schodištěm
+    row('backbar', 0.25, 3.55, 2, 1.1, { along: 'v', rot: 90 })
+    put('fridge', 0.3, 2.5)
+    put('barstore', 0.3, 6.0, { rot: 90, note: 'zásoba baru pod schodištěm' })
     put('pram', 1.8, 1.3, { note: 'rodinný provoz bez odstavení kočárků nefunguje' })
-    put('bench', 5.6, 3.0)
-    put('shoerack', 6.6, 4.6, { rot: 90 })
-    // 3 patra po 10 sloupcích; rodiny sdílejí, na 40 lidí ve špičce to stačí
-    row('valuebox', 6.6, 6.0, 8, 0.32, { along: 'v', rot: 90, note: 'cennosti, 3 patra' })
+    // zouvací kout u jižní stěny vpravo od vstupu — do arény jen
+    // v protiskluzových ponožkách; u stěny arény přehrazoval průchod
+    put('gymbench', 5.75, 1.0)
+    put('shoerack', 6.55, 2.1, { rot: 90 })
+    // 3 patra sloupců; rodiny sdílejí, na 40 lidí ve špičce to stačí.
+    // U jižní stěny vpravo od vstupu — východní stěna je průchod do arény.
+    row('valuebox', 5.5, 0.35, 3, 0.32, { note: 'cennosti, 3 patra' })
     // Schodišťové jádro u západní stěny: schodiště stoupá na SEVER a ústí
-    // nahoře do chodby, výtah stojí vedle něj. Obojí stojí v lobby, takže
-    // se nahoru jde ze společného prostoru; nahoře oba vyústí v bloku 'core',
-    // který je bez příčky spojený s chodbou.
-    put('stairs', 0.6, 8.5, { rot: 180, note: 'výstup na jih, do jádra a odtud do chodby' })
+    // nahoře do jádra a odtud do chodby, výtah stojí vedle něj.
+    put('stairs', 0.6, 8.3, { rot: 180, note: 'výstup na jih, do jádra a odtud do chodby' })
     put('elevator', 2.1, 8.5, { note: 'bezbariérový přístup do patra, u schodiště' })
-    put('cleaning', 2.6, 10.4, { note: 'úklidová komora pod mezipatrem' })
-    // dva sloupce; řady 2,4 m od sebe, jinak židle zády k sobě kolidují.
-    // U řady u příčky se severní židle vynechává.
-    // sloupce sezení jsou na východ od jádra — pod mezipatrem u schodiště
-    // stojí schodiště, výtah a úklidová komora
-    put('rtable', 4.0, 6.6)
-    around(4.0, 6.6, [[-0.75, 0], [0.75, 0], [0, -0.75], [0, 0.75]])
-    // u schránek na cennosti se východní židle vynechává, jinak si sednou na sebe
-    put('rtable', 6.0, 6.6)
-    around(6.0, 6.6, [[-0.75, 0], [0, -0.75], [0, 0.75]])
+    // úklidová komora pod VYSOKOU částí ramene — u severního pruhu
+    // zužovala cestu k pánské šatně na 0,3 m
+    put('cleaning', 1.35, 6.95, { note: 'úklidová komora pod schodištěm' })
     // Vyhrazený stůl pro oslavy (party místnost se nestaví — jen stůl u baru).
     // SEVERNÍ PRUH LOBBY (v > 10) MUSÍ ZŮSTAT PRÁZDNÝ: je to cesta
-    // kavárna → šatny → aréna, kterou si Zdeněk vyžádal.
-    put('partyTable', 4.9, 9.0, { note: 'vyhrazený stůl pro oslavy' })
-    for (let i = 0; i < 4; i++) {
-      const u = 4.3 + i * 0.6
+    // kavárna → šatny → aréna, kterou si Zdeněk vyžádal. Šest míst — krajní
+    // sloupec židlí by uzavřel průchod podél arény.
+    put('partyTable', 4.05, 9.0, { note: 'vyhrazený stůl pro oslavy' })
+    for (let i = 0; i < 3; i++) {
+      const u = 3.45 + i * 0.6
       seat(u, 8.25, u, 9.0)
       seat(u, 9.75, u, 9.0)
     }
     // prosklení do arény zůstává v JIŽNÍ části stěny — severní část stěny
     // (v 8–12) je vynechaná, tudy se do arény vchází
     put('glass', 6.95, 4.5, { rot: 90, note: 'výhled do arény' })
-    put('hydrant', 0.4, 2.6, { rot: 90, dy: 0.6 })
-    put('firstaid', 0.15, 4.6, { rot: 90, note: 'lékárnička + AED u recepce' })
+    // na západní stěně pod sebou: hydrant, lékárnička, lednice, zadní bar
+    put('hydrant', 0.4, 0.7, { rot: 90, dy: 0.6 })
+    put('firstaid', 0.15, 1.6, { rot: 90, note: 'lékárnička + AED u recepce' })
     return items
   },
 
@@ -384,29 +397,51 @@ const LAYOUTS = {
   // musí zůstat 0,85 m volných — proto šatnová část začíná až na v = 1,0
   // a kabiny na v = 1,6. Kabiny jdou na východ HLOUBKOU (rot 90), jinak se
   // do 3 m šířky nevejdou.
+  // V šířce 3 m se vejde jen JEDNA hluboká řada — skříňky a umyvadla na
+  // západní stěně (0,5 m), kabiny a pisoáry na východní (1,5 m), sprchy
+  // u severní stěny, střední ulička ~1 m po celé hloubce. Původní layout
+  // měl lavici napříč a do mokré části se nedalo projít.
   'wc-men': (S, b, P) => {
     const { items, put, row } = maker(S, b)
     const s = sanitaryFor(P.arena.peak, { publicUse: true })
-    row('locker', 0.25, 1.2, Math.ceil(Math.ceil(P.gym.users * 1.5) / 4) * 2, 0.32, { along: 'v', rot: 90 })
-    put('bench', 0.9, 2.2, { rot: 90 })
-    row('wc', 2.25, 1.6, s.wcM, 1.0, { along: 'v', rot: 90 })
-    row('urinal', 2.8, 3.4, 2, 0.55, { along: 'v', rot: 90 })
-    row('shower', 0.7, 5.3, 2, 1.0)
-    row('basin', 2.7, 4.85, Math.floor(s.basins / 2), 0.7, { along: 'v', rot: 90 })
+    put('gymbench', 0.35, 1.5, { rot: 90 })
+    row('locker', 0.25, 2.55, 4, 0.32, { along: 'v', rot: 90 })
+    row('urinal', 2.8, 1.5, 2, 0.55, { along: 'v', rot: 90 })
+    for (let i = 0; i < s.wcM; i++) put('wc', 2.25, 3.0 + i * 0.95, { rot: 270 })
+    row('basin', 0.3, 4.2, Math.floor(s.basins / 2), 0.55, { along: 'v', rot: 90 })
+    row('shower', 0.75, 5.55, 2, 1.0)
     return items
   },
-  // Dámská 4 × 6 m — nese bezbariérovou kabinu (v domě jediná veřejná) a
-  // přebalovací pult, proto je o metr širší než pánská.
+  // Bezbariérové WC — samostatná místnost 2,6 × 2,8 m s dveřmi přímo z lobby
+  // (kabina uvnitř šatny nesplňovala přístup dle vyhl. 398/2009). Mísa má
+  // volný manévrovací prostor, umyvadlo u západní stěny, přebalovací pult
+  // tady (bezbariérová + přebalovací bývá jedna místnost).
+  'wc-bf': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('toilet', 0.65, 2.3, { rot: 180, note: 'mísa s madly, přístup z obou stran' })
+    put('basin', 0.45, 0.9, { rot: 270 })
+    put('babychange', 2.3, 1.3, { rot: 90, note: 'v rodinném provozu povinná výbava' })
+    return items
+  },
+  // Vstupní ulička dámské šatny (1,4 × 2,8) — skříňky podél západní stěny,
+  // průchod 0,9 m do hlavní části. Skříňky až od v 1,2, ať neblokují dveře.
+  'wc-women-s': (S, b, P) => {
+    const { items, put, row } = maker(S, b)
+    row('locker', 0.25, 1.2, 3, 0.32, { along: 'v', rot: 90 })
+    put('basin', 0.25, 2.5, { rot: 90 })
+    return items
+  },
+  // Hlavní část dámské šatny 4 × 3,2 m: kabiny a sprchy u severní stěny,
+  // lavice na jihu, umyvadla u východní stěny. Vstup JV rohem z uličky.
+  // Kabiny jsou 2 běžné — třetí dámskou kabinu dle normy plní bezbariérová
+  // místnost wc-bf hned vedle (počítá se do počtu, vyhl. 398/2009).
   'wc-women': (S, b, P) => {
     const { items, put, row } = maker(S, b)
     const s = sanitaryFor(P.arena.peak, { publicUse: true })
-    row('wc', 3.25, 1.0, s.wcW, 1.0, { along: 'v', rot: 90 })
-    put('wcBF', 1.4, 2.2, { note: 'bezbariérová kabina — v domě jediná veřejná' })
-    row('locker', 0.25, 4.2, Math.ceil(Math.ceil(P.gym.users * 1.5) / 4) * 2, 0.32, { along: 'v', rot: 90 })
-    put('bench', 0.9, 4.8, { rot: 90 })
-    row('shower', 2.55, 4.9, 2, 0.95)
-    row('basin', 2.5, 5.7, Math.ceil(s.basins / 2), 0.7)
-    put('babychange', 1.7, 5.6, { rot: 180, note: 'v rodinném provozu povinná výbava' })
+    row('wc', 0.75, 2.4, s.wcW - 1, 1.0, { rot: 180 })
+    row('shower', 2.7, 2.55, 2, 0.9)
+    put('gymbench', 0.85, 0.35)
+    put('basin', 2.65, 0.35)
     return items
   },
 
@@ -479,22 +514,24 @@ const LAYOUTS = {
       put('gymbench', u, 4.0)                                  // lavička v kleci
     }
     row('mat', 1.7, 1.0, 2, 2.2)
-    row('gymbench', 5.9, 1.2, 2, 1.2, { along: 'v' })
-    put('mirror', 3.5, 0.35)
+    // lavičky u jižní stěny — u stěny arény zavíraly průchod do gym-n
+    row('gymbench', 3.3, 0.35, 2, 1.7)
     put('picture', 0.15, 1.0, { rot: 270, img: '/art/posilka1.jpg', pw: 1.5, ph: 0.85, py: 1.6 })
     put('picture', 0.15, 2.5, { rot: 270, img: '/art/posilka2.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
     put('picture', 0.15, 4.0, { rot: 270, img: '/art/posilka3.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
-    put('cleansink', 6.6, 4.65, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
     put('exitsign', 0.35, 2.5, { rot: 90, dy: 2.3, note: 'směr úniku na chodbu' })
     put('co2', 0.15, 4.4, { rot: 90, dy: 1.6 })
     return items
   },
   'gym-n': (S, b) => {
     const { items, put } = maker(S, b)
-    put('dumbbells', 2.0, 1.0, { rot: 180 })
-    put('gymbench', 2.0, 2.2)
+    // stojan podél západní stěny — napříč místností přehradil vstup z gym
+    put('dumbbells', 0.35, 2.0, { rot: 90 })
+    put('gymbench', 2.6, 2.6)
     put('mat', 2.0, 4.0)
     put('glass', 3.95, 3.5, { rot: 90, note: 'výhled do arény' })
+    put('mirror', 0.06, 4.8, { rot: 90, note: 'zrcadlo u volných vah' })
+    put('cleansink', 0.3, 6.7, { rot: 270, note: 'úklid v patře — voda se nenosí po schodech' })
     return items
   },
   sim: (S, b, P) => {
@@ -551,11 +588,16 @@ const LAYOUTS = {
     // VZT jednotky u severní stěny vedle sebe, hydraulika TČ a nádrže
     // uprostřed, rozvaděče u jižní stěny, baterie u východní. Před vším
     // zůstává manipulační prostor — servis se dělá zepředu.
-    row('ahu', 2.1, 3.9, 2, 3.25)
+    row('ahu', 2.1, 3.9, 2, 3.1)
     put('hpmodule', 1.5, 1.6)
     row('tank', 3.2, 1.6, 2, 1.0)
     row('board', 1.6, 0.35, 3, 1.1)
     put('battery', 6.5, 1.5, { rot: 90 })
+    // Sání a výfuk VZT: severní stěna je slepá (soused) a jižní hrana bloku
+    // je vnitřní (nad dílnou) — žaluzie proto jdou do ZÁPADNÍHO štítu etapy 1.
+    // Při dostavbě etapy 2 se přesunou na střechu (výdechové hlavice).
+    put('louvre', 6.85, 1.2, { rot: 90, dy: 1.6, note: 'sání — štít etapy 1' })
+    put('louvre', 6.85, 3.4, { rot: 90, dy: 1.6, note: 'výfuk — štít etapy 1' })
     return items
   },
 }
@@ -633,10 +675,14 @@ function derivedFor(S, b) {
 
   // hasicí přístroje: 1 na 150 m². Roh si vybírají podle toho, kde je volno
   // a kde nestojí ve vnějším vstupu — pevný roh kolidoval se skříňkami
-  // i s únikovými dveřmi.
+  // i s únikovými dveřmi. Vnitřním dveřím uhýbají o 1 m (hasičák v lobby
+  // stál přesně v dveřích do komunitního prostoru).
   if (a > 15) {
+    const doorsNear = doorsFor(S).filter((d) =>
+      d.x > b.x0 - 0.5 && d.x < b.x1 + 0.5 && d.z > b.z0 - 0.5 && d.z < b.z1 + 0.5)
+    const nearDoor = (x, z) => doorsNear.some((d) => Math.hypot(d.x - x, d.z - z) < 1.0)
     const roomItems = [...fitoutFor(S, b), ...out]
-    const free = (x, z) => !roomItems.some((it) => {
+    const free = (x, z) => !nearDoor(x, z) && !roomItems.some((it) => {
       const f = FURN[it.kind]
       if (!f || it.y > base + 0.5) return false
       const turned = it.rot === 90 || it.rot === 270

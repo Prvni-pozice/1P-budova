@@ -35,6 +35,17 @@ export const SPEC = {
   // ve strojovně vydělá víc než druhá střešní rovina.
   pv: { roofSouth: true, roofNorth: false, facadeSouth: true, wp: 210, coverage: 0.85 },
 
+  // Přípojky a sítě — rozhodnutí Zdeňka 17. 8. 2026:
+  // přípojka elektro se dimenzuje na CELÝCH 1 008 m² (obě etapy), ale hlavní
+  // jistič se žádá podle skutečné potřeby etapy (klidně poloviční — mep.js
+  // počítá breaker z etapy 1, to je hodnota pro žádost). Retence dešťovky
+  // jen na etapu 1, roste s dostavbou.
+  utilities: {
+    elecConnectionArea: 1008,   // m² — na tohle se dimenzuje přípojka
+    mainBreaker: 'stage',       // jistič dle aktuální etapy (viz mep totals.breaker)
+    retention: 'stage',         // retence dešťovky per etapa
+  },
+
   // Program — počty osob a kusů. Od nich se odvozuje vybavení i sanita.
   program: {
     office:   { staff: 8, staffTarget: 10, desks: 10 },
@@ -51,7 +62,8 @@ export const SPEC = {
   compartments: {
     office: ['office-gf', 'commons', 'wc-gf', 'office-1f', 'meeting', 'reserve',
              'corridor', 'core', 'wc-1f-w', 'wc-1f-m'],
-    public: ['arena', 'lobby', 'wc-men', 'wc-women', 'play', 'gym', 'gym-n', 'sim'],
+    public: ['arena', 'lobby', 'wc-men', 'wc-women', 'wc-women-s', 'wc-bf',
+             'play', 'gym', 'gym-n', 'sim'],
     tech:   ['workshop', 'plant', 'store-gf'],
   },
 
@@ -67,7 +79,9 @@ export const SPEC = {
   // Komunitní koncept přízemí: pracovní část a kuchyňský kout tečou do sebe.
   // Chodba + jádro = jeden prostor, aby schodiště ústilo do chodby.
   // Fitness je do L, obě části jsou jedna místnost.
-  openPairs: [['office-gf', 'commons'], ['corridor', 'core'], ['gym', 'gym-n']],
+  // Dámská šatna = vstupní ulička + hlavní část (jedna místnost).
+  openPairs: [['office-gf', 'commons'], ['corridor', 'core'], ['gym', 'gym-n'],
+              ['wc-women-s', 'wc-women']],
 
   // Vnitřní dveře. Co tu není, není propojené — DÍLNA JE ZÁMĚRNĚ ODDĚLENÁ:
   // technická zóna (dílna + strojovna + sklad) se vstupuje jen vlastními
@@ -75,9 +89,10 @@ export const SPEC = {
   //   at = poloha po délce společné hrany (jinak střed)
   links: [
     { a: 'office-gf', b: 'wc-gf',    type: 'door',    at: 5.0,  note: 'jediné uzavřené dveře v komunitní zóně' },
-    { a: 'office-gf', b: 'lobby',    type: 'door',    at: 3.0,  note: 'komunitní prostor do lobby; severněji stojí schodišťové jádro' },
+    { a: 'office-gf', b: 'lobby',    type: 'door',    at: 11.7, note: 'komunitní prostor do lobby u paty schodiště — zaměstnanci nechodí kolem baru; jižněji je zádveří a zadní bar' },
     { a: 'lobby',     b: 'wc-men',   type: 'double',  at: 8.5,  note: 'pánská šatna ze severního pruhu lobby' },
-    { a: 'lobby',     b: 'wc-women', type: 'double',  at: 11.0, note: 'dámská šatna ze severního pruhu lobby' },
+    { a: 'lobby',     b: 'wc-bf',    type: 'door',    at: 11.3, note: 'bezbariérové WC samostatně z lobby, ne přes šatnu (vyhl. 398/2009)' },
+    { a: 'lobby',     b: 'wc-women-s', type: 'door',  at: 13.3, note: 'dámská šatna ze severního pruhu lobby' },
     { a: 'workshop',  b: 'store-gf', type: 'service', at: 24.0, note: 'jediné vnitřní propojení technické zóny' },
     { a: 'corridor',  b: 'office-1f', type: 'door',   at: 4.0 },
     { a: 'corridor',  b: 'reserve',  type: 'door',    at: 6.0,  note: 'samostatný vstup do pronájmu' },
@@ -117,7 +132,13 @@ export const SPEC = {
     // pruhu lobby, který je zároveň cestou do arény.
     // Dámská je širší, protože nese bezbariérovou kabinu a přebalovací pult.
     { id: 'wc-men',    name: 'Šatna + sprchy — páni', type: 'wet', level: 0, x0: 7,  x1: 10, z0: 12, z1: 18 },
-    { id: 'wc-women',  name: 'Šatna + sprchy — dámy', type: 'wet', level: 0, x0: 10, x1: 14, z0: 12, z1: 18 },
+    // Bezbariérové WC je samostatná místnost s dveřmi přímo z lobby — kabina
+    // uvnitř dámské šatny nesplňovala vyhl. 398/2009 (přístup přes šatnu).
+    // Dámská šatna tím dostala tvar L: vstupní ulička se skříňkami + hlavní
+    // část; obě jsou jedna místnost (openPair), jen data je vedou zvlášť.
+    { id: 'wc-bf',      name: 'WC bezbariérové',      type: 'wet', level: 0, x0: 10,   x1: 12.6, z0: 12,   z1: 14.8 },
+    { id: 'wc-women-s', name: 'Šatna dámy — vstup',   type: 'wet', level: 0, x0: 12.6, x1: 14,   z0: 12,   z1: 14.8 },
+    { id: 'wc-women',  name: 'Šatna + sprchy — dámy', type: 'wet', level: 0, x0: 10, x1: 14, z0: 14.8, z1: 18 },
     { id: 'lobby',     name: 'Lobby / recepce / bar', type: 'lobby',  level: 0, x0: 7,  x1: 14, z0: 0,  z1: 12 },
     { id: 'arena',     name: 'Jump aréna',          type: 'arena',    level: 'full', x0: 14, x1: 21, z0: 0, z1: 18 },
     { id: 'store-gf',  name: 'Sklad',               type: 'storage',  level: 0, x0: 21, x1: 28, z0: 13, z1: 18 },

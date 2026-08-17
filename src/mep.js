@@ -57,7 +57,9 @@ const levelOf = (b) => (b.level === 'full' ? 0 : b.level)
 const DROP1 = { vzt: 0.85, heat: 0.5, water: 0.45, elec: 0.22, data: 0.18 }
 const DROP0 = { vzt: 0.38, heat: 0.15, water: 0.18, elec: 0.1, data: 0.07 }
 function spineY(s, level, service) {
-  if (service === 'drain') return 0.12
+  // kanalizace běží v podlaze SVÉHO podlaží — dřív vracela 0,12 pro obě
+  // patra, takže sanita patra neměla svod a „stoupačka" měla nulovou délku
+  if (service === 'drain') return levelBase(s, level) + 0.12
   return level === 1
     ? s.eaves - (DROP1[service] ?? 0.5)
     : s.clearGF - (DROP0[service] ?? 0.2)
@@ -222,13 +224,22 @@ export function computeMEP(s = SPEC) {
       }
     }
 
-    // stoupačka u strojovny propojující podlaží
+    // stoupačka propojující podlaží — u strojovny; kanalizace ale klesá
+    // u mokrých bloků patra (stojí přímo nad šatnami, svod jde mokrou zónou,
+    // ne přes půl budovy ke strojovně)
     if (levels.length > 1) {
       const z = s.spineZ + inward(s) * svc.dz
+      let riserX = plantX
+      if (svc.key === 'drain') {
+        // svod u sanity patra (mokré provozy), ne u strojovny — TČ a výlevka
+        // ve fitness by průměr odtáhly přes půl budovy
+        const wet1 = blocks.filter((b) => b.level === 1 && TYPES[b.type].wet)
+        if (wet1.length) riserX = wet1.reduce((a, b) => a + (b.x0 + b.x1) / 2, 0) / wet1.length
+      }
       routes.push({ service: svc.key, kind: 'riser', color: svc.color, radius: svc.r ?? ductRadius(flowByLevel[1] ?? 0),
         points: [
-          { x: plantX, y: spineY(s, 0, svc.key), z },
-          { x: plantX, y: spineY(s, 1, svc.key), z },
+          { x: riserX, y: spineY(s, 0, svc.key), z },
+          { x: riserX, y: spineY(s, 1, svc.key), z },
         ] })
     }
 
