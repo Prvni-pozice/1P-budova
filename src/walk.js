@@ -47,10 +47,10 @@ export function walkGrid(S, level, clearance = 0.3) {
     }
   }
 
-  // 2) obvodový plášť — jižní stěna má otvory dveří (v0 = 0)
-  const southDoors = level === 0
-    ? openingsFor(S, 'south').filter((h) => h.v0 === 0)
-    : []
+  // 2) obvodový plášť — jižní stěna má otvory dveří v úrovni podlahy podlaží.
+  // V patře to platí jen tam, kde je venku pavlač (varianta B); jinak žádné
+  // dveře v úrovni patra nejsou a filtr nic nevrátí.
+  const southDoors = openingsFor(S, 'south').filter((h) => Math.abs(h.v0 - base) < 1e-6)
   blockRect(0, -0.3, S.stage1, S.wall)           // jih
   blockRect(0, S.depth - S.wall, S.stage1, S.depth + 0.3)  // sever
   blockRect(-0.3, 0, S.wall, S.depth)            // východ

@@ -401,10 +401,10 @@
 <rect x="530.0" y="694.0" width="16.0" height="9.0" class="walltemp" />
 <text x="551.0" y="702.0" class="lblsm" >dočasný štít</text>
 <line x1="40.0" y1="732.0" x2="977.0" y2="732.0" class="frame" />
-<text x="40.0" y="756.0" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1</text>
+<text x="40.0" y="756.0" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · A — FIREMNÍ BUDOVA</text>
 <text x="40.0" y="774.0" class="sub" >PŮDORYS PŘÍZEMÍ (± 0,000) · vodorovný řez v úrovni +1,20 m</text>
 <text x="40.0" y="789.0" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
-<text x="40.0" y="804.0" class="sub" >Generováno ze src/spec.js · 16. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>
+<text x="40.0" y="804.0" class="sub" >Generováno ze src/spec.js · 23. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>
 <text x="40.0" y="819.0" class="warn" >NENÍ projektová dokumentace — nástroj na hledání poměrů ploch před zadáním projektantovi.</text>
 <text x="977.0" y="756.0" class="sub" text-anchor="end">přízemí 504 m² · světlá výška 3,00 m</text>
 <rect x="707.0" y="794.0" width="67.5" height="6.0" class="frame" />

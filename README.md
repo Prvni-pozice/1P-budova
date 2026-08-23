@@ -1,26 +1,48 @@
 # 1P — 3D koncept firemní budovy
 
 Nástroj na hledání dispozice, ne architektonický projekt. Model se **generuje
-ze `src/spec.js`** — geometrie, plochy i dimenze rozvodů. Když se změní číslo
-ve spec, přepočítá se všechno ostatní.
+ze specu** — geometrie, plochy i dimenze rozvodů. Když se změní číslo ve spec,
+přepočítá se všechno ostatní.
+
+Budova má dvě verze dispozice ve stejné obálce. Přepínají se v panelu vlevo
+nahoře (a drží se v adrese za `#`):
+
+| | verze | spec | co je uvnitř |
+|---|---|---|---|
+| **A** | firemní budova | `src/spec.js` | jump aréna, bar, fitness a sim racing v patře |
+| **B** | se 4 byty | `src/spec-byty.js` | 4 byty 2+kk místo arény, sport sjel do přízemí |
 
 ```bash
 npm install
-npm run dev          # http://116.203.103.27:5186/
-node test_spec.mjs   # kontrola ploch, otvorů a rozvodů (79 testů)
-node audit.mjs       # projektantský audit: kolize předmětů, přesahy přes
-                     # stěny, věci ve vstupech, rozvody v prostupech (0 nálezů)
+npm run dev          # http://116.203.103.27:5186/       (verze A)
+                     # http://116.203.103.27:5186/#byty  (verze B)
+node test_spec.mjs   # kontrola varianty A (151 kontrol)
+node test_byty.mjs   # kontrola varianty B (byty, pavlač, požární úseky)
+node audit.mjs       # projektantský audit obou verzí: kolize předmětů,
+                     # přesahy přes stěny, věci ve vstupech, rozvody
+                     # v prostupech (0 nálezů)
+node plans.mjs       # 2D výkresy obou verzí → plans/ a plans/byty/
 ```
 
-## Zadání
+Rozcestník verzí je v `src/variants.js`. Generátory (`building.js`, `mep.js`,
+`fitout.js`, `walk.js`) jsou společné a berou spec parametrem — přidat třetí
+verzi znamená napsat nový spec a přidat řádek do `variants.js`.
+
+## Zadání (společné pro obě verze)
 
 Celkový půdorys 18 × 56 m = 1 008 m², stavěno ve dvou etapách po 18 × 28 m.
 Okap ~6 m, typizovaná montovaná hala, rastr 7 m (28 = 4×7, 56 = 8×7).
 Cíl: z 504 m² půdorysu etapy 1 dostat vestavěnými patry 750–850 m² podlahové
-plochy. Model je teď na **826 m²** (koeficient 1,64), z toho 777 m² vybavených
-a 49 m² vědomě nechaných v hrubé stavbě jako rezerva.
+plochy.
 
-## Program (počty, ze kterých se vybavení odvozuje)
+| | verze A | verze B |
+|---|---|---|
+| Podlahová plocha | 812 m² | 807 m² |
+| Koeficient | 1,61× | 1,60× |
+| Vybaveno | 771 m² | 766 m² |
+| Hrubá rezerva | 41 m² | 41 m² |
+
+## Verze A — program (počty, ze kterých se vybavení odvozuje)
 
 ```
 Kanceláře 1P      8 lidí, výhled 10 → 10 pracovních míst
@@ -43,7 +65,7 @@ Znaménka nejsou libovolná: východ = −x, sever = +z, takže **východ × sev
 Kdyby platilo z+ = jih, byl by celý model zrcadlově převrácený — hlídá to test
 v sekci KOMPAS.
 
-## Řídicí princip dispozice
+## Verze A — řídicí princip dispozice
 
 Sever je hranice pozemku (soused) → **slepá stěna**. Proto tam sedí servisní
 pruh hloubky 6 m: provozy, které okna nechtějí (strojovna, sprchy, sklad,
@@ -62,7 +84,7 @@ Sdílená dílna            x 21–28  z 0–13    91 m²   vrata z jihu
 Strojovna                x 21–28  z 13–18   35 m²   u hranice etapy 2
 ```
 
-### Patro — 336 m²
+### Patro — 308 m²
 
 ```
 Chodba                   x 5,8–7  z 0–18    22 m²   propojuje schodiště se všemi
@@ -74,6 +96,98 @@ Sim racing               x 7–14   z 12–18   42 m²   sever = tma, bez oslně
 Dětské atrakce (galerie) x 14–21  z 15–18   21 m²   vykonzolovaná ze severní stěny
 Sklad nad dílnou         x 21–28  z 6–13    49 m²   nad vjezdovou dráhou nesmí být
 ```
+
+## Verze B — se čtyřmi byty
+
+Zadání 23. 8. 2026: aréna se ruší, na jejím místě a na části lobby vznikají
+**4 byty 2+kk, dva v přízemí a dva v patře, každý s vlastním vstupem zvenku**.
+Kanceláře vepředu a dílna vzadu zůstávají. Záměr byl konzultován na stavebním
+úřadě — model to bere jako zadání, ne jako ověřený fakt.
+
+### Co dispozici určilo
+
+**Světlo je jen z jihu.** Severní stěna je na hranici pozemku a zůstává slepá,
+západní štít jednou zmizí v etapě 2, východní průčelí patří kancelářím. Obytná
+místnost musí mít okno, takže se ložnice i obývák každého bytu musí vejít na
+jižní fasádu — na to je potřeba nejmíň 6 m průčelí na byt. Čtyři byty ve dvou
+podlažích tedy zaberou 14 m jižní fasády, a přesně 14 m je mezi kancelářemi
+(x 0–7) a dílnou (x 21–28). **Na vstup do firmy tam nezbude ani metr.**
+
+Proto se recepce stěhuje do východního pole (x 0–7, z 0–3,2) i s portálem —
+vchod tedy zůstává z jihu, jak velí zbytek konceptu. Komunitní prostor
+kanceláří si drží šířku i polohu, jen se zkrátí ze 102 na 80 m². To je jediný
+zásah do kanceláří.
+
+### Byt 7 × 7 m = 49 m²
+
+```
+ v=7  ┌──────────┬──────┬──────────┐
+      │ koupelna │ před-│ kuchyňský│   sever (bez oken)
+ v=4,6├──────────┤ síň  ├──────────┤
+      │ ložnice  │      │ obývák   │
+ v=0  └──────────┴──────┴──────────┘   jih — okna a vstupní dveře
+      u=0      2,7    4,1          7
+```
+
+Obývák s kuchyňským koutem 20 m², ložnice 12 m², koupelna s WC a pračkou
+6,5 m², předsíň 10 m². Ložnice i obývák mají okno na jih, předsíň mezi nimi
+nese vstupní dveře. **Koupelny všech čtyř bytů leží nad sebou** → dvě
+stoupačky na celý dům. Byty 2 a 4 jsou zrcadlené, aby obývací pokoje sousedily
+s venkovním schodištěm a pavlač běžela před obývákem, ne před ložnicí.
+
+### Přístup: venkovní schodiště a pavlač
+
+Byty v přízemí mají dveře přímo z terénu. Byty v patře obsluhuje **dvouramenné
+ocelové schodiště před jižní fasádou** (vyčnívá 5,6 m) a pavlač x 9,7–18,3.
+Žádná společná vnitřní chodba se nestaví: bytová část se nikde nepotká
+s provozem firmy, každý byt je vlastní požární úsek a schodiště je zároveň
+úniková cesta. Ověřuje to walk test — z bytu se dovnitř firmy neprojde a
+naopak.
+
+### Sport sjel do přízemí
+
+Fitness (42 m²) a sim racing (28 m²) jsou nově v bezokenním středu přízemí.
+Není to jen výplň zbytku:
+
+- posilovna **nad byty** by byla akustický průšvih (kročejový hluk činek),
+- na terénu odpadá dimenzování mezipatra na 5 kN/m²,
+- **nad středem přízemí se strop vůbec nestaví** (`level: 'full'`) — ušetří se
+  121 m² stropní desky, fitness dostane světlou výšku ~7 m a sklad regál
+  do výšky.
+
+### Bilance verze B
+
+```
+Přízemí            504 m²      Byty            4 × 49 = 196 m²
+Patro              303 m²      Fitness                  42 m²
+Celkem             807 m²      Sim racing               28 m²
+Koeficient          1,60×      Kanceláře + zázemí      194 m²
+Hrubá rezerva       41 m²      Dílna + sklady          216 m²
+```
+
+Ekonomika v `spec-byty.js` je **odhad k ověření**, ne nabídka: nájem
+11 000 Kč/měs za byt (spodní hranice trhu v Pelhřimově, průmyslová zóna) =
+528 tis. Kč/rok, provozní náklady bez arény a baru 1,18 mil. Kč/rok.
+
+### Otevřené otázky verze B
+
+- **Územní plán.** V průmyslové zóně bývá bydlení přípustné jen jako byt
+  správce. Čtyři nájemní byty jsou jiná kategorie — tohle je jediné, co může
+  celý záměr zabít, a model si to nijak neověřuje.
+- **Hluk a vibrace.** U verze A platilo „hluk venkovních jednotek TČ se neřeší
+  — průmyslová zóna". S byty přestává platit: hygienické limity pro chráněný
+  venkovní prostor, TČ, VZT dílny i zvedák jsou najednou téma.
+- **Pavlač před okny.** Mezi vstupními dveřmi a schodištěm běží ~2 m pavlače
+  před oknem obývacího pokoje. Řeší se zvýšeným parapetem nebo odsazením
+  pavlače od fasády — v modelu to zatím není.
+- **Předpolí a stání.** Řada stání je odsunutá na z = −12, aby se před fasádu
+  vešlo schodiště. Skutečný počet stání pro 4 byty + firmu a tvar příjezdu je
+  věc situace, ne tohoto modelu.
+- **Bez sklepů a kolárny.** Úložné prostory bytů jsou zatím jen komora v bytě.
+  Kolárnu/kočárkárnu by šlo dodělat jako přístavek u schodiště.
+- 121 m² bezokenního středu přízemí drží sport a sklad. Pokud by fitness
+  a sim racing padly, zůstane z toho hluchá plocha — pak dává smysl spíš
+  zkrátit etapu 1.
 
 ## Co se dopočítává samo
 
@@ -114,7 +228,9 @@ Sklad nad dílnou         x 21–28  z 6–13    49 m²   nad vjezdovou dráhou 
 ## Soubory
 
 ```
-src/spec.js      zadání — jediný zdroj pravdy, tohle se edituje
+src/spec.js      zadání verze A — jediný zdroj pravdy, tohle se edituje
+src/spec-byty.js zadání verze B (4 byty); obálku a sazby bere ze spec.js
+src/variants.js  rozcestník verzí pro model, testy, audit i výkresy
 src/mep.js       přepočet rozvodů (bez závislosti na Three → jde testovat v Node)
 src/building.js  geometrie: plášť, otvory, střecha, bloky, potrubí
 src/cutaway.js   otevírání obálky podle kamery
@@ -122,6 +238,7 @@ src/env.js       Miami sunset (převzato z flightsim)
 src/quality.js   adaptivní kvalita (kopie z flightsim)
 src/fitout.js    vybavení místností + normové počty (taky bez Three)
                  židle se umísťují přes seat(), rotaci nikdy nepiš ručně
+src/walk.js      mřížkový pathfinder — průchodnost patra pro walk test
 src/ui.js        textový souhrn
 src/main.js      scéna, ovládání, editace
 ```
@@ -130,11 +247,12 @@ src/main.js      scéna, ovládání, editace
 
 Příčky se generují z sousednosti bloků (`partitionsFor`): kde je v `links`
 dveřní propojení, je otvor s nadpražím; `wallGaps` přidává průchod výtahu.
-Tři požární úseky (`spec.compartments`): kanceláře, veřejná část
-(shromažďovací prostor arény), technická zóna — stěny mezi úseky jsou
-tlustší a tónované. Postava v GTA režimu prochází jen dveřmi.
+Ve verzi A jsou tři požární úseky (`spec.compartments`): kanceláře, veřejná
+část (shromažďovací prostor arény), technická zóna. Ve verzi B k nim přibývají
+**čtyři úseky bytů** — každý byt vlastní. Stěny mezi úseky jsou tlustší
+a tónované, takže je na modelu vidět, kudy vede požární dělení. Postava v GTA režimu prochází jen dveřmi.
 
-## Otevřené otázky
+## Otevřené otázky verze A
 
 - **Program je menší než půdorys.** 2 rigy do 42 m², 2 klece do 84 m²,
   10 lidí do 126 m² kanceláří. Buď se rezerva nechá v hrubé stavbě

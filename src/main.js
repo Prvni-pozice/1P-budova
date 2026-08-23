@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { SPEC, TYPES, area } from './spec.js'
+import { TYPES, area } from './spec.js'
+import { VARIANTS, variantById, DEFAULT_VARIANT } from './variants.js'
 import { computeMEP, SERVICES, blockDemand } from './mep.js'
 import { FURN } from './fitout.js'
 import { openingsFor, partitionsFor } from './building.js'
@@ -11,9 +12,12 @@ import { Quality } from './quality.js'
 import { summaryText } from './ui.js'
 import { makeCharacter } from './character.js'
 
-// spec je živý — editace ho mění a model se z něj přegeneruje
-const spec = structuredClone(SPEC)
-const ORIGINAL = structuredClone(SPEC)
+// spec je živý — editace ho mění a model se z něj přegeneruje.
+// Verze budovy se přepíná v panelu (a drží se v adrese za #), obsah objektu
+// `spec` se přitom vymění na místě, aby zůstaly platné všechny odkazy na něj.
+let variant = variantById(location.hash.slice(1) || DEFAULT_VARIANT)
+const spec = structuredClone(variant.spec)
+let ORIGINAL = structuredClone(variant.spec)
 
 // ------------------------------------------------------------------ scéna
 const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -661,6 +665,39 @@ $('btn-reset').addEventListener('click', () => {
   selectedId = null
   rebuild()
 })
+
+// ------------------------------------------------------------ verze budovy
+const variantRow = $('variant-row')
+const variantBtns = VARIANTS.map((v) => {
+  const b = document.createElement('button')
+  b.type = 'button'
+  b.textContent = v.label
+  b.addEventListener('click', () => setVariant(v.id))
+  variantRow.appendChild(b)
+  return [v.id, b]
+})
+
+function syncVariantUI() {
+  for (const [id, b] of variantBtns) b.classList.toggle('on', id === variant.id)
+  $('variant-sub').textContent = variant.sub
+}
+
+function setVariant(id) {
+  const v = variantById(id)
+  if (v.id === variant.id) return
+  variant = v
+  // obsah se vymění na místě — `spec` je const a drží ho spousta closures
+  for (const k of Object.keys(spec)) delete spec[k]
+  Object.assign(spec, structuredClone(v.spec))
+  ORIGINAL = structuredClone(v.spec)
+  selectedId = null
+  history.replaceState(null, '', `#${v.id}`)
+  syncVariantUI()
+  rebuild()
+}
+
+addEventListener('hashchange', () => setVariant(location.hash.slice(1) || DEFAULT_VARIANT))
+syncVariantUI()
 
 $('btn-export').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(spec, null, 2)], { type: 'application/json' })

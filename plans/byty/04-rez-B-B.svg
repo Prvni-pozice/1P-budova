@@ -33,9 +33,6 @@
   .warn{font-size:9.5px;fill:#a3453c}
 </style>
 <rect class="bg" x="0" y="0" width="900" height="602"/>
-<rect x="615.5" y="280.0" width="33.0" height="72.0" class="beyond" />
-<rect x="509.0" y="286.0" width="15.0" height="66.0" class="beyond" />
-<rect x="500.0" y="253.0" width="138.0" height="99.0" class="beyond" />
 <rect x="176.0" y="250.0" width="12.0" height="102.0" class="beyond" />
 <rect x="132.5" y="308.5" width="135.0" height="43.5" class="beyond" />
 <rect x="318.5" y="308.5" width="135.0" height="43.5" class="beyond" />
@@ -44,6 +41,9 @@
 <rect x="205.3" y="302.5" width="13.5" height="13.5" class="beyond" />
 <rect x="158.0" y="200.5" width="48.0" height="16.5" class="beyond" />
 <rect x="320.0" y="350.8" width="9.0" height="1.2" class="beyond" />
+<rect x="615.5" y="280.0" width="33.0" height="72.0" class="beyond" />
+<rect x="509.0" y="286.0" width="15.0" height="66.0" class="beyond" />
+<rect x="500.0" y="253.0" width="138.0" height="99.0" class="beyond" />
 <rect x="593.0" y="193.0" width="48.0" height="60.0" class="beyond" />
 <rect x="536.0" y="196.0" width="24.0" height="57.0" class="beyond" />
 <rect x="533.0" y="205.0" width="24.0" height="48.0" class="beyond" />
@@ -106,7 +106,7 @@
 <rect x="418.0" y="466.0" width="16.0" height="9.0" class="beyond" />
 <text x="439.0" y="474.0" class="lblsm" >pohled za rovinou řezu</text>
 <line x1="40.0" y1="506.0" x2="860.0" y2="506.0" class="frame" />
-<text x="40.0" y="530.0" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · A — FIREMNÍ BUDOVA</text>
+<text x="40.0" y="530.0" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · B — SE 4 BYTY</text>
 <text x="40.0" y="548.0" class="sub" >ŘEZ B–B · příčný, rovina x = 24,50 m od východního průčelí, pohled k západu</text>
 <text x="40.0" y="563.0" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
 <text x="40.0" y="578.0" class="sub" >Generováno ze src/spec.js · 23. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>

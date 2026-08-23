@@ -40,6 +40,11 @@ export const FURN = {
   cleaning:   { w: 1.20, d: 1.20, h: 2.10, color: 0xb6bcc4, shape: 'cubicle', solid: true, label: 'Úklidová komora' },
 
   kitchen:    { w: 2.40, d: 0.60, h: 0.90, color: 0xbfb5a5, shape: 'box',     label: 'Kuchyňská linka' },
+  // vybavení bytů (varianta B)
+  bed:        { w: 1.60, d: 2.00, h: 0.55, color: 0xc9b7a0, shape: 'box',     label: 'Manželská postel' },
+  wardrobe:   { w: 1.60, d: 0.60, h: 2.10, color: 0xbfb5a5, shape: 'box',     label: 'Šatní skříň' },
+  washer:     { w: 0.60, d: 0.60, h: 0.85, color: 0xdfe3e6, shape: 'box',     label: 'Pračka' },
+  wcbowl:     { w: 0.40, d: 0.65, h: 0.80, color: 0xeef2f5, shape: 'box',     label: 'WC mísa' },
   fridge:     { w: 0.60, d: 0.65, h: 1.85, color: 0xb8bec6, shape: 'box',     label: 'Lednice' },
   bar:        { w: 1.20, d: 0.65, h: 1.10, color: 0xa8763f, shape: 'box',     label: 'Barový pult' },
   backbar:    { w: 1.00, d: 0.45, h: 2.00, color: 0x8c6234, shape: 'box',     label: 'Zadní bar' },
@@ -131,6 +136,8 @@ export const SVC = {
   cleaning:   { svc: ['water', 'drain'], conn: 0.50 },   // úklidová komora má výlevku uvnitř
   urinal:     { svc: ['water', 'drain'], conn: 0.60 },
   shower:     { svc: ['water', 'drain'], conn: 0.20 },
+  wcbowl:     { svc: ['water', 'drain'], conn: 0.30 },
+  washer:     { svc: ['water', 'drain', 'elec'], conn: 0.70 },
   cleansink:  { svc: ['water', 'drain'], conn: 0.50 },
   kitchen:    { svc: ['water', 'drain', 'elec'], conn: 0.60 },
   bar:        { svc: ['water', 'drain', 'elec'], conn: 0.60 },
@@ -201,9 +208,15 @@ export const lockersFor = (peak) => Math.ceil((peak * 1.25) / 2) * 2
 function maker(S, b) {
   const items = []
   const y = levelBase(S, b.level === 'full' ? 0 : b.level)
+  // Zrcadlený blok (b.mirror) překlopí u i rotaci. Píše se tedy jen jedna
+  // dispozice bytu a druhý byt na patře je její zrcadlo — bez druhého layoutu
+  // a bez rizika, že se obě verze rozejdou.
+  const W = b.x1 - b.x0
   const put = (kind, u, v, o = {}) => {
-    items.push({ kind, block: b.id, x: b.x0 + u, z: b.z0 + v, y: y + (o.dy ?? 0),
-      rot: o.rot ?? 0, note: o.note,
+    const rot = o.rot ?? 0
+    items.push({ kind, block: b.id,
+      x: b.x0 + (b.mirror ? W - u : u), z: b.z0 + v, y: y + (o.dy ?? 0),
+      rot: b.mirror ? (360 - rot) % 360 : rot, note: o.note,
       ...(o.img && { img: o.img, pw: o.pw, ph: o.ph, py: o.py }) })
   }
   /** řada n kusů s roztečí step; rot=90 znamená, že řada běží podél v */
@@ -600,12 +613,187 @@ const LAYOUTS = {
     put('louvre', 6.85, 3.4, { rot: 90, dy: 1.6, note: 'výfuk — štít etapy 1' })
     return items
   },
+
+  // ==================================================================
+  // VARIANTA B — se čtyřmi byty. Bloky, které mají ve verzi A stejné id,
+  // ale jiný rozměr, si dispozici vybírají přes `layout` ve spec-byty.js.
+  // ==================================================================
+
+  // Recepce 7 × 3,2 m: zádveří, pult, dvě křesla. Vstup je uprostřed
+  // (portál v jižní fasádě), dveře do komunitního prostoru u východní stěny,
+  // aby se od pultu nechodilo přes čekání.
+  reception: (S, b) => {
+    const { items, put, seat } = maker(S, b)
+    put('entrymat', 3.5, 1.0)
+    put('glazed', 3.5, 0.14, { note: 'hlavní vstup do firmy' })
+    put('exitsign', 3.5, 0.45, { dy: 2.35 })
+    put('reception', 5.6, 2.5, { note: 'pult — vstup do firmy i ke službám' })
+    seat(5.6, 3.0, 5.6, 2.5)
+    put('sofa', 0.6, 2.0, { rot: 90, note: 'čekání' })
+    put('rtable', 1.6, 1.8)
+    put('hydrant', 6.8, 0.45, { rot: 90, dy: 0.6 })
+    put('firstaid', 6.78, 1.6, { rot: 90, note: 'lékárnička + AED u pultu' })
+    return items
+  },
+
+  // Komunitní prostor varianty B: 7 × 11,4 m. Proti verzi A chybí jižní
+  // pruh (zabrala ho recepce), takže lounge padl a zůstaly dva typy sezení.
+  'office-b': (S, b, P) => {
+    const { items, put, row, desks, seat } = maker(S, b)
+    const n1 = Math.ceil(P.office.desks / 2 / 2)
+    desks(1.0, 3.2, n1)
+    desks(1.0, 7.0, Math.max(0, Math.ceil(P.office.desks / 2) - n1))
+    put('hightable', 2.2, 9.8)
+    for (const du of [-0.8, 0, 0.8]) {
+      seat(2.2 + du, 10.5, 2.2 + du, 9.8)
+      seat(2.2 + du, 9.1, 2.2 + du, 9.8)
+    }
+    row('sideboard', 4.6, 0.35, 2, 0.9)
+    row('cabinet', 6.55, 1.4, 3, 0.9, { along: 'v', rot: 90 })
+    put('pod', 5.9, 6.0, { note: 'akustická budka na hovory' })
+    put('rack19', 6.55, 8.4, { rot: 90, note: 'uzamykatelná serverová skříň' })
+    put('printer3d', 6.55, 10.4, { rot: 90, note: 'sdílená tiskárna' })
+    return items
+  },
+
+  // Jádro varianty B je PRŮCHOZÍ místnost (kanceláře → fitness), proto
+  // schodiště stojí u západní stěny a podél něj zůstává 1,8 m volných.
+  // Výtah je až za schodištěm na severním konci, aby nestál v cestě.
+  'core-b': (S, b) => {
+    const { items, put } = maker(S, b)
+    // Schodiště u západní stěny, výtah u východní, mezi nimi 1,4 m volné
+    // chodby po celé hloubce. Bez toho by se jádro ucpalo: dveře z kanceláří,
+    // do fitness a na WC vedou do tří různých stěn a všechny musí být dostupné.
+    put('stairs', 0.6, 4.0, { rot: 180, note: 'výstup na jih do podesty a odtud do chodby' })
+    put('elevator', 3.3, 2.0, { note: 'bezbariérový přístup do patra i k rezervě' })
+    put('hydrant', 1.9, 0.4, { dy: 0.6 })
+    put('exitsign', 0.4, 0.45, { dy: 2.35, note: 'směr úniku přes recepci' })
+    return items
+  },
+
+  // Fitness sjelo do přízemí: 49 m², světlá výška až pod střechu.
+  'gym-b': (S, b, P) => {
+    const { items, put, row } = maker(S, b)
+    for (let i = 0; i < P.gym.cages; i++) {
+      const u = 2.2 + i * 1.9
+      put('cage', u, 5.4)
+      put('gymbench', u, 5.4)
+    }
+    put('dumbbells', 3.0, 6.6)
+    row('mat', 1.4, 1.2, 2, 2.4)
+    row('gymbench', 4.9, 1.6, 2, 1.4, { along: 'v' })   // dál od rozvaděče i ode dveří do sim racingu
+    put('mirror', 3.0, 0.06, { note: 'zrcadlo na stěně k bytům — zároveň akustický obklad' })
+    put('picture', 0.15, 2.0, { rot: 270, img: '/art/posilka1.jpg', pw: 1.5, ph: 0.85, py: 1.6 })
+    put('picture', 0.15, 3.2, { rot: 270, img: '/art/posilka2.jpg', pw: 1.2, ph: 1.0, py: 1.6 })
+    put('cleansink', 5.7, 6.7, { rot: 270, note: 'úklid sportovní části' })
+    put('co2', 0.15, 6.5, { rot: 90, dy: 1.6 })
+    put('exitsign', 0.35, 5.0, { rot: 90, dy: 2.3, note: 'směr úniku přes jádro' })
+    return items
+  },
+
+  'sim-b': (S, b, P) => {
+    const { items, put, row, around } = maker(S, b)
+    for (let i = 0; i < P.sim.rigs; i++) put('simrig', 1.2 + i * 1.7, 1.6)
+    put('rtable', 2.0, 4.6)
+    around(2.0, 4.6, [[-0.78, 0], [0.78, 0]])
+    put('fridge', 3.6, 6.5)
+    put('rack19', 0.5, 6.4)
+    put('picture', 2.0, 6.9, { rot: 180, img: '/art/sim.jpg', pw: 1.0, ph: 1.3, py: 1.45 })
+    row('acpanel', 1.2, 6.87, 2, 1.6, { rot: 180, dy: 1.3 })
+    return items
+  },
+
+  // Vysoký sklad pod halou — nad ním se strop nestaví, regál jde do výšky.
+  'store-w': (S, b) => {
+    const { items, put, row } = maker(S, b)
+    row('palrack', 1.6, 0.8, 3, 3.0)
+    row('palrack', 1.6, 3.2, 3, 3.0)
+    put('partshelf', 9.4, 3.0, { rot: 90 })
+    return items
+  },
+
+  // WC návštěvníků 4 × 4 m: bezbariérová kabina (vyhl. 398/2009), běžná
+  // kabina, sprcha pro fitness, dvě umyvadla, skříňky. Úklidová komora je
+  // v patře, výlevka pro sportovní část přímo ve fitness.
+  'wc-pub': (S, b) => {
+    const { items, put, row } = maker(S, b)
+    put('wcBF', 1.3, 2.75, { note: 'jediná bezbariérová kabina v domě' })
+    put('wc', 3.25, 3.25, { rot: 90 })
+    put('shower', 3.5, 1.9)
+    row('basin', 2.9, 0.45, 2, 0.75)
+    row('locker', 0.28, 0.5, 3, 0.35, { along: 'v', rot: 90 })
+    return items
+  },
+
+  // Sanita patra 3 × 4 m — obsluhuje kanceláře, zasedačku a rezervu.
+  'wc-1f': (S, b) => {
+    const { items, put, row } = maker(S, b)
+    row('wc', 3.25, 1.6, 2, 1.0, { along: 'v', rot: 90 })
+    put('urinal', 3.8, 3.6, { rot: 90 })
+    row('basin', 0.3, 1.6, 2, 0.7, { along: 'v', rot: 90 })
+    put('cleaning', 0.7, 3.3, { note: 'úklidová komora patra' })
+    return items
+  },
+
+  // ---------------------------------------------------------------- byt
+  // Jedna dispozice na místnost, čtyři byty. Byty 2 a 4 jsou zrcadlené
+  // (b.mirror) — maker() překlopí u i rotaci, takže se nic nepíše dvakrát.
+
+  'flat-bed': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('bed', 1.5, 2.9, { note: 'postel čelem k oknu, ne pod ním' })
+    put('wardrobe', 0.35, 2.6, { rot: 90 })
+    return items
+  },
+
+  'flat-bath': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('shower', 0.55, 0.6)
+    put('wcbowl', 0.35, 2.0)
+    put('basin', 1.6, 2.1, { rot: 180 })
+    put('washer', 2.35, 2.05, { note: 'pračka v bytě, ne ve společné prádelně' })
+    return items
+  },
+
+  // Předsíň nese vstupní dveře z pláště: v přízemí přímo z terénu,
+  // v patře z pavlače. Uvnitř jen šatní skříň na severním konci, jinak
+  // musí zůstat průchozí ke třem dveřím.
+  'flat-hall': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('door', 0.7, 0.14, { note: 'vlastní vstup do bytu' })
+    put('cabinet', 0.27, 6.4, { rot: 90, note: 'šatní skříň' })
+    put('smoke', 0.7, 2.0, { dy: blockHeight(S, b) - 0.3, note: 'autonomní hlásič — povinný v bytě' })
+    return items
+  },
+
+  'flat-liv': (S, b) => {
+    const { items, put, around } = maker(S, b)
+    // Obývák 2,9 × 4,6 m nemá dveře do kuchyně — jsou to dva bloky bez příčky.
+    // Průchod k lince proto MUSÍ zůstat volný po celé délce u stěny s předsíní;
+    // nábytek napříč místností kuchyň odřízl a byl to nález walk testu.
+    put('table', 1.9, 1.2, { note: 'jídelní stůl u okna' })
+    around(1.9, 1.2, [[0, -0.8], [0, 0.8]])
+    put('sofa', 2.45, 3.4, { rot: 90 })
+    put('screen', 0.1, 3.4, { rot: 90, dy: 1.1, note: 'TV na stěně k předsíni' })
+    return items
+  },
+
+  'flat-kit': (S, b) => {
+    const { items, put } = maker(S, b)
+    // linka po severní stěně, lednice v rohu — jižní polovina zůstává volná
+    // jako průchod z obýváku
+    put('kitchen', 1.3, 2.05)
+    put('fridge', 2.55, 1.4, { rot: 90 })
+    return items
+  },
 }
 
 /** Vybavení jednoho bloku ve světových souřadnicích. */
 export function fitoutFor(S, b) {
   if (b.fitout === 'shell') return []
-  const gen = LAYOUTS[b.id]
+  // b.layout přepíše dispozici podle id — dvě verze budovy mají blok stejného
+  // jména v jiném rozměru a čtyři byty sdílejí jeden layout na místnost
+  const gen = LAYOUTS[b.layout ?? b.id]
   if (!gen) return []
   const raw = gen(S, b, S.program)
   // co po zmenšení bloku vypadlo ven, zahoď — ať model nelže
@@ -629,6 +817,7 @@ const ZONE_BOARDS = { 'office-gf': 'komunitní zóna', lobby: 'veřejná část'
 const LUX = {
   office: 500, meeting: 500, sim: 300, gym: 300, lobby: 200, wet: 200, arena: 300,
   play: 300, workshop: 500, storage: 150, plant: 200, circ: 150, reserve: 0,
+  flat: 200,                                   // obytné místnosti, ČSN EN 12464-1
 }
 const M2_PER_LUM = (lux) => (lux >= 500 ? 8 : lux >= 300 ? 11 : 16)
 
@@ -708,7 +897,7 @@ function derivedFor(S, b) {
   // buňka mřížky už obsazená (vyústka, svítidlo a čidlo jinak sedí na sobě).
   const ceilTaken = (x, z) => out.some((o) =>
     ['diffuser', 'light', 'smoke'].includes(o.kind)
-    && Math.abs(o.x - x) < 0.65 && Math.abs(o.z - z) < 0.48)
+    && Math.abs(o.x - x) < 0.95 && Math.abs(o.z - z) < 0.48)
   const dodgeZ = (x, z) => {
     for (let k = 0; k < 4 && ceilTaken(x, z); k++) {
       z = z + 0.6 > b.z1 - 0.4 ? z - 0.6 : z + 0.6
@@ -803,8 +992,9 @@ export function fitoutAll(S) {
   // kde přesně se co nevešlo — jinak se hlásí jen číslo a nikdo neví kam sáhnout
   const droppedBy = {}
   for (const b of S.blocks) {
-    if (b.fitout === 'shell' || !LAYOUTS[b.id]) continue
-    const n = LAYOUTS[b.id](S, b, S.program).length - fitoutFor(S, b).length
+    const gen = LAYOUTS[b.layout ?? b.id]
+    if (b.fitout === 'shell' || !gen) continue
+    const n = gen(S, b, S.program).length - fitoutFor(S, b).length
     if (n > 0) droppedBy[b.id] = n
   }
   const dropped = Object.values(droppedBy).reduce((a, n) => a + n, 0)

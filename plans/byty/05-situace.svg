@@ -144,7 +144,7 @@
 <rect x="549.0" y="562.5" width="16.0" height="9.0" class="room" fill="#a9c6d8" stroke="#2b2f36" stroke-width="0.8"/>
 <text x="570.0" y="570.5" class="lblsm" >retence dešťovky</text>
 <line x1="40.0" y1="632.5" x2="906.0" y2="632.5" class="frame" />
-<text x="40.0" y="656.5" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · A — FIREMNÍ BUDOVA</text>
+<text x="40.0" y="656.5" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · B — SE 4 BYTY</text>
 <text x="40.0" y="674.5" class="sub" >SITUACE · etapa 1 + obrys etapy 2, celkem 18 × 56 m = 1 008 m² zastavěné plochy</text>
 <text x="40.0" y="689.5" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
 <text x="40.0" y="704.5" class="sub" >Generováno ze src/spec.js · 23. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>

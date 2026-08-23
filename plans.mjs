@@ -16,12 +16,26 @@
 // utne a celý výkres se sesype do rohu (stalo se).
 
 import { writeFileSync, mkdirSync } from 'node:fs'
-import { SPEC as S, TYPES, area, levelBase, roofY, ridgeY } from './src/spec.js'
+import { spawnSync } from 'node:child_process'
+import { TYPES, area, levelBase, roofY, ridgeY } from './src/spec.js'
 import { openingsFor, partitionsFor } from './src/building.js'
 import { FURN, fitoutAll } from './src/fitout.js'
+import { VARIANTS, variantFromArgv } from './src/variants.js'
 
-const OUT = 'plans'
-const DATE = '16. 8. 2026'
+// Bez argumentu se vygenerují obě verze — každá ve vlastním procesu, protože
+// celý soubor pracuje s jedním modulovým `S`.
+const VARIANT = variantFromArgv()
+if (!VARIANT) {
+  for (const v of VARIANTS) {
+    const r = spawnSync(process.execPath, [process.argv[1], v.id], { stdio: 'inherit' })
+    if (r.status) process.exit(r.status)
+  }
+  process.exit(0)
+}
+
+const S = VARIANT.spec
+const OUT = VARIANT.id === VARIANTS[0].id ? 'plans' : `plans/${VARIANT.id}`
+const DATE = '23. 8. 2026'
 const LOC = 'Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou'
 
 // ---------------------------------------------------------------- pomocníci
@@ -109,7 +123,7 @@ ${this.b.join('\n')}
 function titleBlock(d, { name, note, scaleBar, sc }) {
   const y = d.h - 96
   d.line(40, y, d.w - 40, y, 'frame')
-  d.text(40, y + 24, 'BUDOVA 1P — studie dispozice, etapa 1', 'ttl')
+  d.text(40, y + 24, `BUDOVA 1P — studie dispozice, etapa 1 · ${VARIANT.label.toUpperCase()}`, 'ttl')
   d.text(40, y + 42, name, 'sub')
   d.text(40, y + 57, LOC, 'sub')
   d.text(40, y + 72, `Generováno ze src/spec.js · ${DATE} · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m`, 'sub')
@@ -660,4 +674,5 @@ const made = [
   sectionB(),
   site(),
 ]
-console.log(made.map((f) => `${OUT}/${f}`).join('\n'))
+console.log(`${VARIANT.label}:`)
+console.log(made.map((f) => `  ${OUT}/${f}`).join('\n'))

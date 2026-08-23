@@ -1,7 +1,11 @@
-// spec.js — JEDINÝ zdroj pravdy celého modelu.
+// spec.js — JEDINÝ zdroj pravdy celého modelu (varianta A, firemní budova).
 //
 // Geometrie, plochy i trasy rozvodů se generují odtud. Když se tady změní
 // číslo, přegeneruje se všechno včetně dimenzí VZT, topení a elektra.
+//
+// Druhá varianta dispozice (se 4 byty místo arény) je v spec-byty.js —
+// přebírá odsud obálku i sazby typů a mění jen bloky, propojení a program.
+// Přepínač obou verzí je v variants.js.
 //
 // Souřadnice — POZOR na znaménka, kompas musí být pravotočivý:
 //   x = 0 na VÝCHODNÍM průčelí, roste na ZÁPAD (etapa 1 = 0..28, etapa 2 = 28..56)
@@ -44,6 +48,19 @@ export const SPEC = {
     elecConnectionArea: 1008,   // m² — na tohle se dimenzuje přípojka
     mainBreaker: 'stage',       // jistič dle aktuální etapy (viz mep totals.breaker)
     retention: 'stage',         // retence dešťovky per etapa
+  },
+
+  // Venkovní část — stání na jižním předpolí. Řada z 5,0 m hloubky, osa v `row`.
+  // Pruh x 21–28,5 zůstává VOLNÝ jako vjezd k vratům dílny, další stání jsou
+  // na ploše etapy 2 (do doby, než se postaví).
+  site: {
+    parkRow: -6.5,
+    bays: [
+      { x: 1.7, w: 2.4 }, { x: 4.3, w: 2.4 }, { x: 6.9, w: 2.4 },
+      { x: 9.55, w: 3.4, bf: true }, { x: 13.15, w: 3.4, bf: true },
+      { x: 16.4, w: 2.4 }, { x: 19.0, w: 2.4 },
+      { x: 29.7, w: 2.4 }, { x: 32.3, w: 2.4 }, { x: 34.9, w: 2.4 }, { x: 37.5, w: 2.4 },
+    ],
   },
 
   // Program — počty osob a kusů. Od nich se odvozuje vybavení i sanita.
@@ -196,6 +213,10 @@ export const TYPES = {
   plant:    { label: 'Strojovna',   color: 0xd94f8a, vzt: 2,  heat: 15, cool: 0,   elec: 60,  wet: false },
   circ:     { label: 'Komunikace',  color: 0xc9cdd4, vzt: 4,  heat: 35, cool: 0,   elec: 15,  wet: false },
   reserve:  { label: 'Rezerva',     color: 0x8a8f98, vzt: 1,  heat: 20, cool: 0,   elec: 5,   wet: false },
+  // Byt (varianta B). VZT 2 m³/h/m² ≈ 0,5 výměny za hodinu při světlé 2,7 m —
+  // hygienické minimum pro trvalý pobyt s rekuperací. Chlazení 0: byty se
+  // v nájmu neklimatizují, stínění řeší markýza pavlače a přesah okapu.
+  flat:     { label: 'Byt 2+kk',    color: 0xe0b34a, vzt: 2,  heat: 40, cool: 0,   elec: 25,  wet: false },
 }
 
 // --- odvozené veličiny ---

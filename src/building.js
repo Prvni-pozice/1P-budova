@@ -133,6 +133,16 @@ export function openingsFor(S, side) {
       // v2.2: žádný výklad — stejná okna jako kanceláře, jednotný rytmus fasády
       out.push({ x0: b.x0 + 1.9, x1: b.x1 - 1.2, v0: 0.9, v1: 2.4 })
       out.push({ x0: b.x0 + 1.9, x1: b.x1 - 1.2, v0: 4.3, v1: 5.6 })
+    } else if (b.type === 'flat') {
+      // Byt (varianta B). Předsíň si nese vlastní vstupní dveře, obytné
+      // místnosti okno přes skoro celou šířku — denní světlo je z jihu
+      // jediné, které byt může dostat. V patře sedí obojí na úrovni podlahy
+      // patra, tedy na pavlači (viz spec.exterior).
+      if (b.entry) {
+        out.push({ x0: cx - 0.5, x1: cx + 0.5, v0: base, v1: base + 2.1 })
+      } else {
+        out.push({ x0: b.x0 + 0.35, x1: b.x1 - 0.35, v0: base + 0.9, v1: base + 2.4 })
+      }
     } else if (b.type === 'plant') {
       out.push({ x0: cx - 1.9, x1: cx - 0.4, v0: 2.2, v1: 3.7 })                 // žaluzie sání
       out.push({ x0: cx + 0.4, x1: cx + 1.9, v0: 2.2, v1: 3.7 })                 // žaluzie výfuk
@@ -228,7 +238,11 @@ export function stairOpening(it, FURN) {
 
 /** Volné hrany mezipatra — sem patří zábradlí, jinak se z něj dá spadnout. */
 export function openEdges(S, b) {
-  const upper = S.blocks.filter((o) => o.level === 1 && o.id !== b.id)
+  // Blok přes obě podlaží se počítá jako krytí hrany jen tehdy, je-li to
+  // uzavřená místnost (enclosed) — pak tam stojí stěna a zábradlí by v ní
+  // jen trčelo. Galerie nad halou (aréna ve variantě A) enclosed nemá.
+  const upper = S.blocks.filter((o) =>
+    (o.level === 1 || (o.level === 'full' && o.enclosed)) && o.id !== b.id)
   const out = []
   const covered = (a0, a1, fixed, axis) => {
     // úsek hrany je krytý, když na něj navazuje jiný blok v patře nebo obvodová stěna
@@ -757,6 +771,7 @@ export function buildAll(spec, mep) {
     gym: ['rubber', 1.5], sim: ['rubber', 1.5],
     workshop: ['concrete', 3.0], storage: ['concrete', 3.0], plant: ['concrete', 3.0],
     circ: ['concrete', 3.0], reserve: ['concrete', 3.0],
+    flat: ['wood', 1.6],
   }
   const stairsForHoles = fit.items.filter((it) => it.kind === 'stairs')
   for (const b of S.blocks) {
@@ -989,18 +1004,86 @@ export function buildAll(spec, mep) {
   // Řada stání z −6,5 m: tři běžná, dvě bezbariérová (3,5 m) nejblíž vstupu,
   // dvě běžná — a pak MEZERA: pruh x 21–28,5 zůstává volný jako vjezd
   // k vratům dílny. Zbylá stání jsou na ploše etapy 2 (do její stavby).
-  const bay = (x, w2, disabled) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w2, disabled ? 0.05 : 0.04, 5.0),
-      disabled ? siteMat(0x2f6fa8) : asphalt)
-    m.position.set(x, disabled ? 0.03 : 0.02, -6.5)
+  const park = S.site ?? { parkRow: -6.5, bays: [] }
+  for (const b of park.bays) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(b.w, b.bf ? 0.05 : 0.04, 5.0),
+      b.bf ? siteMat(0x2f6fa8) : asphalt)
+    m.position.set(b.x, b.bf ? 0.03 : 0.02, park.parkRow)
     m.receiveShadow = true
     groups.site.add(m)
   }
-  for (let i = 0; i < 3; i++) bay(1.7 + i * 2.6, 2.4, false)
-  bay(9.55, 3.4, true)
-  bay(13.15, 3.4, true)
-  for (let i = 0; i < 2; i++) bay(16.4 + i * 2.6, 2.4, false)
-  for (let i = 0; i < 4; i++) bay(29.7 + i * 2.6, 2.4, false)
+
+  // --- venkovní schodiště a pavlač k bytům v patře (varianta B) ---
+  // Nejlevnější způsob, jak dát dvěma bytům nahoře vlastní vstup: ocelová
+  // konstrukce před jižní fasádou. Žádná společná chodba uvnitř, bytová část
+  // se s provozem firmy nikde nepotká a je vlastní požární úsek.
+  const ext = S.exterior
+  if (ext?.walkway) {
+    const steel = new THREE.MeshStandardMaterial({ color: 0x6f7680, roughness: 0.55, metalness: 0.6 })
+    steel.userData.shared = true
+    const railM = new THREE.MeshStandardMaterial({
+      color: 0xb9b0a2, roughness: 0.5, transparent: true, opacity: 0.6, depthWrite: false,
+    })
+    railM.userData.shared = true
+    const w = ext.walkway
+    const y = levelBase(S, w.level ?? 1)
+    const len = w.x1 - w.x0
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(len, 0.12, w.depth), steel)
+    deck.position.set((w.x0 + w.x1) / 2, y - 0.06, -w.depth / 2)
+    deck.castShadow = true
+    deck.receiveShadow = true
+    groups.site.add(deck)
+    // zábradlí po vnější hraně + čela
+    const rail = (l, x, z, turn, base = y) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(l, 1.1, 0.06), railM)
+      m.position.set(x, base + 0.55, z)
+      if (turn) m.rotation.y = Math.PI / 2
+      groups.site.add(m)
+    }
+    rail(len, (w.x0 + w.x1) / 2, -w.depth, false)
+    rail(w.depth, w.x0, -w.depth / 2, true)
+    rail(w.depth, w.x1, -w.depth / 2, true)
+    // sloupky pavlače, ať to nevisí ve vzduchu; v poli schodiště se vynechají
+    for (let x = w.x0 + 0.6; x < w.x1; x += 2.8) {
+      if (ext.stairs && x > ext.stairs.x0 - 0.3 && x < ext.stairs.x1 + 0.3) continue
+      const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, y, 0.12), steel)
+      p.position.set(x, y / 2, -w.depth + 0.1)
+      p.castShadow = true
+      groups.site.add(p)
+    }
+    // Dvouramenné schodiště s mezipodestou. Rovné rameno by na 3,3 m výšky
+    // potřebovalo 5,5 m běhu a stálo by uprostřed příjezdu — dvě ramena
+    // vedle sebe to zkrátí na polovinu.
+    const st = ext.stairs
+    if (st) {
+      const sw = st.x1 - st.x0
+      const LAND = 1.2
+      const run = st.out - w.depth - LAND        // běh jednoho ramene
+      const slope = Math.atan2(y / 2, run)
+      const zMid = -(w.depth + run / 2)
+      // rameno 1 stoupá od terénu u fasády k mezipodestě (výš je konec na −z),
+      // rameno 2 z mezipodesty zpět nahoru na pavlač (výš je konec na +z)
+      for (const [i, sign] of [[0, 1], [1, -1]]) {
+        const fl = new THREE.Mesh(
+          new THREE.BoxGeometry(sw / 2 - 0.08, 0.1, Math.hypot(run, y / 2)), steel)
+        fl.position.set(st.x0 + (i === 0 ? sw / 4 : (3 * sw) / 4), y * (i === 0 ? 0.25 : 0.75), zMid)
+        fl.rotation.x = sign * slope
+        fl.castShadow = true
+        groups.site.add(fl)
+      }
+      const landing = new THREE.Mesh(new THREE.BoxGeometry(sw, 0.12, LAND), steel)
+      landing.position.set((st.x0 + st.x1) / 2, y / 2 - 0.06, -(st.out - LAND / 2))
+      landing.castShadow = true
+      groups.site.add(landing)
+      rail(sw, (st.x0 + st.x1) / 2, -st.out, false, y / 2)   // zábradlí mezipodesty je o patro níž
+      for (const x of [st.x0, st.x1]) {
+        const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, y / 2, 0.12), steel)
+        p.position.set(x, y / 4, -(st.out - LAND / 2))
+        p.castShadow = true
+        groups.site.add(p)
+      }
+    }
+  }
 
   // POZOR: hledat podle ID — kuchyňský kout má taky typ 'lobby' a portál
   // se po komunitní přestavbě přestěhoval na jeho střed (x=2)
