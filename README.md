@@ -101,8 +101,8 @@ Sklad nad dílnou         x 21–28  z 6–13    49 m²   nad vjezdovou dráhou 
 
 Zadání 23. 8. 2026: aréna se ruší, na jejím místě a na části lobby vznikají
 **4 byty 2+kk, dva v přízemí a dva v patře, každý s vlastním vstupem zvenku**.
-Kanceláře vepředu a dílna vzadu zůstávají. Záměr byl konzultován na stavebním
-úřadě — model to bere jako zadání, ne jako ověřený fakt.
+Kanceláře vepředu a dílna vzadu zůstávají. Bydlení je v této zóně podle
+územního plánu **přípustné** — ověřeno na stavebním úřadě.
 
 ### Co dispozici určilo
 
@@ -165,21 +165,26 @@ Koeficient          1,60×      Kanceláře + zázemí      194 m²
 Hrubá rezerva       41 m²      Dílna + sklady          216 m²
 ```
 
-Ekonomika v `spec-byty.js` je **odhad k ověření**, ne nabídka: nájem
-11 000 Kč/měs za byt (spodní hranice trhu v Pelhřimově, průmyslová zóna) =
-528 tis. Kč/rok, provozní náklady bez arény a baru 1,18 mil. Kč/rok.
+Ekonomika v `spec-byty.js`: nájem **12 000 Kč/měs bez energií za byt**
+(Zdeněk, 23. 8. 2026) = 576 tis. Kč/rok. Provozní náklady bez arény a baru
+1,18 mil. Kč/rok jsou pořád jen odhad k ověření — provozní výsledek tedy
+vychází na ~612 tis. Kč/rok, ale spolehlivá je zatím jen ta výnosová půlka.
+
+### Rozhodnuto (23. 8. 2026)
+
+- **Územní plán bydlení dovoluje** — 4 nájemní byty v této zóně projdou.
+- **Nájem 12 000 Kč/měs** bez energií za byt.
+- **Hluk se zatím neřeší.** U verze A to plynulo z průmyslové zóny, teď je to
+  vědomý odklad: až se projekt pohne dál, hygienické limity pro chráněný
+  venkovní prostor, TČ, VZT dílny i zvedák budou téma.
+- **Pavlač před oknem obýváku zůstává, jak je.** Mezi vstupními dveřmi
+  a schodištěm běží ~2 m pavlače před oknem obývacího pokoje. Kdyby to vadilo,
+  řeší se to zvýšeným parapetem nebo odsazením pavlače od fasády.
 
 ### Otevřené otázky verze B
 
-- **Územní plán.** V průmyslové zóně bývá bydlení přípustné jen jako byt
-  správce. Čtyři nájemní byty jsou jiná kategorie — tohle je jediné, co může
-  celý záměr zabít, a model si to nijak neověřuje.
-- **Hluk a vibrace.** U verze A platilo „hluk venkovních jednotek TČ se neřeší
-  — průmyslová zóna". S byty přestává platit: hygienické limity pro chráněný
-  venkovní prostor, TČ, VZT dílny i zvedák jsou najednou téma.
-- **Pavlač před okny.** Mezi vstupními dveřmi a schodištěm běží ~2 m pavlače
-  před oknem obývacího pokoje. Řeší se zvýšeným parapetem nebo odsazením
-  pavlače od fasády — v modelu to zatím není.
+- **Provozní náklady jsou odhad.** 1,18 mil. Kč/rok bez arény a baru je jen
+  hrubý odhad — výnosová strana je zadaná, nákladová ne.
 - **Předpolí a stání.** Řada stání je odsunutá na z = −12, aby se před fasádu
   vešlo schodiště. Skutečný počet stání pro 4 byty + firmu a tvar příjezdu je
   věc situace, ne tohoto modelu.

@@ -4,6 +4,10 @@
 // vznikají 4 byty 2+kk, dva v přízemí a dva v patře, každý s vlastním vstupem
 // z venkovního pláště. Kanceláře vepředu a dílna vzadu zůstávají.
 //
+// Bydlení v této zóně je podle územního plánu PŘÍPUSTNÉ — ověřeno na stavebním
+// úřadě, potvrzeno 23. 8. 2026. Hluk (TČ, VZT dílny, zvedák) se zatím neřeší;
+// s byty na pozemku to jednou téma bude, ale teď to není zadání.
+//
 // ---------------------------------------------------------------------------
 // PROČ TAKHLE — tři vazby, které dispozici určily:
 //
@@ -101,9 +105,9 @@ const FLATS = [
 const flatBlocks = FLATS.flatMap((f) => flat(f.n, f.x, f.level, f.mirror))
 const flatLinkSet = FLATS.map((f) => flatLinks(f.n))
 
-// Nájem: 2+kk 49 m² v Pelhřimově, novostavba v průmyslové zóně → spodní
-// hranice trhu, 11 000 Kč/měsíc bez energií. ODHAD, ne nabídka nájemce.
-const RENT_PER_FLAT = 11000 * 12
+// Nájem 12 000 Kč/měsíc bez energií za byt (Zdeněk, 23. 8. 2026).
+// 2+kk 49 m², novostavba, Pelhřimov — průmyslová zóna.
+const RENT_PER_FLAT = 12000 * 12
 
 // Výnos se rozpustí do místností bytu podle plochy, aby sloupec výnosnosti
 // nad bytem byl rovný — jinak by „vydělával" jen obývák.
@@ -209,7 +213,7 @@ export const SPEC_BYTY = {
     // účetnictví, úklid, obsluha fitness a sim racingu. ODHAD k ověření.
     costsTotal: 1180000,
     revenue: {
-      ...flatRevenue,                        // 4 byty à 132 tis. Kč/rok
+      ...flatRevenue,                        // 4 byty à 144 tis. Kč/rok
       gym: 260000, sim: 300000,              // fitness zvětšené na 49 m², sim beze změny
       workshop: 200000, 'store-gf': 50000, 'store-w': 60000,
       'office-gf': 120000, 'office-1f': 60000, meeting: 60000, commons: 32000,

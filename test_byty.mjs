@@ -271,7 +271,7 @@ console.log('\nEKONOMIKA')
 const badIds = Object.keys(S.economy.revenue).filter((id) => !S.blocks.some((b) => b.id === id))
 ok(badIds.length === 0, 'ekonomika se odkazuje jen na existující bloky', badIds.join(', '))
 const rentTotal = S.blocks.filter((b) => b.flat).reduce((s, b) => s + (S.economy.revenue[b.id] ?? 0), 0)
-ok(Math.abs(rentTotal - 4 * 11000 * 12) < 20, 'nájem 4 bytů sedí na 11 000 Kč/měs',
+ok(Math.abs(rentTotal - 4 * 12000 * 12) < 20, 'nájem 4 bytů sedí na 12 000 Kč/měs',
   `${rentTotal.toLocaleString('cs-CZ')} Kč/rok`)
 const revSum = Object.values(S.economy.revenue).reduce((s, v) => s + v, 0)
 ok(revSum > S.economy.costsTotal, 'model počítá s kladným provozním výsledkem',
