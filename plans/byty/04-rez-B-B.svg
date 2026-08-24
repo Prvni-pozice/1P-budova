@@ -106,7 +106,7 @@
 <rect x="418.0" y="466.0" width="16.0" height="9.0" class="beyond" />
 <text x="439.0" y="474.0" class="lblsm" >pohled za rovinou řezu</text>
 <line x1="40.0" y1="506.0" x2="860.0" y2="506.0" class="frame" />
-<text x="40.0" y="530.0" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · B — SE 4 BYTY</text>
+<text x="40.0" y="530.0" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · B — S 5 JEDNOTKAMI</text>
 <text x="40.0" y="548.0" class="sub" >ŘEZ B–B · příčný, rovina x = 24,50 m od východního průčelí, pohled k západu</text>
 <text x="40.0" y="563.0" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
 <text x="40.0" y="578.0" class="sub" >Generováno ze src/spec.js · 23. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>

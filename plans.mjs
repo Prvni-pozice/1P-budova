@@ -208,7 +208,7 @@ const southHoles = openingsFor(S, 'south')
 const RIDGE = ridgeY(S)
 
 // kusy, které v půdorysu jen dělají nepořádek (stropní / zavěšené na stěně)
-const SKIP_PLAN = new Set(['light', 'emlight', 'smoke', 'diffuser', 'destrat', 'exitsign',
+const SKIP_PLAN = new Set(['light', 'emlight', 'smoke', 'diffuser', 'destrat', 'exitsign', 'skylight',
   'sidelight', 'aircurtain', 'co2', 'entrymat', 'picture', 'mirror', 'board', 'screen',
   'acpanel', 'subboard', 'firstaid', 'hydrant', 'extinguisher', 'coatrack'])
 const DOORS = new Set(['door', 'double', 'glazed', 'service'])

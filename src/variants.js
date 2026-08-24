@@ -16,9 +16,9 @@ export const VARIANTS = [
   },
   {
     id: 'byty',
-    label: 'B — se 4 byty',
+    label: 'B — s 5 jednotkami',
     short: 'B',
-    sub: 'Místo arény 4 byty 2+kk, sport sjel do přízemí',
+    sub: '4 byty 2+kk + jednotka byt/kancelář, sport v přízemí',
     spec: SPEC_BYTY,
   },
 ]

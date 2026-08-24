@@ -30,15 +30,20 @@ export function summaryText(spec, mep, pv, fit) {
     L.push(`  ${pad('hrubá rezerva', 16)}${rpad(n0(a.shell), 7)} m²`)
   }
   const flats = {}
-  for (const b of spec.blocks) if (b.flat) flats[b.flat] = (flats[b.flat] ?? 0) + (b.x1 - b.x0) * (b.z1 - b.z0)
+  let unit5 = 0
+  for (const b of spec.blocks) {
+    if (b.flat) flats[b.flat] = (flats[b.flat] ?? 0) + (b.x1 - b.x0) * (b.z1 - b.z0)
+    if (b.unit === 5) unit5 += (b.x1 - b.x0) * (b.z1 - b.z0)
+  }
   const nFlats = Object.keys(flats).length
   if (nFlats) {
     const sum = Object.values(flats).reduce((s, v) => s + v, 0)
     L.push('')
-    L.push('BYTY')
-    L.push(`  ${pad('Počet', 16)}${rpad(nFlats + '× ' + (spec.program?.flats?.layout ?? ''), 7)}`)
+    L.push('JEDNOTKY')
+    L.push(`  ${pad('Byty', 16)}${rpad(nFlats + '× ' + (spec.program?.flats?.layout ?? ''), 7)}`)
     L.push(`  ${pad('Plocha bytu', 16)}${rpad(n1(sum / nFlats), 7)} m²`)
-    L.push(`  ${pad('Bydlení celkem', 16)}${rpad(n0(sum), 7)} m²`)
+    if (unit5 > 0) L.push(`  ${pad('Jednotka 5', 16)}${rpad(n0(unit5), 7)} m²  (byt/kancelář)`)
+    L.push(`  ${pad('Pronájem celkem', 16)}${rpad(n0(sum + unit5), 7)} m²`)
   }
 
   L.push('')

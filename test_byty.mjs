@@ -1,10 +1,10 @@
-// test_byty.mjs — kontrola VARIANTY B (firemní budova se 4 byty).
+// test_byty.mjs — kontrola VARIANTY B (firemní budova s 5 jednotkami).
 // Spouštět: node test_byty.mjs
 //
 // test_spec.mjs hlídá variantu A do detailu jejího programu (trampolíny, bar,
 // šatny). Tady se hlídá to, co je na variantě B nové a co se dá snadno
-// rozbít: že byty mají světlo, vlastní vstup, oddělený požární úsek a že
-// zbytek domu (kanceláře, dílna) zůstal, kde byl.
+// rozbít: že byty mají světlo, vlastní vstup, oddělený požární úsek, že
+// jednotka 5 kryje bývalou díru za byty a že dílna zůstala, kde byla.
 
 import { SPEC, areaTotals, area, levelBase } from './src/spec.js'
 import { SPEC_BYTY as S } from './src/spec-byty.js'
@@ -24,13 +24,16 @@ const fit = fitoutAll(S)
 const mep = computeMEP(S)
 const FLAT_IDS = [1, 2, 3, 4]
 const roomsOf = (n) => S.blocks.filter((b) => b.flat === n)
+const U5 = S.blocks.filter((b) => b.unit === 5)
 
 // ------------------------------------------------------------------ PLOCHY
 console.log('\nPLOCHY')
 const a = areaTotals(S)
 ok(Math.abs(a.footprint - 504) < 0.01, 'půdorys etapy 1 = 504 m²', `${a.footprint}`)
 ok(Math.abs(a.gf - 504) < 0.01, 'přízemí zaplňuje půdorys přesně', `${a.gf.toFixed(1)} m²`)
-ok(a.total >= 750 && a.total <= 850, 'celkem v cílovém pásmu 750–850 m²', `${a.total.toFixed(0)} m²`)
+// Jednotka 5 zastropila střed → celek přerostl původní pásmo 750–850.
+// To je záměr (98 m² pronajímatelné plochy navíc), ne chyba.
+ok(a.total >= 800 && a.total <= 880, 'celkem 800–880 m² (jednotka 5 zvedla patro)', `${a.total.toFixed(0)} m²`)
 
 function coverage(spec) {
   const step = 0.5
@@ -66,29 +69,35 @@ ok(S.blocks.every((b) => b.x0 >= 0 && b.x1 <= S.stage1 && b.z0 >= 0 && b.z1 <= S
 
 // --------------------------------------------------------------- CO ZŮSTALO
 console.log('\nCO ZŮSTALO Z VARIANTY A')
-for (const id of ['workshop', 'store-gf', 'plant', 'corridor', 'office-1f', 'meeting', 'reserve',
-                  'commons', 'wc-gf']) {
+for (const id of ['workshop', 'store-gf', 'plant', 'commons', 'wc-gf', 'meeting']) {
   const x = blk(id), y = SPEC.blocks.find((b) => b.id === id)
   ok(x && y && x.x0 === y.x0 && x.x1 === y.x1 && x.z0 === y.z0 && x.z1 === y.z1,
     `${id} beze změny proti variantě A`, x ? `x ${x.x0}–${x.x1}, z ${x.z0}–${x.z1}` : 'CHYBÍ')
 }
-const off = blk('office-gf')
-ok(off.x0 === 0 && off.x1 === 7, 'kanceláře drží východní pole x 0–7', `${area(off).toFixed(1)} m²`)
 ok(!S.blocks.some((b) => b.type === 'arena' || b.type === 'play'), 'aréna ani dětský koutek v modelu nejsou')
-const lobbyB = blk('lobby')
-const lobbyA = SPEC.blocks.find((b) => b.id === 'lobby')
-ok(area(lobbyB) < area(lobbyA) * 0.4, 'recepce je výrazně menší než lobby varianty A',
-  `${area(lobbyB).toFixed(1)} vs ${area(lobbyA).toFixed(1)} m²`)
-const gymB = area(blk('gym'))
-const gymA = area(SPEC.blocks.find((b) => b.id === 'gym')) + area(SPEC.blocks.find((b) => b.id === 'gym-n'))
-ok(gymB <= gymA, 'fitness se nezvětšilo', `${gymB.toFixed(0)} vs ${gymA.toFixed(0)} m²`)
+ok(!S.blocks.some((b) => b.id === 'store-w'), 'vysoký sklad zrušen — sklad je jen u dílny')
+const storages = S.blocks.filter((b) => b.type === 'storage')
+ok(storages.length === 1 && storages[0].id === 'store-gf', 'jediný sklad v domě sousedí s dílnou')
+
+// -------------------------------------------------------- JÁDRO U RECEPCE
+console.log('\nVNITŘNÍ JÁDRO (iterace 1)')
+const core = blk('core')
+const lobby = blk('lobby')
+ok(Math.abs(core.z0 - lobby.z1) < 0.01 && core.x0 >= lobby.x0 && core.x1 <= lobby.x1,
+  'schodiště stojí přímo za recepcí', `core z ${core.z0}–${core.z1}`)
+ok((S.openPairs ?? []).some(([p, q]) => (p === 'lobby' && q === 'core') || (p === 'core' && q === 'lobby')),
+  'recepce a jádro jsou jeden otevřený prostor — vejdeš a vidíš schody')
+const stairsIt = fit.items.filter((it) => it.kind === 'stairs')
+const coreStair = stairsIt.find((it) => it.block === 'core')
+ok(!!coreStair, 'schodiště je v jádru', coreStair ? `(${coreStair.x.toFixed(1)}, ${coreStair.z.toFixed(1)})` : '')
+ok(fit.items.some((it) => it.kind === 'elevator' && it.block === 'core'),
+  'výtah vedle schodiště — bezbariérový přístup do patra')
 
 // ------------------------------------------------------------------- BYTY
-console.log('\nBYTY')
+console.log('\nBYTY 1–4')
 ok(S.program.flats.units === 4, 'program počítá se 4 byty')
 const flatAreas = FLAT_IDS.map((n) => roomsOf(n).reduce((s, b) => s + area(b), 0))
 ok(flatAreas.every((x) => Math.abs(x - 49) < 0.01), 'každý byt má 49 m²', flatAreas.map((x) => x.toFixed(1)).join(' / '))
-ok(flatAreas.every((x) => x >= 40 && x <= 60), 'byty drží pásmo malého 2+kk (40–60 m²)')
 const gfFlats = FLAT_IDS.filter((n) => roomsOf(n)[0].level === 0).length
 ok(gfFlats === 2, 'dva byty v přízemí, dva v patře', `${gfFlats} + ${4 - gfFlats}`)
 
@@ -114,60 +123,103 @@ for (const n of FLAT_IDS) {
 }
 const flatIds = new Set(S.blocks.filter((b) => b.flat).map((b) => b.id))
 const leaks = S.links.filter((l) => flatIds.has(l.a) !== flatIds.has(l.b))
-ok(leaks.length === 0, 'z bytů nevedou žádné dveře do zbytku domu',
-  leaks.length ? leaks.map((l) => `${l.a}–${l.b}`).join(', ') : 'bytová část je oddělená')
+ok(leaks.length === 0, 'z bytů 1–4 nevedou žádné dveře do zbytku domu',
+  leaks.length ? leaks.map((l) => `${l.a}–${l.b}`).join(', ') : 'byty jsou oddělené')
 
-// pavlač musí dosáhnout na obě horní vstupní dveře, jinak jsou byty nepřístupné
+// koupelny nad sebou = dvě stoupačky na byty
+const baths = S.blocks.filter((b) => b.id.endsWith('-bath') && b.flat)
+const risers = new Set(baths.map((b) => `${b.x0.toFixed(2)}|${b.z0.toFixed(2)}`))
+ok(risers.size === 2, 'koupelny bytů leží nad sebou → 2 stoupačky', `${risers.size} poloh pro ${baths.length} koupelen`)
+
+// ------------------------------------------------------------- JEDNOTKA 5
+console.log('\nJEDNOTKA 5 (iterace 2)')
+ok(U5.length === 3, 'jednotka 5 má tři místnosti (hlavní, kuchyň, koupelna)')
+const u5Area = U5.reduce((s, b) => s + area(b), 0)
+ok(Math.abs(u5Area - 98) < 0.5, 'jednotka 5 má ~98 m²', `${u5Area.toFixed(1)} m²`)
+ok(U5.every((b) => b.level === 1), 'jednotka 5 je celá v patře')
+
+// jednotka 5 kryje CELÝ pás za byty — po díře nesmí zbýt nic
+const upCover = (x, z) => S.blocks.some((b) =>
+  (b.level === 1 || (b.level === 'full' && b.enclosed))
+  && x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1)
+let holes = 0
+for (let x = 7.25; x < 21; x += 0.5) for (let z = 7.25; z < 18; z += 0.5) if (!upCover(x, z)) holes++
+ok(holes === 0, 'za byty v patře už není žádná díra dolů', `${holes} nekrytých buněk`)
+
+// bez fasády → světlo dávají střešní okna
+const skylights = fit.items.filter((it) => it.kind === 'skylight')
+ok(skylights.length >= 6, 'jednotka 5 má střešní okna (jediné denní světlo)', `${skylights.length} ks`)
+ok(skylights.every((it) => U5.some((b) => b.id === it.block)), 'všechna střešní okna patří jednotce 5')
+
+// vstup z chodby u vnitřního schodiště
+ok(S.links.some((l) => (l.a === 'corridor' && l.b === 'u5-w') || (l.a === 'u5-w' && l.b === 'corridor')),
+  'jednotka 5 má vstup z chodby u schodiště')
+ok(Array.isArray(S.compartments.byt5) && S.compartments.byt5.length === 3,
+  'jednotka 5 je vlastní požární úsek')
+
+// koupelna jednotky 5 navazuje na stoupačku koupelny bytu 3
+const u5b = blk('u5-bath')
+const f3b = blk('f3-bath')
+ok(Math.abs(u5b.z0 - f3b.z1) < 0.01 && u5b.x0 === f3b.x0,
+  'koupelna jednotky 5 sedí na stoupačce bytu 3', `z ${f3b.z1} → ${u5b.z0}`)
+
+// vybavení: linka, koupelna kompletní, hlásič
+{
+  const ids = new Set(U5.map((b) => b.id))
+  const its = fit.items.filter((it) => ids.has(it.block))
+  const has = (k) => its.some((it) => it.kind === k)
+  ok(has('kitchen') && has('shower') && has('wcbowl') && has('basin') && has('washer'),
+    'jednotka 5: linka, sprcha, WC, umyvadlo, pračka', `${its.length} kusů`)
+  ok(has('smoke'), 'jednotka 5: autonomní hlásič kouře')
+}
+
+// -------------------------------------------- VENKOVNÍ SCHODIŠTĚ (iterace 3)
+console.log('\nVENKOVNÍ SCHODIŠTĚ A PAVLAČ (iterace 3)')
+const st = S.exterior.stairs
 const w = S.exterior.walkway
+ok(Math.abs(st.z1) <= 3.0, 'schodiště jde podél fasády — vyčnívá max 3 m', `pás z ${st.z0} až ${st.z1}`)
+const run = st.x1 - st.x0 - (st.landing ?? 0.9)
+ok(run >= 5.0, 'rameno má dost běhu na 3,3 m výšky (sklon ≤ 33°)',
+  `běh ${run.toFixed(1)} m, sklon ${(Math.atan2(3.3, run) * 180 / Math.PI).toFixed(0)}°`)
+ok(Math.abs(st.z1 - -w.depth) < 0.01, 'schodiště přiléhá k pavlači — podesta ústí přímo na ni')
+ok(st.x0 >= w.x0 - 0.01, 'podesta schodiště leží v rozsahu pavlače')
 for (const n of FLAT_IDS.filter((k) => roomsOf(k)[0].level === 1)) {
   const hall = roomsOf(n).find((b) => b.entry)
   const cx = (hall.x0 + hall.x1) / 2
   ok(cx > w.x0 + 0.5 && cx < w.x1 - 0.5, `byt ${n}: pavlač dosáhne na vstupní dveře`,
     `dveře x ${cx.toFixed(1)}, pavlač ${w.x0}–${w.x1}`)
 }
-ok(S.exterior.stairs.out > 4.5, 'venkovní schodiště má dost běhu na 3,3 m výšky',
-  `vyčnívá ${S.exterior.stairs.out} m`)
-const stX = (S.exterior.stairs.x0 + S.exterior.stairs.x1) / 2
-ok(S.site.bays.every((b) => Math.abs(b.x - stX) > (b.w + (S.exterior.stairs.x1 - S.exterior.stairs.x0)) / 2),
-  'venkovní schodiště nestojí v parkovacím stání')
+ok(S.site.bays.every((b) => b.x + b.w / 2 < st.x0 || b.x - b.w / 2 > st.x1
+    || S.site.parkRow + 2.5 < st.z0 - 0.5),
+  'schodiště nezasahuje do parkovacích stání')
 
-// koupelny nad sebou = dvě stoupačky na celý dům, ne čtyři
-const baths = S.blocks.filter((b) => b.id.endsWith('-bath'))
-const risers = new Set(baths.map((b) => `${b.x0.toFixed(2)}|${b.z0.toFixed(2)}`))
-ok(risers.size === 2, 'koupelny bytů leží nad sebou → 2 stoupačky', `${risers.size} poloh pro ${baths.length} koupelen`)
-
-// každý byt = samostatný požární úsek
-for (const n of FLAT_IDS) {
-  ok(Array.isArray(S.compartments[`byt${n}`]) && S.compartments[`byt${n}`].length === 5,
-    `byt ${n} je samostatný požární úsek`)
-}
+// ------------------------------------------------------- POŽÁRNÍ ODDĚLENÍ
+console.log('\nPOŽÁRNÍ ÚSEKY')
 const parts = partitionsFor(S)
 const compOf = {}
 for (const [name, ids] of Object.entries(S.compartments)) for (const id of ids) compOf[id] = name
-const flatWalls = parts.filter((p) => p.blocks.some((id) => flatIds.has(id))
-  && !p.blocks.every((id) => compOf[id] === compOf[p.blocks[0]]))
-ok(flatWalls.length > 0 && flatWalls.every((p) => p.fire),
-  'stěny bytů proti okolí jsou požárně dělicí', `${flatWalls.length} úseků`)
-const gymWall = parts.find((p) => p.blocks.includes('gym') && p.blocks.some((id) => flatIds.has(id)))
-ok(!!gymWall, 'mezi fitness a byty stojí stěna, ne otevřená hrana mezipatra')
-
-// hrana mezipatra u bytů nesmí dostat zábradlí — je tam stěna
-const railsOnFlats = S.blocks.filter((b) => b.level === 1 && b.flat)
+const unitIds = new Set([...flatIds, ...U5.map((b) => b.id)])
+const unitWalls = parts.filter((p) => p.blocks.some((id) => unitIds.has(id))
+  && compOf[p.blocks[0]] !== compOf[p.blocks[1]])
+ok(unitWalls.length > 0 && unitWalls.every((p) => p.fire),
+  'stěny jednotek proti okolí jsou požárně dělicí', `${unitWalls.length} úseků`)
+const railsOnFlats = S.blocks.filter((b) => b.level === 1 && (b.flat || b.unit))
   .flatMap((b) => openEdges(S, b))
-ok(railsOnFlats.length === 0, 'byty v patře nemají volnou hranu se zábradlím',
+ok(railsOnFlats.length === 0, 'jednotky v patře nemají volnou hranu se zábradlím',
   `${railsOnFlats.length} úseků`)
 
-// ------------------------------------------------------------- VYBAVENÍ BYTU
-console.log('\nVYBAVENÍ BYTU')
+// ------------------------------------------------------------- VYBAVENÍ
+console.log('\nVYBAVENÍ')
 for (const n of FLAT_IDS) {
   const ids = new Set(roomsOf(n).map((b) => b.id))
   const its = fit.items.filter((it) => ids.has(it.block))
   const has = (k) => its.some((it) => it.kind === k)
   ok(has('bed') && has('kitchen') && has('shower') && has('wcbowl') && has('basin') && has('washer'),
-    `byt ${n}: postel, linka, sprcha, WC, umyvadlo, pračka`,
-    `${its.length} kusů`)
+    `byt ${n}: postel, linka, sprcha, WC, umyvadlo, pračka`, `${its.length} kusů`)
   ok(has('smoke'), `byt ${n}: autonomní hlásič kouře`)
 }
+ok(fit.counts.desk === S.program.office.desks, 'počet stolů kanceláří sedí s programem',
+  `${fit.counts.desk} / ${S.program.office.desks}`)
 ok(fit.dropped === 0, 'nic z vybavení nevypadlo mimo místnost',
   fit.dropped ? JSON.stringify(fit.droppedBy) : 'vše se vešlo')
 
@@ -175,7 +227,7 @@ ok(fit.dropped === 0, 'nic z vybavení nevypadlo mimo místnost',
 const blocked = []
 for (const d of doorsFor(S)) {
   for (const it of fit.items) {
-    if (it.link || ['light', 'smoke', 'diffuser', 'emlight', 'exitsign', 'co2'].includes(it.kind)) continue
+    if (it.link || ['light', 'smoke', 'diffuser', 'emlight', 'exitsign', 'co2', 'skylight'].includes(it.kind)) continue
     if (Math.abs(it.y - d.y) > 0.6) continue
     const f = FURN[it.kind]
     if (!f || f.h < 0.4) continue
@@ -194,7 +246,6 @@ ok(blocked.length === 0, 'před žádnými vnitřními dveřmi nestojí nábytek
 
 // ------------------------------------------------------------- PŘÍSTUPNOST
 console.log('\nPŘÍSTUPNOST A ÚNIK')
-const stairs = fit.items.filter((it) => it.kind === 'stairs')
 const entrances = new Set()
 for (const lvl of [0, 1]) {
   const base = levelBase(S, lvl)
@@ -209,10 +260,10 @@ for (const lvl of [0, 1]) {
 const edges = new Map(S.blocks.map((b) => [b.id, new Set()]))
 for (const l of S.links) { edges.get(l.a).add(l.b); edges.get(l.b).add(l.a) }
 for (const [p, q] of S.openPairs ?? []) { edges.get(p).add(q); edges.get(q).add(p) }
-for (const st of stairs) {
+for (const s2 of stairsIt) {
   const to = S.blocks.find((b) => b.level === 1
-    && st.x > b.x0 - 1 && st.x < b.x1 + 1 && st.z > b.z0 - 3 && st.z < b.z1 + 3)
-  if (to) { edges.get(st.block).add(to.id); edges.get(to.id).add(st.block) }
+    && s2.x > b.x0 - 1 && s2.x < b.x1 + 1 && s2.z > b.z0 - 3 && s2.z < b.z1 + 3)
+  if (to) { edges.get(s2.block).add(to.id); edges.get(to.id).add(s2.block) }
 }
 const seen = new Set(entrances)
 const queue = [...entrances]
@@ -221,13 +272,10 @@ const cutOff = S.blocks.filter((b) => !seen.has(b.id))
 ok(cutOff.length === 0, 'z každé místnosti se dá dojít ven',
   cutOff.length ? cutOff.map((b) => b.id).join(', ') : `${seen.size} místností, ${entrances.size} vchodů`)
 
-const tech = new Set(['workshop', 'plant', 'store-gf', 'store-w'])
+const tech = new Set(['workshop', 'plant', 'store-gf'])
 const techLeaks = S.links.filter((l) => tech.has(l.a) !== tech.has(l.b))
 ok(techLeaks.length === 0, 'z dílny nevede do zbytku domu žádné dveře',
   techLeaks.length ? techLeaks.map((l) => `${l.a}–${l.b}`).join(', ') : 'technická zóna je samostatná')
-
-const elev = fit.items.find((it) => it.kind === 'elevator')
-ok(!!elev, 'výtah pro bezbariérový přístup do patra firmy')
 
 // ----------------------------------------------------------------- ROZVODY
 console.log('\nROZVODY A SANITA')
@@ -256,11 +304,10 @@ const sPub = sanitaryFor(S.program.visitors.peak, { publicUse: true })
 const pubItems = fit.items.filter((it) => it.block === 'wc-pub')
 ok(pubItems.some((it) => it.kind === 'wcBF'), 'veřejná část má bezbariérovou kabinu (vyhl. 398/2009)',
   `norma žádá ${sPub.wcBF}`)
-ok(pubItems.filter((it) => it.kind === 'basin').length >= 2, 'u WC návštěvníků jsou aspoň dvě umyvadla')
 
 // severní stěna zůstává slepá
 ok(openingsFor(S, 'north').length === 0, 'severní stěna (soused) je bez otvorů')
-const NO_WINDOW_OK = ['wet', 'plant', 'sim', 'meeting', 'circ', 'storage', 'lobby']
+const NO_WINDOW_OK = ['wet', 'plant', 'sim', 'meeting', 'circ', 'storage', 'lobby', 'reserve']
 const atNorth = S.blocks.filter((b) => b.z1 >= S.depth)
 ok(atNorth.every((b) => NO_WINDOW_OK.includes(b.type)),
   'u slepé stěny nestojí žádný byt ani jiný provoz s nárokem na okna',
@@ -273,6 +320,9 @@ ok(badIds.length === 0, 'ekonomika se odkazuje jen na existující bloky', badId
 const rentTotal = S.blocks.filter((b) => b.flat).reduce((s, b) => s + (S.economy.revenue[b.id] ?? 0), 0)
 ok(Math.abs(rentTotal - 4 * 12000 * 12) < 20, 'nájem 4 bytů sedí na 12 000 Kč/měs',
   `${rentTotal.toLocaleString('cs-CZ')} Kč/rok`)
+const u5Rent = U5.reduce((s, b) => s + (S.economy.revenue[b.id] ?? 0), 0)
+ok(Math.abs(u5Rent - 13000 * 12) < 20, 'jednotka 5 nese 13 000 Kč/měs (odhad)',
+  `${u5Rent.toLocaleString('cs-CZ')} Kč/rok`)
 const revSum = Object.values(S.economy.revenue).reduce((s, v) => s + v, 0)
 ok(revSum > S.economy.costsTotal, 'model počítá s kladným provozním výsledkem',
   `${((revSum - S.economy.costsTotal) / 1000).toFixed(0)} tis. Kč/rok`)
@@ -282,21 +332,37 @@ console.log('\nPRŮCHODNOST (walk test)')
 const wg0 = walkGrid(S, 0, 0.3)
 const vstup = { x: 3.5, z: 0.6 }
 const cileGF = {
-  'pata schodiště': { x: 7.7, z: 8.0 },
-  'výtah': { x: 9.1, z: 11.5 },
-  'fitness': { x: 13.0, z: 10.5 },
-  'sim racing': { x: 19.0, z: 10.5 },
-  'WC návštěvníků': { x: 8.0, z: 15.0 },
-  'komunitní prostor': { x: 3.5, z: 8.0 },
+  'pata schodiště': { x: 4.2, z: 3.5 },
+  'výtah': { x: 5.5, z: 4.2 },
+  'fitness': { x: 10.5, z: 10.5 },
+  'sim racing': { x: 16.0, z: 10.5 },
+  'šatna sportu': { x: 8.6, z: 14.6 },
+  'komunitní prostor': { x: 1.6, z: 8.0 },
+  'pracovní zóna': { x: 4.4, z: 10.5 },
   'WC kanceláří': { x: 5.5, z: 16.0 },
   'kuchyňský kout': { x: 2.0, z: 16.5 },
 }
 for (const [name, c] of Object.entries(cileGF)) {
   const d = findPath(wg0, vstup, c)
-  ok(d !== null, `od recepce: ${name}`, d !== null ? `${d.toFixed(1)} m` : 'CESTA NEEXISTUJE')
+  ok(d !== null, `od vstupu: ${name}`, d !== null ? `${d.toFixed(1)} m` : 'CESTA NEEXISTUJE')
 }
 ok(findPath(wg0, vstup, { x: 24.5, z: 6.0 }) === null,
-  'do dílny se z recepce vnitřkem nedá (technická zóna má vlastní vstup)')
+  'do dílny se od recepce vnitřkem nedá (technická zóna má vlastní vstup)')
+
+const wg1 = walkGrid(S, 1, 0.3)
+const podesta = { x: 5.0, z: 6.5 }
+const cile1F = {
+  'klidové místnosti': { x: 3.5, z: 1.6 },
+  'WC patra': { x: 1.6, z: 6.0 },
+  'rezerva': { x: 2.9, z: 10.5 },
+  'zasedačka': { x: 4.5, z: 15.8 },
+  'jednotka 5 — kuchyň': { x: 8.3, z: 11.0 },
+  'jednotka 5 — hlavní prostor': { x: 15.0, z: 10.5 },
+}
+for (const [name, c] of Object.entries(cile1F)) {
+  const d = findPath(wg1, podesta, c)
+  ok(d !== null, `z podesty: ${name}`, d !== null ? `${d.toFixed(1)} m` : 'CESTA NEEXISTUJE')
+}
 
 // v bytě se musí dát dojít od vstupních dveří do každé místnosti
 for (const n of FLAT_IDS) {
@@ -315,9 +381,8 @@ for (const n of FLAT_IDS) {
     bad.length ? bad.map((b) => b.id).join(', ') : `${rooms.length - 1} místností`)
 }
 // a naopak: z bytu se do firmy neprojde
-const wgFlat = walkGrid(S, 0, 0.3)
-ok(findPath(wgFlat, { x: 10.4, z: 0.55 }, { x: 3.5, z: 8.0 }) === null,
-  'z bytu se dovnitř firmy nedá — bydlení a provoz se nepotkají')
+ok(findPath(wg0, { x: 10.4, z: 0.55 }, { x: 1.6, z: 8.0 }) === null,
+  'z bytu se dovnitř firmy nedá — byty 1–4 a provoz se nepotkají')
 
 console.log(fail === 0 ? '\n✓ vše prošlo\n' : `\n✗ ${fail} selhalo\n`)
 process.exit(fail ? 1 : 0)

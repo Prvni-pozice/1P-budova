@@ -14,7 +14,7 @@ const CELL = 0.1
 // co člověku v cestě nestojí
 const DOOR_KINDS = new Set(['door', 'double', 'glazed', 'service', 'escape'])
 const FLAT = new Set(['mat', 'entrymat', 'floordrain', 'pram', 'tramp'])
-const CEIL = new Set(['diffuser', 'light', 'smoke', 'destrat', 'aircurtain', 'tyreloft'])
+const CEIL = new Set(['diffuser', 'light', 'smoke', 'destrat', 'aircurtain', 'tyreloft', 'skylight'])
 const WALLMOUNT = new Set(['picture', 'mirror', 'screen', 'emlight', 'exitsign', 'co2',
   'firstaid', 'airreel', 'hydrant', 'subboard', 'acpanel', 'louvre', 'babychange'])
 

@@ -19,13 +19,13 @@ const dims = (it) => {
 // Dvojice, které se překrývat SMÍ (židle pod stolem, lavička v kleci, auto
 // na zvedáku, cokoliv na žíněnce/rohoži, síť a příčka přes cokoli).
 const PAIR_OK = new Set([
-  'chair|desk', 'chair|reception', 'chair|table', 'chair|rtable', 'chair|mtable', 'chair|partyTable',
+  'chair|desk', 'chair|hightable', 'chair|reception', 'chair|table', 'chair|rtable', 'chair|mtable', 'chair|partyTable',
   'cage|gymbench', 'car|carlift', 'net|tramp', 'net|softplay', 'foampit|net',
   'bench|glass', 'glass|reception', 'partition|partyTable', 'hoop|tramp',
   'printer3d|workbench',
 ])
 const FLAT = new Set(['mat', 'entrymat', 'floordrain', 'pram'])
-const CEIL = new Set(['diffuser', 'light', 'smoke'])
+const CEIL = new Set(['diffuser', 'light', 'smoke', 'skylight'])
 const WALLMOUNT = new Set(['picture', 'mirror', 'screen', 'emlight', 'exitsign',
   'co2', 'firstaid', 'airreel', 'hydrant', 'subboard', 'board', 'aircurtain', 'babychange',
   'sidelight', 'acpanel', 'louvre'])

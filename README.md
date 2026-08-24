@@ -10,7 +10,7 @@ nahoře (a drží se v adrese za `#`):
 | | verze | spec | co je uvnitř |
 |---|---|---|---|
 | **A** | firemní budova | `src/spec.js` | jump aréna, bar, fitness a sim racing v patře |
-| **B** | se 4 byty | `src/spec-byty.js` | 4 byty 2+kk místo arény, sport sjel do přízemí |
+| **B** | s 5 jednotkami | `src/spec-byty.js` | 4 byty 2+kk + jednotka 5 (byt/kancelář), sport v přízemí |
 
 ```bash
 npm install
@@ -37,10 +37,13 @@ plochy.
 
 | | verze A | verze B |
 |---|---|---|
-| Podlahová plocha | 812 m² | 807 m² |
-| Koeficient | 1,61× | 1,60× |
-| Vybaveno | 771 m² | 766 m² |
-| Hrubá rezerva | 41 m² | 41 m² |
+| Podlahová plocha | 812 m² | 861 m² |
+| Koeficient | 1,61× | 1,71× |
+| Vybaveno | 771 m² | 783 m² |
+| Hrubá rezerva | 41 m² | 78 m² |
+
+Verze B překročila horní mez záměrně: jednotka 5 zastropila střed a přidala
+98 m² pronajímatelné plochy.
 
 ## Verze A — program (počty, ze kterých se vybavení odvozuje)
 
@@ -97,12 +100,14 @@ Dětské atrakce (galerie) x 14–21  z 15–18   21 m²   vykonzolovaná ze sev
 Sklad nad dílnou         x 21–28  z 6–13    49 m²   nad vjezdovou dráhou nesmí být
 ```
 
-## Verze B — se čtyřmi byty
+## Verze B — s pěti jednotkami
 
 Zadání 23. 8. 2026: aréna se ruší, na jejím místě a na části lobby vznikají
 **4 byty 2+kk, dva v přízemí a dva v patře, každý s vlastním vstupem zvenku**.
 Kanceláře vepředu a dílna vzadu zůstávají. Bydlení je v této zóně podle
 územního plánu **přípustné** — ověřeno na stavebním úřadě.
+Revize 24. 8. 2026 přidala pátou jednotku a proběhla v pěti iteracích
+(viz níž).
 
 ### Co dispozici určilo
 
@@ -114,15 +119,41 @@ podlažích tedy zaberou 14 m jižní fasády, a přesně 14 m je mezi kancelá�
 (x 0–7) a dílnou (x 21–28). **Na vstup do firmy tam nezbude ani metr.**
 
 Proto se recepce stěhuje do východního pole (x 0–7, z 0–3,2) i s portálem —
-vchod tedy zůstává z jihu, jak velí zbytek konceptu. Komunitní prostor
-kanceláří si drží šířku i polohu, jen se zkrátí ze 102 na 80 m². To je jediný
-zásah do kanceláří.
+vchod tedy zůstává z jihu, jak velí zbytek konceptu.
+
+### Pět iterací revize 24. 8.
+
+1. **Vnitřní jádro za recepcí.** Schodiště bývalo hluboko ve středu dispozice
+   a chodilo se k němu přes komunitní prostor. Teď stojí s výtahem přímo za
+   pultem (x 3,2–7, z 3,2–9), otevřené do vstupní haly: vejdeš a vidíš schody.
+   Kanceláře se kolem jádra složily do L (pruh u okna + pracovní zóna za
+   jádrem), sanita patra sedí hned vedle podesty.
+2. **Jednotka 5 — 98 m² byt/kancelář.** Za byty v patře zela díra dolů do
+   fitness. Střed se zastropil (x 7–21, z 7–14) a vznikla pátá jednotka:
+   velký byt 3+kk, nebo kancelář — podle nájemce. Fasádu nemá žádnou, denní
+   světlo dává **sedm střešních oken** (nad jednotkou už je jen střecha,
+   světlíky jsou levné a pro obytnou místnost normově stačí). Vstup z chodby
+   u vnitřního schodiště — pro kancelář přirozené, pro byt je to totéž co
+   vstup bytového domu. Koupelna sedí na stoupačce koupelny bytu 3.
+3. **Venkovní schodiště podél fasády.** Kolmé dvouramenné vyčnívalo 5,6 m do
+   předpolí. Teď jde jedno přímé ocelové rameno rovnoběžně s jižní stěnou
+   v pásu 1,2 m hned za pavlačí (běh 5,3 m, sklon ~32°), nahoře podesta
+   a vstup mezerou v zábradlí pavlače. Otevřené stupně a odstup 1,5 m od
+   fasády nechávají oknům přízemí světlo. Nejlevnější možná konstrukce —
+   žádná mezipodesta, žádné zalomení.
+4. **Střed přízemí bez vysokého skladu.** Sklad zůstává jen u dílny
+   (store-gf). Fitness 49 m² hned u jádra, sim racing 28 m² za ním, šatna se
+   sprchami a bezbariérovým WC u severní stěny. Zbylých **61 m² je hrubá
+   rezerva** — nestaví se do ní nic, dokud není nájemce nebo potřeba růstu
+   (nejblíž má k rozšíření fitness nebo sim centra).
+5. **Ekonomika a požární úseky.** Jednotka 5 je vlastní požární úsek; nájem
+   4 × 12 000 Kč (byty) + 13 000 Kč (jednotka 5, odhad).
 
 ### Byt 7 × 7 m = 49 m²
 
 ```
  v=7  ┌──────────┬──────┬──────────┐
-      │ koupelna │ před-│ kuchyňský│   sever (bez oken)
+      │ koupelna │ před-│ kuchyňský│   sever (vnitřní stěna)
  v=4,6├──────────┤ síň  ├──────────┤
       │ ložnice  │      │ obývák   │
  v=0  └──────────┴──────┴──────────┘   jih — okna a vstupní dveře
@@ -131,68 +162,72 @@ zásah do kanceláří.
 
 Obývák s kuchyňským koutem 20 m², ložnice 12 m², koupelna s WC a pračkou
 6,5 m², předsíň 10 m². Ložnice i obývák mají okno na jih, předsíň mezi nimi
-nese vstupní dveře. **Koupelny všech čtyř bytů leží nad sebou** → dvě
-stoupačky na celý dům. Byty 2 a 4 jsou zrcadlené, aby obývací pokoje sousedily
-s venkovním schodištěm a pavlač běžela před obývákem, ne před ložnicí.
+nese vstupní dveře. **Koupelny bytů leží nad sebou** → dvě stoupačky (a třetí
+sdílená s jednotkou 5). Byty 2 a 4 jsou zrcadlené, aby obývací pokoje
+sousedily s venkovním schodištěm a pavlač běžela před obývákem, ne před
+ložnicí.
 
-### Přístup: venkovní schodiště a pavlač
+### Přístup k jednotkám
 
-Byty v přízemí mají dveře přímo z terénu. Byty v patře obsluhuje **dvouramenné
-ocelové schodiště před jižní fasádou** (vyčnívá 5,6 m) a pavlač x 9,7–18,3.
-Žádná společná vnitřní chodba se nestaví: bytová část se nikde nepotká
-s provozem firmy, každý byt je vlastní požární úsek a schodiště je zároveň
-úniková cesta. Ověřuje to walk test — z bytu se dovnitř firmy neprojde a
-naopak.
+Byty v přízemí mají dveře přímo z terénu. Byty v patře obsluhuje pavlač
+x 9,7–18,3 s venkovním schodištěm podél fasády (iterace 3). Byty 1–4 se
+s provozem firmy nikde nepotkají — ověřuje to walk test v obou směrech.
+Jednotka 5 je vědomá výjimka: sdílí vnitřní schodiště s firmou, což jí
+zároveň umožňuje fungovat jako kancelář.
 
-### Sport sjel do přízemí
+### Sport na terénu, nad ním jednotka 5
 
-Fitness (42 m²) a sim racing (28 m²) jsou nově v bezokenním středu přízemí.
-Není to jen výplň zbytku:
-
-- posilovna **nad byty** by byla akustický průšvih (kročejový hluk činek),
-- na terénu odpadá dimenzování mezipatra na 5 kN/m²,
-- **nad středem přízemí se strop vůbec nestaví** (`level: 'full'`) — ušetří se
-  121 m² stropní desky, fitness dostane světlou výšku ~7 m a sklad regál
-  do výšky.
+Fitness a sim racing jsou v bezokenním středu přízemí: posilovna nad byty by
+byla akustický průšvih a na terénu odpadá dimenzování stropu na 5 kN/m².
+Nad fitness a simem teď bydlí jednotka 5 → fitness má těžkou plovoucí
+podlahu (kročejový hluk) a jednotka je primárně nabízená jako kancelář;
+jako byt s tím nájemce musí počítat (večerní provoz posilovny pod podlahou).
 
 ### Bilance verze B
 
 ```
-Přízemí            504 m²      Byty            4 × 49 = 196 m²
-Patro              303 m²      Fitness                  42 m²
-Celkem             807 m²      Sim racing               28 m²
-Koeficient          1,60×      Kanceláře + zázemí      194 m²
-Hrubá rezerva       41 m²      Dílna + sklady          216 m²
+Přízemí            504 m²      Byty 1–4        4 × 49 = 196 m²
+Patro              357 m²      Jednotka 5               98 m²
+Celkem             861 m²      Fitness                  49 m²
+Koeficient          1,71×      Sim racing               28 m²
+Hrubá rezerva       78 m²      Dílna + sklad           126 m²
 ```
 
 Ekonomika v `spec-byty.js`: nájem **12 000 Kč/měs bez energií za byt**
-(Zdeněk, 23. 8. 2026) = 576 tis. Kč/rok. Provozní náklady bez arény a baru
-1,18 mil. Kč/rok jsou pořád jen odhad k ověření — provozní výsledek tedy
-vychází na ~612 tis. Kč/rok, ale spolehlivá je zatím jen ta výnosová půlka.
+(Zdeněk, 23. 8. 2026) = 576 tis. Kč/rok, jednotka 5 za 13 000 Kč/měs
+(odhad) = 156 tis. Kč/rok. Provozní náklady bez arény a baru 1,18 mil.
+Kč/rok jsou pořád jen odhad k ověření — provozní výsledek vychází na
+~730 tis. Kč/rok, ale spolehlivá je zatím jen výnosová půlka.
 
-### Rozhodnuto (23. 8. 2026)
+### Rozhodnuto
 
-- **Územní plán bydlení dovoluje** — 4 nájemní byty v této zóně projdou.
-- **Nájem 12 000 Kč/měs** bez energií za byt.
+- **Územní plán bydlení dovoluje** — nájemní byty v této zóně projdou
+  (23. 8. 2026).
+- **Nájem 12 000 Kč/měs** bez energií za byt (23. 8. 2026).
 - **Hluk se zatím neřeší.** U verze A to plynulo z průmyslové zóny, teď je to
   vědomý odklad: až se projekt pohne dál, hygienické limity pro chráněný
   venkovní prostor, TČ, VZT dílny i zvedák budou téma.
-- **Pavlač před oknem obýváku zůstává, jak je.** Mezi vstupními dveřmi
-  a schodištěm běží ~2 m pavlače před oknem obývacího pokoje. Kdyby to vadilo,
-  řeší se to zvýšeným parapetem nebo odsazením pavlače od fasády.
+- **Pavlač před oknem obýváku zůstává, jak je.** Kdyby to vadilo, řeší se to
+  zvýšeným parapetem nebo odsazením pavlače od fasády.
+- **Vysoký sklad zrušen, sklad jen u dílny; rozcestník verzí v modelu**
+  (24. 8. 2026).
 
 ### Otevřené otázky verze B
 
 - **Provozní náklady jsou odhad.** 1,18 mil. Kč/rok bez arény a baru je jen
-  hrubý odhad — výnosová strana je zadaná, nákladová ne.
-- **Předpolí a stání.** Řada stání je odsunutá na z = −12, aby se před fasádu
-  vešlo schodiště. Skutečný počet stání pro 4 byty + firmu a tvar příjezdu je
-  věc situace, ne tohoto modelu.
-- **Bez sklepů a kolárny.** Úložné prostory bytů jsou zatím jen komora v bytě.
-  Kolárnu/kočárkárnu by šlo dodělat jako přístavek u schodiště.
-- 121 m² bezokenního středu přízemí drží sport a sklad. Pokud by fitness
-  a sim racing padly, zůstane z toho hluchá plocha — pak dává smysl spíš
-  zkrátit etapu 1.
+  hrubý odhad — výnosová strana je zadaná, nákladová ne. Stejně tak nájem
+  jednotky 5 (13 tis.) je odhad.
+- **Jednotka 5 jako byt = kolaudace na zkoušku.** Střešní okna normově na
+  denní osvětlení stačí, ale byt bez jediného svislého okna je na hraně
+  komfortu; jako kancelář je jednotka bez diskuse. Nabízet primárně jako
+  kancelář.
+- **Předpolí a stání.** Řada stání je na z = −9. Skutečný počet stání pro
+  5 jednotek + firmu a tvar příjezdu je věc situace, ne tohoto modelu.
+- **Bez sklepů a kolárny.** Úložné prostory bytů jsou zatím jen komora
+  v bytě. Kolárnu/kočárkárnu by šlo dodělat jako přístavek u schodiště,
+  nebo vyčlenit kus hrubé rezervy středu.
+- 61 m² hrubé rezervy středu čeká na obsah — nejblíž má k rozšíření fitness
+  nebo sim centra, případně na kóje pro nájemníky.
 
 ## Co se dopočítává samo
 

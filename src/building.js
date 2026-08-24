@@ -1040,45 +1040,55 @@ export function buildAll(spec, mep) {
       if (turn) m.rotation.y = Math.PI / 2
       groups.site.add(m)
     }
-    rail(len, (w.x0 + w.x1) / 2, -w.depth, false)
+    // Vnější zábradlí pavlače má MEZERU tam, kde na ni ústí podesta
+    // schodiště (x0 .. x0 + landing) — jinak by se z podesty nedalo vstoupit.
+    const st = ext.stairs
+    const gap = st ? st.x0 + (st.landing ?? 0.9) + 0.15 : w.x0
+    if (gap < w.x1) rail(w.x1 - gap, (gap + w.x1) / 2, -w.depth, false)
     rail(w.depth, w.x0, -w.depth / 2, true)
     rail(w.depth, w.x1, -w.depth / 2, true)
-    // sloupky pavlače, ať to nevisí ve vzduchu; v poli schodiště se vynechají
+    // sloupky pavlače, ať to nevisí ve vzduchu
     for (let x = w.x0 + 0.6; x < w.x1; x += 2.8) {
-      if (ext.stairs && x > ext.stairs.x0 - 0.3 && x < ext.stairs.x1 + 0.3) continue
       const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, y, 0.12), steel)
       p.position.set(x, y / 2, -w.depth + 0.1)
       p.castShadow = true
       groups.site.add(p)
     }
-    // Dvouramenné schodiště s mezipodestou. Rovné rameno by na 3,3 m výšky
-    // potřebovalo 5,5 m běhu a stálo by uprostřed příjezdu — dvě ramena
-    // vedle sebe to zkrátí na polovinu.
-    const st = ext.stairs
+    // Schodiště PODÉL fasády (iterace 3): jedno přímé rameno v pásu
+    // st.z0..st.z1 hned za pavlačí, pata u st.x1, nahoře podesta u st.x0
+    // a vstup na pavlač mezerou v jejím zábradlí. Ocel, otevřené stupně —
+    // odstup od fasády nechává oknům přízemí světlo.
     if (st) {
-      const sw = st.x1 - st.x0
-      const LAND = 1.2
-      const run = st.out - w.depth - LAND        // běh jednoho ramene
-      const slope = Math.atan2(y / 2, run)
-      const zMid = -(w.depth + run / 2)
-      // rameno 1 stoupá od terénu u fasády k mezipodestě (výš je konec na −z),
-      // rameno 2 z mezipodesty zpět nahoru na pavlač (výš je konec na +z)
-      for (const [i, sign] of [[0, 1], [1, -1]]) {
-        const fl = new THREE.Mesh(
-          new THREE.BoxGeometry(sw / 2 - 0.08, 0.1, Math.hypot(run, y / 2)), steel)
-        fl.position.set(st.x0 + (i === 0 ? sw / 4 : (3 * sw) / 4), y * (i === 0 ? 0.25 : 0.75), zMid)
-        fl.rotation.x = sign * slope
-        fl.castShadow = true
-        groups.site.add(fl)
-      }
-      const landing = new THREE.Mesh(new THREE.BoxGeometry(sw, 0.12, LAND), steel)
-      landing.position.set((st.x0 + st.x1) / 2, y / 2 - 0.06, -(st.out - LAND / 2))
+      const LAND = st.landing ?? 0.9
+      const zc = (st.z0 + st.z1) / 2
+      const depth = st.z1 - st.z0
+      const run = st.x1 - (st.x0 + LAND)
+      const slope = Math.atan2(y, run)
+      // rameno: stoupá od (x1, 0) k (x0+LAND, y)
+      const fl = new THREE.Mesh(new THREE.BoxGeometry(Math.hypot(run, y), 0.1, depth - 0.08), steel)
+      fl.position.set(st.x0 + LAND + run / 2, y / 2, zc)
+      fl.rotation.z = -slope          // x roste na západ, výška klesá s x → záporný úhel
+      fl.castShadow = true
+      groups.site.add(fl)
+      // podesta nahoře — z ní se vstupuje na pavlač (na sever)
+      const landing = new THREE.Mesh(new THREE.BoxGeometry(LAND, 0.12, depth), steel)
+      landing.position.set(st.x0 + LAND / 2, y - 0.06, zc)
       landing.castShadow = true
       groups.site.add(landing)
-      rail(sw, (st.x0 + st.x1) / 2, -st.out, false, y / 2)   // zábradlí mezipodesty je o patro níž
-      for (const x of [st.x0, st.x1]) {
-        const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, y / 2, 0.12), steel)
-        p.position.set(x, y / 4, -(st.out - LAND / 2))
+      // zábradlí: šikmé po vnější hraně ramene, rovné kolem podesty
+      const sr = new THREE.Mesh(new THREE.BoxGeometry(Math.hypot(run, y), 1.05, 0.06), railM)
+      sr.position.set(st.x0 + LAND + run / 2, y / 2 + 0.55, st.z0)
+      sr.rotation.z = -slope
+      groups.site.add(sr)
+      const sr2 = sr.clone()
+      sr2.position.z = st.z1
+      groups.site.add(sr2)
+      rail(LAND, st.x0 + LAND / 2, st.z0, false)                 // podesta — vnější hrana
+      rail(depth, st.x0, zc, true)                                // podesta — východní čelo
+      // sloupky: pod podestou a v polovině ramene
+      for (const [px, ph] of [[st.x0 + 0.15, y], [st.x0 + LAND + run / 2, y / 2]]) {
+        const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, ph, 0.12), steel)
+        p.position.set(px, ph / 2, st.z0 + 0.12)
         p.castShadow = true
         groups.site.add(p)
       }
