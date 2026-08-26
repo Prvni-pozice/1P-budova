@@ -11,39 +11,42 @@ nahoře (a drží se v adrese za `#`):
 |---|---|---|---|
 | **A** | firemní budova | `src/spec.js` | jump aréna, bar, fitness a sim racing v patře |
 | **B** | s 5 jednotkami | `src/spec-byty.js` | 4 byty 2+kk + jednotka 5 (byt/kancelář), sport v přízemí |
+| **C** | nudle 3+kk | `src/spec-nudle.js` | přízemí jako B, patro = 3 nudle 84 m² přes celý rozpon |
 
 ```bash
 npm install
 npm run dev          # http://116.203.103.27:5186/       (verze A)
                      # http://116.203.103.27:5186/#byty  (verze B)
+                     # http://116.203.103.27:5186/#nudle (verze C)
 node test_spec.mjs   # kontrola varianty A (151 kontrol)
 node test_byty.mjs   # kontrola varianty B (byty, pavlač, požární úseky)
+node test_nudle.mjs  # kontrola varianty C (nudle, chodba, střešní okna)
 node audit.mjs       # projektantský audit obou verzí: kolize předmětů,
                      # přesahy přes stěny, věci ve vstupech, rozvody
                      # v prostupech (0 nálezů)
-node plans.mjs       # 2D výkresy obou verzí → plans/ a plans/byty/
+node plans.mjs       # 2D výkresy všech verzí → plans/, plans/byty/, plans/nudle/
 ```
 
 Rozcestník verzí je v `src/variants.js`. Generátory (`building.js`, `mep.js`,
 `fitout.js`, `walk.js`) jsou společné a berou spec parametrem — přidat třetí
 verzi znamená napsat nový spec a přidat řádek do `variants.js`.
 
-## Zadání (společné pro obě verze)
+## Zadání (společné pro všechny verze)
 
 Celkový půdorys 18 × 56 m = 1 008 m², stavěno ve dvou etapách po 18 × 28 m.
 Okap ~6 m, typizovaná montovaná hala, rastr 7 m (28 = 4×7, 56 = 8×7).
 Cíl: z 504 m² půdorysu etapy 1 dostat vestavěnými patry 750–850 m² podlahové
 plochy.
 
-| | verze A | verze B |
-|---|---|---|
-| Podlahová plocha | 812 m² | 861 m² |
-| Koeficient | 1,61× | 1,71× |
-| Vybaveno | 771 m² | 783 m² |
-| Hrubá rezerva | 41 m² | 78 m² |
+| | verze A | verze B | verze C |
+|---|---|---|---|
+| Podlahová plocha | 812 m² | 861 m² | 917 m² |
+| Koeficient | 1,61× | 1,71× | 1,82× |
+| Hrubá rezerva | 41 m² | 78 m² | 78 m² |
+| Jednotky k pronájmu | — | 294 m² | 448 m² |
 
-Verze B překročila horní mez záměrně: jednotka 5 zastropila střed a přidala
-98 m² pronajímatelné plochy.
+Verze B a C překračují horní mez záměrně: zastropení středu přidává
+pronajímatelnou plochu.
 
 ## Verze A — program (počty, ze kterých se vybavení odvozuje)
 
@@ -229,6 +232,56 @@ Kč/rok jsou pořád jen odhad k ověření — provozní výsledek vychází na
 - 61 m² hrubé rezervy středu čeká na obsah — nejblíž má k rozšíření fitness
   nebo sim centra, případně na kóje pro nájemníky.
 
+## Verze C — nudle 3+kk přes rozpon
+
+Zadání 26. 8. 2026: byty v patře jako „nudle" napříč celou hloubkou haly
+(18 m). Přízemí zůstává jako ve verzi B (2 byty 2+kk s okny na jih, fitness,
+sim, rezerva) — nudle funguje **jen v patře**: v přízemí je nad ložnicí
+a dětským pokojem strop, střešní okno tam nedosáhne.
+
+### Jedna nudle: ~4,67 × 18 m = 84 m² (3+kk)
+
+Chodbový pruh 1,8 m (0,6 m skříně + 1,2 m průchod) + pokojový pruh ~2,87 m.
+Od jihu: předsíň se vstupem z pavlače | obývák s KK přes oba pruhy
+(průchozí), kuchyň zády k WC a koupelně → jedna stoupačka na byt | WC |
+koupelna s pračkou | šatna | ložnice ⌂ | dětský pokoj ⌂⌂ přes celou šířku
+u severní stěny.
+
+**Sever je slepá stěna (hranice pozemku), okno tam nejde.** Ložnice
+a dětský pokoj mají střešní okna v severní rovině střechy: stálé difuzní
+světlo bez oslnění a žádná kolize s FVE (ta je jen na jižní rovině).
+
+### Tři nudle v poli x 7–21
+
+Byty A a C jsou zrcadlené, aby se koupelnové pruhy A|B potkaly zády k sobě
+→ **dvě stoupačky na tři byty** (C má vlastní u stěny dílny). Všechny tři
+vstupy z pavlače (x ~7,9 / 15,4 / 17,2), venkovní schodiště podél fasády
+jako ve verzi B. Žádný vnitřní vstup — bydlení a firma se nepotkají nikde,
+odpadá i kompromis jednotky 5 z verze B.
+
+### Bilance a srovnání s verzí B (patro)
+
+```
+                       verze B         verze C
+Jednotky nahoře        2× 2+kk + 98 m² 3× 3+kk 84 m²
+Plocha pronájmu patra  196 m²          252 m²
+Nájem patra (odhad)    444 tis. Kč/rok 558 tis. Kč/rok  (3× 15 500 Kč/měs)
+Vstupy                 pavlač + vnitřní jen pavlač
+```
+
+Celkem verze C: 5 jednotek, 917 m² podlahové plochy, výnos jednotek
+846 tis. Kč/rok (2× 144 + 3× 186 tis.).
+
+### Slabá místa verze C
+
+- **Ložnice 9,2 m²** — na dvoulůžko úsporný standard (postel 1,8 m
+  + průchod po jedné straně).
+- **Jediné fasádní okno na byt** (obývák) — zbytek světla jde střechou.
+  V patře plnohodnotné, ale jiný charakter bydlení než klasický byt.
+- **Fitness pod ložnicemi.** Pod byty A a B leží fitness (x 7–14, z 7–14)
+  — těžká plovoucí podlaha zůstává nutností, večerní provoz je slyšet.
+- Nájem 15 500 Kč/měs za 3+kk je ODHAD k ověření.
+
 ## Co se dopočítává samo
 
 - **Otvory v plášti** z bloků, které se stěny dotýkají — dílna si nese vrata,
@@ -269,7 +322,8 @@ Kč/rok jsou pořád jen odhad k ověření — provozní výsledek vychází na
 
 ```
 src/spec.js      zadání verze A — jediný zdroj pravdy, tohle se edituje
-src/spec-byty.js zadání verze B (4 byty); obálku a sazby bere ze spec.js
+src/spec-byty.js zadání verze B (byty + jednotka 5); obálku bere ze spec.js
+src/spec-nudle.js zadání verze C (nudle) — přízemí přebírá ze spec-byty.js
 src/variants.js  rozcestník verzí pro model, testy, audit i výkresy
 src/mep.js       přepočet rozvodů (bez závislosti na Three → jde testovat v Node)
 src/building.js  geometrie: plášť, otvory, střecha, bloky, potrubí

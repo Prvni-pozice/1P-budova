@@ -5,6 +5,7 @@
 
 import { SPEC } from './spec.js'
 import { SPEC_BYTY } from './spec-byty.js'
+import { SPEC_NUDLE } from './spec-nudle.js'
 
 export const VARIANTS = [
   {
@@ -20,6 +21,13 @@ export const VARIANTS = [
     short: 'B',
     sub: '4 byty 2+kk + jednotka byt/kancelář, sport v přízemí',
     spec: SPEC_BYTY,
+  },
+  {
+    id: 'nudle',
+    label: 'C — nudle 3+kk',
+    short: 'C',
+    sub: '3 byty 84 m² přes celý rozpon patra, střešní okna na severu',
+    spec: SPEC_NUDLE,
   },
 ]
 

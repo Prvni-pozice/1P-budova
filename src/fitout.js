@@ -42,6 +42,7 @@ export const FURN = {
   kitchen:    { w: 2.40, d: 0.60, h: 0.90, color: 0xbfb5a5, shape: 'box',     label: 'Kuchyňská linka' },
   // vybavení bytů (varianta B)
   bed:        { w: 1.60, d: 2.00, h: 0.55, color: 0xc9b7a0, shape: 'box',     label: 'Manželská postel' },
+  bedS:       { w: 0.90, d: 2.00, h: 0.55, color: 0xc9b7a0, shape: 'box',     label: 'Postel jednolůžko' },
   wardrobe:   { w: 1.60, d: 0.60, h: 2.10, color: 0xbfb5a5, shape: 'box',     label: 'Šatní skříň' },
   washer:     { w: 0.60, d: 0.60, h: 0.85, color: 0xdfe3e6, shape: 'box',     label: 'Pračka' },
   wcbowl:     { w: 0.40, d: 0.65, h: 0.80, color: 0xeef2f5, shape: 'box',     label: 'WC mísa' },
@@ -784,6 +785,87 @@ const LAYOUTS = {
     return items
   },
 
+  // ------------------------------------------------- nudle (varianta C)
+  // Byt 3+kk přes celý rozpon 18 m. Chodbový pruh 1,8 m, pokojový ~2,87 m.
+  // Základní orientace = chodba NA VÝCHODĚ (byt B); byty A a C jsou
+  // zrcadlené přes b.mirror — maker překlopí u i rotace.
+
+  'nudle-hall': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('door', 0.9, 0.14, { note: 'vlastní vstup z pavlače' })
+    put('smoke', 0.45, 0.5, { dy: blockHeight(S, b) - 0.3, note: 'autonomní hlásič — povinný v bytě' })
+    return items
+  },
+
+  // Chodbová část obýváku zůstává prázdná — je průchozí (předsíň → chodba).
+  'nudle-livw': () => [],
+
+  // Pokojový pruh obýváku: kuchyň na severním konci ZÁDY k WC a koupelně
+  // (jedna stoupačka), jídelní stůl uprostřed, sezení u jižního okna.
+  'nudle-liv': (S, b) => {
+    const { items, put, seat } = maker(S, b)
+    put('kitchen', 1.35, 5.85)
+    put('fridge', 0.35, 4.85)
+    put('table', 0.7, 3.4, { rot: 90 })
+    seat(1.5, 3.0, 0.7, 3.0)
+    seat(1.5, 3.8, 0.7, 3.8)
+    put('sofa', 1.15, 0.75, { note: 'sezení u jižního okna' })
+    put('screen', 0.1, 2.2, { rot: 90, dy: 1.1, note: 'TV na západní stěně' })
+    return items
+  },
+
+  // Chodba 1,8 × 8 m: skříně podél vnější stěny (0,6 m), průchod 1,2 m.
+  // Dveře do pokojů jsou v protější stěně, skříně jim nepřekážejí.
+  'nudle-corr': (S, b) => {
+    const { items, put, row } = maker(S, b)
+    row('wardrobe', 1.5, 1.6, 3, 1.9, { along: 'v', rot: 90 })
+    put('smoke', 0.6, 7.0, { dy: blockHeight(S, b) - 0.3, note: 'hlásič na únikové cestě' })
+    return items
+  },
+
+  'nudle-wc': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('wcbowl', 0.4, 0.65, { rot: 270 })
+    put('basin', 1.4, 0.3)
+    return items
+  },
+
+  'nudle-bath': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('shower', 0.55, 1.45)
+    put('washer', 1.6, 1.6, { note: 'pračka v bytě' })
+    put('basin', 0.5, 0.35)
+    return items
+  },
+
+  'nudle-shatna': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('wardrobe', 0.85, 1.15, { note: 'u severní stěny — východní třetina patří dveřím' })
+    put('sideboard', 0.25, 0.4, { rot: 90 })
+    return items
+  },
+
+  'nudle-bed': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('bed', 1.15, 1.7, { note: 'hlava k severní stěně' })
+    put('sideboard', 2.45, 0.4, { rot: 90 })
+    put('skylight', 1.4, 0.75, { rot: 90, dy: 2.62, note: 'jediné denní světlo ložnice' })
+    return items
+  },
+
+  // Dětský pokoj přes celou šířku u slepé severní stěny — dvě střešní okna
+  // v severní rovině střechy (difuzní světlo, FVE je jen na jižní rovině).
+  'nudle-kid': (S, b) => {
+    const { items, put, seat } = maker(S, b)
+    put('bedS', 1.2, 3.35, { rot: 90, note: 'postel podél severní stěny' })
+    put('desk', 0.95, 0.45)
+    seat(0.95, 1.1, 0.95, 0.45)
+    put('wardrobe', 3.6, 3.4)
+    put('skylight', 1.2, 1.5, { dy: 2.62 })
+    put('skylight', 3.4, 1.5, { dy: 2.62 })
+    return items
+  },
+
   // ---------------------------------------------------------------- byt
   // Jedna dispozice na místnost, čtyři byty. Byty 2 a 4 jsou zrcadlené
   // (b.mirror) — maker() překlopí u i rotaci, takže se nic nepíše dvakrát.
@@ -945,7 +1027,7 @@ function derivedFor(S, b) {
   // Stropní prvky sdílejí jednu rovinu — nový kus si uhne v z, když je jeho
   // buňka mřížky už obsazená (vyústka, svítidlo a čidlo jinak sedí na sobě).
   // Střešní okna z layoutu (jednotka 5) se počítají jako obsazené taky.
-  const skyTaken = fitoutFor(S, b).filter((it) => it.kind === 'skylight')
+  const skyTaken = fitoutFor(S, b).filter((it) => ['skylight', 'smoke'].includes(it.kind))
   const ceilTaken = (x, z) => [...out, ...skyTaken].some((o) =>
     ['diffuser', 'light', 'smoke', 'skylight'].includes(o.kind)
     && Math.abs(o.x - x) < 0.95

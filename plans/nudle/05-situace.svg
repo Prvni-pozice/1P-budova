@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="946" height="729" viewBox="0 0 946 729" font-family="Helvetica, Arial, sans-serif">
+<style>
+  .bg{fill:#ffffff}
+  .wall{fill:#2b2f36;stroke:none}
+  .walltemp{fill:#8f959d;stroke:#2b2f36;stroke-width:0.7;stroke-dasharray:4 3}
+  .glassw{fill:#bcd9e6;stroke:#2b2f36;stroke-width:0.7}
+  .part{fill:#5b616a;stroke:none}
+  .partfire{fill:#b4544a;stroke:none}
+  .room{stroke:none}
+  .void{fill:#eceff3;stroke:#9aa1ab;stroke-width:0.8;stroke-dasharray:5 4}
+  .furn{fill:#ffffff;fill-opacity:0.55;stroke:#6d747d;stroke-width:0.7}
+  .furnkey{fill:#ffffff;fill-opacity:0.75;stroke:#2b2f36;stroke-width:1.1}
+  .beyond{fill:#ffffff;fill-opacity:0.5;stroke:#a7adb6;stroke-width:0.7}
+  .slab{fill:#7d848d;stroke:#2b2f36;stroke-width:0.6}
+  .roof{fill:#4a505a;stroke:none}
+  .ground{stroke:#2b2f36;stroke-width:2.2;fill:none}
+  .grid{stroke:#c2c8d0;stroke-width:0.8;stroke-dasharray:9 4 2 4;fill:none}
+  .dim{stroke:#2b2f36;stroke-width:0.7;fill:none}
+  .lead{stroke:#8b929b;stroke-width:0.6;fill:none}
+  .door{stroke:#2b2f36;stroke-width:0.9;fill:none}
+  .frame{fill:none;stroke:#2b2f36;stroke-width:1.2}
+  .thin{fill:none;stroke:#2b2f36;stroke-width:0.8}
+  .hatch{fill:none;stroke:#2b2f36;stroke-width:0.7}
+  text{fill:#20242a}
+  .lbl{font-size:11px}
+  .lblsm{font-size:9px;fill:#5b616a}
+  .lblrm{font-size:11.5px;font-weight:700}
+  .lblar{font-size:9.5px;fill:#4a505a}
+  .ttl{font-size:19px;font-weight:700;letter-spacing:0.2px}
+  .sub{font-size:11px;fill:#5b616a}
+  .axis{font-size:10px;font-weight:700;fill:#2b2f36}
+  .dimt{font-size:9.5px;fill:#2b2f36}
+  .warn{font-size:9.5px;fill:#a3453c}
+</style>
+<rect class="bg" x="0" y="0" width="946" height="729"/>
+<rect x="298.5" y="344.5" width="483.0" height="115.0" class="room" fill="#eceef1"/>
+<rect x="126.0" y="137.5" width="322.0" height="207.0" class="void" />
+<text x="287.0" y="224.9" class="lblrm" text-anchor="middle">ETAPA 2</text>
+<text x="287.0" y="238.7" class="lblar" text-anchor="middle">28 × 18 m = 504 m² · doporučeno rozšíření arény</text>
+<text x="287.0" y="250.2" class="lblsm" text-anchor="middle">(obrys — zatím nestaví se)</text>
+<rect x="448.0" y="137.5" width="322.0" height="207.0" class="room" fill="#ccd2d9"/>
+<rect x="448.0" y="137.5" width="322.0" height="207.0" class="frame" />
+<line x1="448.0" y1="241.0" x2="770.0" y2="241.0" class="dim" stroke-dasharray="8 4"/>
+<text x="609.0" y="199.6" class="lblrm" text-anchor="middle">ETAPA 1</text>
+<text x="609.0" y="212.3" class="lblar" text-anchor="middle">504 m² zastavěné · 812 m² podlažní plochy</text>
+<text x="609.0" y="223.8" class="lblsm" text-anchor="middle">sedlová střecha 10°, okap 6,0 m, hřeben v ose (čerchovaně)</text>
+<text x="609.0" y="268.6" class="lblsm" text-anchor="middle">FVE jižní střešní rovina 38,9 kWp · fasáda 1,7 kWp</text>
+<text x="609.0" y="281.3" class="lblsm" text-anchor="middle">severní rovina vypnutá — rozhodnutí otevřené</text>
+<line x1="91.5" y1="137.5" x2="804.5" y2="137.5" class="frame" stroke-width="2.6"/>
+<line x1="804.5" y1="137.5" x2="788.4" y2="119.1" class="hatch" />
+<line x1="781.5" y1="137.5" x2="765.4" y2="119.1" class="hatch" />
+<line x1="758.5" y1="137.5" x2="742.4" y2="119.1" class="hatch" />
+<line x1="735.5" y1="137.5" x2="719.4" y2="119.1" class="hatch" />
+<line x1="712.5" y1="137.5" x2="696.4" y2="119.1" class="hatch" />
+<line x1="689.5" y1="137.5" x2="673.4" y2="119.1" class="hatch" />
+<line x1="666.5" y1="137.5" x2="650.4" y2="119.1" class="hatch" />
+<line x1="643.5" y1="137.5" x2="627.4" y2="119.1" class="hatch" />
+<line x1="620.5" y1="137.5" x2="604.4" y2="119.1" class="hatch" />
+<line x1="597.5" y1="137.5" x2="581.4" y2="119.1" class="hatch" />
+<line x1="574.5" y1="137.5" x2="558.4" y2="119.1" class="hatch" />
+<line x1="551.5" y1="137.5" x2="535.4" y2="119.1" class="hatch" />
+<line x1="528.5" y1="137.5" x2="512.4" y2="119.1" class="hatch" />
+<line x1="505.5" y1="137.5" x2="489.4" y2="119.1" class="hatch" />
+<line x1="482.5" y1="137.5" x2="466.4" y2="119.1" class="hatch" />
+<line x1="459.5" y1="137.5" x2="443.4" y2="119.1" class="hatch" />
+<line x1="436.5" y1="137.5" x2="420.4" y2="119.1" class="hatch" />
+<line x1="413.5" y1="137.5" x2="397.4" y2="119.1" class="hatch" />
+<line x1="390.5" y1="137.5" x2="374.4" y2="119.1" class="hatch" />
+<line x1="367.5" y1="137.5" x2="351.4" y2="119.1" class="hatch" />
+<line x1="344.5" y1="137.5" x2="328.4" y2="119.1" class="hatch" />
+<line x1="321.5" y1="137.5" x2="305.4" y2="119.1" class="hatch" />
+<line x1="298.5" y1="137.5" x2="282.4" y2="119.1" class="hatch" />
+<line x1="275.5" y1="137.5" x2="259.4" y2="119.1" class="hatch" />
+<line x1="252.5" y1="137.5" x2="236.4" y2="119.1" class="hatch" />
+<line x1="229.5" y1="137.5" x2="213.4" y2="119.1" class="hatch" />
+<line x1="206.5" y1="137.5" x2="190.4" y2="119.1" class="hatch" />
+<line x1="183.5" y1="137.5" x2="167.4" y2="119.1" class="hatch" />
+<line x1="160.5" y1="137.5" x2="144.4" y2="119.1" class="hatch" />
+<line x1="137.5" y1="137.5" x2="121.4" y2="119.1" class="hatch" />
+<line x1="114.5" y1="137.5" x2="98.4" y2="119.1" class="hatch" />
+<text x="448.0" y="109.5" class="lblsm" text-anchor="middle">HRANICE POZEMKU — soused, průmyslová zóna · severní stěna slepá, bez otvorů</text>
+<rect x="736.6" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="706.8" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="676.9" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="640.6" y="390.5" width="39.1" height="57.5" class="room" fill="#9cc2e0" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="599.2" y="390.5" width="39.1" height="57.5" class="room" fill="#9cc2e0" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="567.6" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="537.7" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="414.7" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="384.8" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="354.8" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<rect x="324.9" y="390.5" width="27.6" height="57.5" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<text x="639.5" y="416.9" class="axis" text-anchor="middle">BF</text>
+<text x="660.8" y="454.9" class="lblsm" text-anchor="middle">7 stání u etapy 1, z toho 2 bezbariérová (3,4 m)</text>
+<text x="383.6" y="454.9" class="lblsm" text-anchor="middle">4 stání na ploše etapy 2</text>
+<rect x="442.3" y="344.5" width="86.3" height="103.5" class="room" fill="#dfe3e8" stroke="#8b929b" stroke-width="0.8" stroke-dasharray="5 4"/>
+<text x="485.4" y="425.0" class="lblsm" text-anchor="middle">vjezd k vratům</text>
+<line x1="649.3" y1="372.1" x2="649.3" y2="347.9" class="dim" stroke-width="1.5"/>
+<polygon points="649.3,344.5 645.3,356.0 653.3,356.0" class="wall" />
+<text x="649.3" y="376.3" class="lblsm" text-anchor="middle">hlavní vstup</text>
+<line x1="598.6" y1="389.3" x2="598.6" y2="347.9" class="dim" stroke-width="1.5"/>
+<polygon points="598.6,344.5 594.6,356.0 602.6,356.0" class="wall" />
+<text x="598.6" y="393.6" class="lblsm" text-anchor="middle">únik z arény</text>
+<line x1="517.0" y1="372.1" x2="517.0" y2="347.9" class="dim" stroke-width="1.5"/>
+<polygon points="517.0,344.5 513.0,356.0 521.0,356.0" class="wall" />
+<text x="517.0" y="376.3" class="lblsm" text-anchor="middle">personál dílny</text>
+<line x1="480.2" y1="389.3" x2="480.2" y2="347.9" class="dim" stroke-width="1.5"/>
+<polygon points="480.2,344.5 476.2,356.0 484.2,356.0" class="wall" />
+<text x="480.2" y="393.6" class="lblsm" text-anchor="middle">vrata 4,0 × 4,0 m</text>
+<rect x="680.3" y="356.6" width="27.6" height="12.7" class="furnkey" />
+<text x="717.1" y="367.5" class="lblsm" >odpad</text>
+<rect x="344.5" y="384.8" width="69.0" height="34.5" class="room" fill="#a9c6d8" stroke="#2b2f36" stroke-width="0.8"/>
+<text x="379.0" y="425.0" class="lblsm" text-anchor="middle">retence dešťovky</text>
+<circle cx="482.5" cy="379.0" r="8.0" fill="#cfcfae" stroke="#2b2f36" stroke-width="0.8"/>
+<text x="500.5" y="382.0" class="lblsm" >lapol (dílna)</text>
+<line x1="770.0" y1="476.8" x2="448.0" y2="476.8" class="dim" />
+<line x1="770.0" y1="472.8" x2="770.0" y2="480.8" class="dim" />
+<line x1="448.0" y1="472.8" x2="448.0" y2="480.8" class="dim" />
+<text x="609.0" y="471.8" class="dimt" text-anchor="middle">28,00</text>
+<line x1="448.0" y1="476.8" x2="126.0" y2="476.8" class="dim" />
+<line x1="448.0" y1="472.8" x2="448.0" y2="480.8" class="dim" />
+<line x1="126.0" y1="472.8" x2="126.0" y2="480.8" class="dim" />
+<text x="287.0" y="471.8" class="dimt" text-anchor="middle">28,00</text>
+<line x1="770.0" y1="498.6" x2="126.0" y2="498.6" class="dim" />
+<line x1="770.0" y1="494.6" x2="770.0" y2="502.6" class="dim" />
+<line x1="126.0" y1="494.6" x2="126.0" y2="502.6" class="dim" />
+<text x="448.0" y="493.6" class="dimt" text-anchor="middle">56,00</text>
+<line x1="822.0" y1="344.5" x2="822.0" y2="137.5" class="dim" />
+<line x1="818.0" y1="344.5" x2="826.0" y2="344.5" class="dim" />
+<line x1="818.0" y1="137.5" x2="826.0" y2="137.5" class="dim" />
+<text x="816.0" y="241.0" class="dimt" text-anchor="middle" transform="rotate(-90 816.0 241.0)">18,00</text>
+<text x="448.0" y="519.3" class="warn" text-anchor="middle">Hranice pozemku mimo severní stranu nejsou součástí modelu — doplnit z katastru.</text>
+<circle cx="46.0" cy="102.0" r="15.0" fill="#fff" stroke="#2b2f36" stroke-width="1"/>
+<polygon points="46.0,82.0 41.5,108.8 46.0,102.8 50.5,108.8" class="wall" />
+<text x="46.0" y="78.0" class="axis" text-anchor="middle">S</text>
+<rect x="80.0" y="562.5" width="16.0" height="9.0" class="room" fill="#ccd2d9" stroke="#2b2f36" stroke-width="0.8"/>
+<text x="101.0" y="570.5" class="lblsm" >etapa 1 — zastavěno</text>
+<rect x="216.0" y="562.5" width="16.0" height="9.0" class="void" />
+<text x="237.0" y="570.5" class="lblsm" >etapa 2 — obrys</text>
+<rect x="332.0" y="562.5" width="16.0" height="9.0" class="room" fill="#c9ced5" stroke="#5b616a" stroke-width="0.7"/>
+<text x="353.0" y="570.5" class="lblsm" >parkování</text>
+<rect x="418.0" y="562.5" width="16.0" height="9.0" class="room" fill="#9cc2e0" stroke="#5b616a" stroke-width="0.7"/>
+<text x="439.0" y="570.5" class="lblsm" >bezbariérové stání</text>
+<rect x="549.0" y="562.5" width="16.0" height="9.0" class="room" fill="#a9c6d8" stroke="#2b2f36" stroke-width="0.8"/>
+<text x="570.0" y="570.5" class="lblsm" >retence dešťovky</text>
+<line x1="40.0" y1="632.5" x2="906.0" y2="632.5" class="frame" />
+<text x="40.0" y="656.5" class="ttl" >BUDOVA 1P — studie dispozice, etapa 1 · C — NUDLE 3+KK</text>
+<text x="40.0" y="674.5" class="sub" >SITUACE · etapa 1 + obrys etapy 2, celkem 18 × 56 m = 1 008 m² zastavěné plochy</text>
+<text x="40.0" y="689.5" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
+<text x="40.0" y="704.5" class="sub" >Generováno ze src/spec.js · 23. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>
+<text x="40.0" y="719.5" class="warn" >NENÍ projektová dokumentace — nástroj na hledání poměrů ploch před zadáním projektantovi.</text>
+<text x="906.0" y="656.5" class="sub" text-anchor="end">sever nahoře · východ vpravo</text>
+<rect x="676.0" y="694.5" width="57.5" height="6.0" class="frame" />
+<rect x="733.5" y="694.5" width="57.5" height="6.0" class="wall" />
+<rect x="791.0" y="694.5" width="57.5" height="6.0" class="frame" />
+<rect x="848.5" y="694.5" width="57.5" height="6.0" class="wall" />
+<text x="676.0" y="711.5" class="dimt" >0</text>
+<text x="906.0" y="711.5" class="dimt" text-anchor="end">20 m</text>
+</svg>
