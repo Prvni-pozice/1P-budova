@@ -12,19 +12,23 @@ nahoře (a drží se v adrese za `#`):
 | **A** | firemní budova | `src/spec.js` | jump aréna, bar, fitness a sim racing v patře |
 | **B** | s 5 jednotkami | `src/spec-byty.js` | 4 byty 2+kk + jednotka 5 (byt/kancelář), sport v přízemí |
 | **C** | nudle 3+kk | `src/spec-nudle.js` | přízemí jako B, patro = 3 nudle 84 m² přes celý rozpon |
+| **D** | vesnička | `src/spec-vesnice.js` | žádná hala — kontejnerové buňky kolem návsi na celém pozemku |
 
 ```bash
 npm install
 npm run dev          # http://116.203.103.27:5186/       (verze A)
                      # http://116.203.103.27:5186/#byty  (verze B)
                      # http://116.203.103.27:5186/#nudle (verze C)
+                     # http://116.203.103.27:5186/#vesnice (verze D)
 node test_spec.mjs   # kontrola varianty A (151 kontrol)
 node test_byty.mjs   # kontrola varianty B (byty, pavlač, požární úseky)
 node test_nudle.mjs  # kontrola varianty C (nudle, chodba, střešní okna)
-node audit.mjs       # projektantský audit obou verzí: kolize předmětů,
+node test_vesnice.mjs # kontrola varianty D (modularita, rozestupy, chodníky)
+node audit.mjs       # projektantský audit všech verzí: kolize předmětů,
                      # přesahy přes stěny, věci ve vstupech, rozvody
                      # v prostupech (0 nálezů)
-node plans.mjs       # 2D výkresy všech verzí → plans/, plans/byty/, plans/nudle/
+node plans.mjs       # 2D výkresy hal → plans/, plans/byty/, plans/nudle/
+                     # (verze D výkresy zatím nemá)
 ```
 
 Rozcestník verzí je v `src/variants.js`. Generátory (`building.js`, `mep.js`,
@@ -281,6 +285,49 @@ Celkem verze C: 5 jednotek, 917 m² podlahové plochy, výnos jednotek
 - **Fitness pod ložnicemi.** Pod byty A a B leží fitness (x 7–14, z 7–14)
   — těžká plovoucí podlaha zůstává nutností, večerní provoz je slyšet.
 - Nájem 15 500 Kč/měs za 3+kk je ODHAD k ověření.
+
+## Verze D — kontejnerová vesnička (zadání 29. 8.)
+
+Úplně jiný přístup: žádná hala 18 × 56 m, ale **samostatné modulární buňky
+z lodních kontejnerů** rozeseté po celém pozemku 2360/110 (~2 850 m²,
+obdélníková aproximace 62 × 46 m). Vjezd v SV rohu od kruhového objezdu.
+
+- **Buňka = 2× 40' kontejner podélně vedle sebe**, uvnitř propojený bez
+  příčky: 12,19 × 4,88 m ≈ 59 m². K tomu sólo 40' (30 m²) a 20' (15 m²).
+- **Kontejnery na severní hranici stojí přímo na hraně pozemku a dělají
+  plot** — sklad a technika okna nepotřebují, zády tvoří souvislou stěnu
+  k sousedovi 2360/111. Zbytek hranice má lehké oplocení s bránou u vjezdu.
+- **Náves** ~14 × 20 m uprostřed; na ni se otvírají vstupy kanceláří
+  a prosklení baru. Parkování (8 stání vč. 1 bezbariérového) hned u vjezdu,
+  auta dovnitř vesničky nejezdí.
+
+Etapy — **etapa 1 je vymodelovaná naplno, 2 a 3 jen naznačené obrysy**
+(`spec.future`), všechno na finálních pozicích, nic se pak nestěhuje:
+
+| etapa | buňky | kontejnery |
+|---|---|---|
+| **1** | kanceláře A, bar/komunita, bydlení 2+kk, technika, sanita | 6× 40' + 2× 20' |
+| 2 | fitness, sim racing, recepce | 3× 40' + 1× 20' |
+| 3 | kanceláře B, dílna, sklad (3× 40' = plot) | 7× 40' |
+| **celkem** | 11 buněk | **16× 40' + 3× 20' = 19 ks** |
+
+Bydlení je 2+kk v jedné duo buňce: předsíň se vstupem z východního štítu,
+koupelna, obývák s KK (jižní prosklení na terasu) a průchozí ložnice.
+Přípojky se v etapě 1 dimenzují a pokládají na celou vesničku — kope se
+jednou; technika proto sedí na severní hraně hned u vjezdu.
+
+Co z programu haly ve verzi D není a proč: **jump aréna** (kontejnery nemají
+výšku), **zvedák v dílně** (4,2 m se do 2,6 m nevejde — max nůžkový).
+Otevřené: souhlas souseda / výjimka pro stavbu na hranici, kapacita stání,
+nacenění buněk (odhad 12–15 mil. Kč za finál, etapa 1 ~5 mil.).
+
+Model: `src/village.js` staví obálky buněk ze `spec.units` (stěny s otvory
+z `openings`, plochá střecha, limetkové ostění vstupů = brand 1P jako
+u haly), vybavení jde přes společný `fitout.js` (layouty `ves-*`), příčky
+a vnitřní dveře bytu přes `partitionsFor`/`doorsFor`. Postava chodí po
+vesničce (pláště buněk jsou pevné, dveřmi se prochází, hranice pozemku
+drží jako plot). Editace tažením je u verze D vypnutá — buňky se editují
+ve spec.
 
 ## Co se dopočítává samo
 

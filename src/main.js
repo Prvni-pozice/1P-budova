@@ -6,10 +6,11 @@ import { computeMEP, SERVICES, blockDemand } from './mep.js'
 import { FURN } from './fitout.js'
 import { openingsFor, partitionsFor } from './building.js'
 import { buildAll } from './building.js'
+import { buildVillage } from './village.js'
 import { Cutaway } from './cutaway.js'
 import { Env } from './env.js'
 import { Quality } from './quality.js'
-import { summaryText } from './ui.js'
+import { summaryText, summaryVillage } from './ui.js'
 import { makeCharacter } from './character.js'
 
 // spec je živý — editace ho mění a model se z něj přegeneruje.
@@ -85,14 +86,17 @@ function rebuild() {
     scene.remove(built.root)
     disposeTree(built.root)
   }
-  mep = computeMEP(spec)
-  built = buildAll(spec, mep)
+  const isVillage = spec.kind === 'village'
+  mep = isVillage ? null : computeMEP(spec)
+  built = isVillage ? buildVillage(spec) : buildAll(spec, mep)
   scene.add(built.root)
-  cut = new Cutaway(built.walls, built.groups.roof, spec)
+  cut = new Cutaway(built.walls, built.groups.roof, built.cutSpec ?? spec)
   cut.mode = cutMode
   applyLayers()
   applyMepToggles()
-  document.getElementById('summary').textContent = summaryText(spec, mep, built.pv, built.fit)
+  document.getElementById('summary').textContent = isVillage
+    ? summaryVillage(spec, built.fit)
+    : summaryText(spec, mep, built.pv, built.fit)
   refreshSelection()
   floors = [
     ...built.groups.ground.children,
@@ -126,6 +130,9 @@ function rebuild() {
         yBase: it.y, yTop: it.y + f.h,
       }
     })
+  // vesnička: pláště buněk jsou pevné AABB (dveře nechávají mezeru); hranice
+  // pozemku funguje jako plot — postava zůstává na parcele
+  solids.push(...(built.extraSolids ?? []))
   southDoors = openingsFor(spec, 'south').filter((h) => h.v0 === 0).map((h) => [h.x0, h.x1])
   partSegs = partitionsFor(spec)
   camBlockers.push(...built.groups.partitions.children)
@@ -283,7 +290,8 @@ function setMode(mode) {
       ? 'Procházka: joystick pohyb · pravý prst rozhlížení · ▲▼ výška'
       : 'Procházka: WASD · Space/Shift výška · myš rozhlížení · Esc konec'
   } else if (mode === 'gta') {
-    char.group.position.set(10.5, 0, -5)   // před hlavním vstupem
+    const st = spec.gtaStart ?? { x: 10.5, z: -5 }   // před hlavním vstupem
+    char.group.position.set(st.x, 0, st.z)
     char.group.rotation.y = 0
     gta.yaw = Math.PI
     gta.pitch = 0.35
@@ -596,7 +604,9 @@ renderer.domElement.addEventListener('pointerdown', (ev) => {
   if (!hit) return
   selectedId = hit.object.userData.block.id
   refreshSelection()
-  if (!editMode) return
+  // vesnička: bloky jsou svázané s obálkou buňky ze spec.units — tažení by
+  // odtrhlo interiér od pláště, editují se jen kóty ve spec
+  if (!editMode || spec.kind === 'village') return
   orbit.enabled = false
   plane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), hit.point)
   dragStart.copy(hit.point)
@@ -633,6 +643,7 @@ for (const f of fields) {
   f.addEventListener('change', () => {
     const b = spec.blocks.find((x) => x.id === selectedId)
     if (!b) return
+    if (spec.kind === 'village') { refreshSelection(); return }   // buňky se editují ve spec
     const [x0, x1, z0, z1] = fields.map((el) => parseFloat(el.value))
     if ([x0, x1, z0, z1].some(Number.isNaN) || x1 <= x0 || z1 <= z0) { refreshSelection(); return }
     Object.assign(b, { x0, x1, z0, z1 })
@@ -680,6 +691,9 @@ const variantBtns = VARIANTS.map((v) => {
 function syncVariantUI() {
   for (const [id, b] of variantBtns) b.classList.toggle('on', id === variant.id)
   $('variant-sub').textContent = variant.sub
+  $('head-sub').textContent = spec.kind === 'village'
+    ? `Pozemek 2360/110 · ${spec.stage1} × ${spec.depth} m · kontejnerové buňky`
+    : 'Etapa 1 · 18 × 28 m · okap 6 m'
 }
 
 function setVariant(id) {
@@ -693,6 +707,7 @@ function setVariant(id) {
   selectedId = null
   history.replaceState(null, '', `#${v.id}`)
   syncVariantUI()
+  orbit.target.set(spec.stage1 / 2, spec.eaves * 0.45, spec.depth / 2)
   rebuild()
 }
 

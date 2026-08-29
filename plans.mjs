@@ -26,7 +26,8 @@ import { VARIANTS, variantFromArgv } from './src/variants.js'
 // celý soubor pracuje s jedním modulovým `S`.
 const VARIANT = variantFromArgv()
 if (!VARIANT) {
-  for (const v of VARIANTS) {
+  // vesnička (varianta D) halové výkresy nemá — jen 3D model
+  for (const v of VARIANTS.filter((x) => x.spec.kind !== 'village')) {
     const r = spawnSync(process.execPath, [process.argv[1], v.id], { stdio: 'inherit' })
     if (r.status) process.exit(r.status)
   }
@@ -34,6 +35,10 @@ if (!VARIANT) {
 }
 
 const S = VARIANT.spec
+if (S.kind === 'village') {
+  console.log('Varianta D (vesnička) zatím 2D výkresy nemá — jen 3D model a testy.')
+  process.exit(0)
+}
 const OUT = VARIANT.id === VARIANTS[0].id ? 'plans' : `plans/${VARIANT.id}`
 const DATE = '23. 8. 2026'
 const LOC = 'Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou'

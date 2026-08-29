@@ -917,6 +917,106 @@ const LAYOUTS = {
     put('fridge', 2.55, 1.4, { rot: 90 })
     return items
   },
+
+  // ------------------------------------------- varianta D: vesnička (buňky)
+  // Buňka duo 2× 40' = vnitřek 12,19 × 4,88 m; sólo 20' = 6,06 × 2,44 m.
+  // Vstupní dveře nese obálka buňky (village.js), tady je jen nábytek.
+
+  // Kanceláře A: bench 6 stolů na západě, malý jednací stůl na východě,
+  // vstup z jihu u 5,6–6,6 zůstává volný.
+  'ves-office': (S, b, P) => {
+    const { items, put, row, desks, seat } = maker(S, b)
+    desks(1.3, 2.44, Math.ceil((P.office?.desks ?? 6) / 2))
+    put('mtable', 9.0, 2.44)
+    for (const du of [-0.75, 0.75]) {
+      seat(9.0 + du, 1.55, 9.0 + du, 2.44)
+      seat(9.0 + du, 3.33, 9.0 + du, 2.44)
+    }
+    row('cabinet', 0.7, 4.6, 3, 0.9)
+    put('sideboard', 10.6, 4.6)
+    put('printer3d', 10.6, 4.55, { dy: 0.78, note: 'tiskárna na skříňce' })
+    put('rack19', 11.75, 4.4, { rot: 90, note: 'switch + NAS' })
+    return items
+  },
+
+  // Bar / komunita: pult a zázemí u jižní stěny, posezení u severního
+  // prosklení na náves. Dveře na severu u 5,6–6,6.
+  'ves-bar': (S, b) => {
+    const { items, put, row, seat, around } = maker(S, b)
+    row('backbar', 1.1, 0.35, 2, 1.1)
+    put('fridge', 3.15, 0.4)
+    put('kitchen', 4.9, 0.38)
+    put('bar', 2.0, 1.45)
+    put('bar', 3.25, 1.45)
+    seat(2.0, 2.25, 2.0, 1.45)
+    seat(3.25, 2.25, 3.25, 1.45)
+    put('table', 8.3, 1.7)
+    around(8.3, 1.7, [[-1.05, 0], [1.05, 0]])
+    seat(8.3, 2.75, 8.3, 1.7)
+    put('table', 10.6, 3.1)
+    around(10.6, 3.1, [[-1.05, 0], [1.05, 0]])
+    put('sofa', 8.0, 4.32, { rot: 180 })
+    put('rtable', 8.0, 3.35)
+    return items
+  },
+
+  // Byt 2+kk v duo buňce: obývák s KK, průchozí do ložnice (jako verze C).
+  'ves-obyvak': (S, b) => {
+    const { items, put, around } = maker(S, b)
+    put('kitchen', 2.3, 4.55)
+    put('fridge', 3.95, 4.5)
+    put('table', 1.6, 3.3)
+    around(1.6, 3.3, [[-1.05, 0], [1.05, 0]])
+    put('sofa', 4.35, 2.9, { rot: 0, note: 'pohovka čelem k jižnímu prosklení' })
+    put('rtable', 4.35, 1.9)
+    put('screen', 6.0, 2.2, { rot: 90, dy: 1.1, note: 'TV na stěně k ložnici' })
+    return items
+  },
+  'ves-loznice': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('bed', 2.7, 2.0, { rot: 90 })
+    put('wardrobe', 1.05, 4.55)
+    return items
+  },
+  'ves-koupelna': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('shower', 0.55, 1.95)
+    put('wcbowl', 1.75, 2.0)
+    put('basin', 1.85, 1.3, { rot: 90 })
+    put('washer', 0.35, 0.35)
+    return items
+  },
+  'ves-predsin': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('shoerack', 1.1, 0.35)
+    // hlásič u jižního konce — střed drží vyústka VZT a svítidlo jí uhýbá
+    // v ose z, takže lávka 5,2–5,8 musí zůstat volná
+    put('smoke', 0.5, 0.6, { dy: blockHeight(S, b) - 0.3, note: 'autonomní hlásič — povinný v bytě' })
+    return items
+  },
+
+  // Technika: TČ, akumulace, rozvaděč, baterie a rack u severní stěny,
+  // dveře na jihu u 2,5–3,5 volné.
+  'ves-tech': (S, b) => {
+    const { items, put } = maker(S, b)
+    put('hpmodule', 0.85, 1.9)
+    put('tank', 2.0, 2.0)
+    put('board', 3.1, 2.25)
+    put('battery', 4.2, 2.2)
+    put('rack19', 5.5, 2.0)
+    return items
+  },
+
+  // Sanita v sólo 20': dvě WC kabiny na severním konci, sprcha na jižním,
+  // umyvadla u západní stěny. Dveře na východě u 2,5–3,5.
+  'ves-sanita': (S, b) => {
+    const { items, put, row } = maker(S, b)
+    put('wc', 0.65, 5.25)
+    put('wc', 1.75, 5.25)
+    put('shower', 0.65, 0.85, { rot: 180 })
+    row('basin', 2.15, 1.7, 2, 0.8, { along: 'v', rot: 90 })
+    return items
+  },
 }
 
 /** Vybavení jednoho bloku ve světových souřadnicích. */

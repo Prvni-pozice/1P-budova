@@ -6,6 +6,7 @@
 import { SPEC } from './spec.js'
 import { SPEC_BYTY } from './spec-byty.js'
 import { SPEC_NUDLE } from './spec-nudle.js'
+import { SPEC_VESNICE } from './spec-vesnice.js'
 
 export const VARIANTS = [
   {
@@ -28,6 +29,13 @@ export const VARIANTS = [
     short: 'C',
     sub: '3 byty 84 m² přes celý rozpon patra, střešní okna na severu',
     spec: SPEC_NUDLE,
+  },
+  {
+    id: 'vesnice',
+    label: 'D — vesnička',
+    short: 'D',
+    sub: 'Kontejnerové buňky kolem návsi; etapa 1 naplno, 2 a 3 naznačené',
+    spec: SPEC_VESNICE,
   },
 ]
 

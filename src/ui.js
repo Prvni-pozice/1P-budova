@@ -1,6 +1,7 @@
 // ui.js — textový souhrn. Vše se přepočítává ze SPEC, nic není opsané ručně.
 import { areaTotals } from './spec.js'
 import { FURN } from './fitout.js'
+import { CONT, containerCounts } from './spec-vesnice.js'
 
 const BREAKERS = [25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400]
 
@@ -12,6 +13,49 @@ const rpad = (s, w) => String(s).padStart(w)
 
 // Měrné výnosy pro ČR [kWh/kWp/rok] — střecha ve sklonu 10°, fasáda svisle
 const YIELD = { roof: 1020, facade: 700 }
+
+/** Souhrn varianty D (vesnička) — bez MEP, zato s bilancí kontejnerů. */
+export function summaryVillage(spec, fit) {
+  const site = spec.stage1 * spec.depth
+  const uArea = (u) => (u.x1 - u.x0) * (u.z1 - u.z0)
+  const a1 = spec.units.reduce((s, u) => s + uArea(u), 0)
+  const aAll = a1 + (spec.future ?? []).reduce((s, u) => s + uArea(u), 0)
+  const c1 = containerCounts(spec, [1])
+  const cAll = containerCounts(spec)
+  const cRow = (c) => [c.c40 ? `${c.c40}× 40′` : '', c.c20 ? `${c.c20}× 20′` : '']
+    .filter(Boolean).join(' + ')
+
+  const L = []
+  L.push('POZEMEK 2360/110')
+  L.push(`  ${pad('Výměra (model)', 18)}${rpad(n0(site), 6)} m²`)
+  L.push(`  ${pad('Zastavěno et. 1', 18)}${rpad(n0(a1), 6)} m²  (${Math.round((a1 / site) * 100)} %)`)
+  L.push(`  ${pad('Zastavěno finál', 18)}${rpad(n0(aAll), 6)} m²  (${Math.round((aAll / site) * 100)} %)`)
+  L.push('')
+  L.push('ETAPA 1')
+  for (const u of spec.units) {
+    L.push(`  ${pad(u.name, 18)}${rpad(n0(uArea(u)), 6)} m²  ${cRow(CONT[u.kind])}`)
+  }
+  L.push('')
+  L.push('NAZNAČENO (etapy 2–3)')
+  for (const u of spec.future ?? []) {
+    L.push(`  ${pad(`${u.name} (${u.stage})`, 18)}${rpad(n0(uArea(u)), 6)} m²  ${cRow(CONT[u.kind])}`)
+  }
+  L.push('')
+  L.push('KONTEJNERY')
+  L.push(`  ${pad('Etapa 1', 18)}${cRow(c1)}  (${c1.c40 + c1.c20} ks)`)
+  L.push(`  ${pad('Celkem finál', 18)}${cRow(cAll)}  (${cAll.c40 + cAll.c20} ks)`)
+
+  if (fit && Object.keys(fit.counts).length) {
+    L.push('')
+    L.push('VYBAVENÍ (etapa 1)')
+    const rows = Object.entries(fit.counts)
+      .map(([k, v]) => [FURN[k]?.label ?? k, v])
+      .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0], 'cs'))
+    for (const [label, v] of rows) L.push(`  ${pad(label, 24)}${rpad(v, 4)} ks`)
+    if (fit.dropped > 0) L.push(`  ${pad('!! nevešlo se', 24)}${rpad(fit.dropped, 4)} ks`)
+  }
+  return L.join('\n')
+}
 
 export function summaryText(spec, mep, pv, fit) {
   const a = areaTotals(spec)

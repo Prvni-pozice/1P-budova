@@ -41,8 +41,10 @@ export class Cutaway {
     const S = this.spec
     const cx = camera.position.x
     const cz = camera.position.z
-    const inside =
-      cx > -1 && cx < S.stage1 + 1 && cz > -1 && cz < S.depth + 1 && camera.position.y < S.eaves + 2
+    // noInside: u vesničky (varianta D) „uvnitř budovy“ neexistuje — kamera
+    // na pozemku nemá zavírat všechny buňky
+    const inside = !S.noInside
+      && cx > -1 && cx < S.stage1 + 1 && cz > -1 && cz < S.depth + 1 && camera.position.y < S.eaves + 2
 
     const cxm = S.stage1 / 2
     const czm = S.depth / 2

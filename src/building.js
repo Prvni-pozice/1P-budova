@@ -12,7 +12,7 @@ const deg = (d) => (d * Math.PI) / 180
  * Stěna jako plocha s otvory. Lokální u = po délce stěny, v = výška.
  * Vysune se do tloušťky t a posune tak, aby lokální +Z byla VNĚJŠÍ normála.
  */
-function wallGeom(profile, holes, t) {
+export function wallGeom(profile, holes, t) {
   const shape = new THREE.Shape()
   shape.moveTo(profile[0][0], profile[0][1])
   for (let i = 1; i < profile.length; i++) shape.lineTo(profile[i][0], profile[i][1])
@@ -29,7 +29,7 @@ function wallGeom(profile, holes, t) {
 }
 
 /** Umístí stěnu z bodu A ve směru dir; lokální +Z vyjde jako vnější normála. */
-function placeWall(mesh, ax, az, dx, dz) {
+export function placeWall(mesh, ax, az, dx, dz) {
   mesh.position.set(ax, 0, az)
   mesh.rotation.y = Math.atan2(-dz, dx)
 }
@@ -65,7 +65,7 @@ function tube(points, radius, color) {
   return g
 }
 
-function labelSprite(title, sub) {
+export function labelSprite(title, sub) {
   // dvojnásobné rozlišení plátna, ať je text při větším měřítku ostrý
   const c = document.createElement('canvas')
   c.width = 1024; c.height = 320
@@ -381,7 +381,7 @@ const box = (w, h, d, mat, x = 0, y = 0, z = 0) => {
  * Jeden kus vybavení. Tvary jsou schválně hrubé — jde o kontrolu, jestli se to
  * vejde a dá projít, ne o katalogový render.
  */
-function furnitureMesh(item, FURN) {
+export function furnitureMesh(item, FURN) {
   const f = FURN[item.kind]
   const g = new THREE.Group()
   const mat = new THREE.MeshStandardMaterial({ color: f.color, roughness: 0.72 })

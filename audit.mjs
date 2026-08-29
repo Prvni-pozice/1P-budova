@@ -104,7 +104,8 @@ function auditSpec(SPEC) {
   }
 
   // ------------------------------------------------------- 5) rozvody v cestě
-  const mep = computeMEP(SPEC)
+  // vesnička (varianta D) MEP model nemá — kontroly 1–4 platí i pro ni
+  const mep = SPEC.kind === 'village' ? { routes: [] } : computeMEP(SPEC)
   for (const r of mep.routes.filter((x) => x.kind === 'terminal' || x.kind === 'branch')) {
     for (const st of stairs) {
       const o = stairOpening(st, FURN)
