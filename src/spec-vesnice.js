@@ -11,9 +11,15 @@
 // sanita), etapy 2 a 3 jsou jen naznačené obrysy (spec.future).
 //
 // Souřadnice — stejný kompas jako u haly (pravotočivý):
-//   x = 0 na VÝCHODNÍ hranici (ulice), roste na ZÁPAD (0..62)
-//   z = 0 na JIŽNÍ hranici (soused 2360/109), roste na SEVER (0..46)
-// Vjezd je v SV rohu od kruhového objezdu. Sever (z = 46) = soused 2360/111.
+//   x = 0 na VÝCHODNÍ hranici (ulice), roste na ZÁPAD (0..72)
+//   z = 0 na JIŽNÍ hranici (soused 2360/109), roste na SEVER (0..40)
+// Vjezd je v SV rohu od kruhového objezdu. Sever (z = 40) = soused 2360/111.
+//
+// TVAR: skutečná parcela je protáhlý lichoběžník (přeměřeno z katastru
+// 29. 8., kalibrace přes výměru): jih ~81 m, sever ~65 m vč. oblouku
+// u kruháče, hloubka ~40–45 m, dlouhá osa pootočená ~21° od V–Z.
+// Model drží osový obdélník 72 × 40 m (2 880 m²) — poměr ~1,8 sedí,
+// pootočení a zkosení rohů se doladí až nad geodetickým zaměřením.
 
 // vnější rozměry kontejnerů [m]; duo40 = dva 40' bez vnitřní příčky
 export const CONT = {
@@ -25,10 +31,10 @@ export const CONT = {
 export const SPEC_VESNICE = {
   kind: 'village',
 
-  // pozemek — obdélníková aproximace parcely 2360/110 (62 × 46 = 2 852 m²)
-  stage1: 62,       // šířka V–Z (kvůli sdílenému kódu: střed scény, cutaway)
-  length: 62,
-  depth: 46,        // hloubka J–S
+  // pozemek — obdélníková aproximace parcely 2360/110 (72 × 40 = 2 880 m²)
+  stage1: 72,       // délka dlouhé osy (kvůli sdílenému kódu: střed scény, cutaway)
+  length: 72,
+  depth: 40,        // hloubka J–S
   grid: 7,          // nepoužito, drží kontrakt spec
   eaves: 2.9,       // vnější výška kontejneru (HC)
   clearGF: 2.6,     // světlá výška uvnitř buňky
@@ -37,7 +43,7 @@ export const SPEC_VESNICE = {
   blindWalls: [],
 
   // postava startuje na parkovací uličce u vjezdu
-  gtaStart: { x: 11.5, z: 40 },
+  gtaStart: { x: 11.5, z: 34 },
 
   // Buňky. Etapa 1 se modeluje naplno — každá má obálku s otvory (openings:
   // u = vzdálenost podél stěny od východního rohu [s/n] resp. od jižního [e/w],
@@ -45,7 +51,7 @@ export const SPEC_VESNICE = {
   units: [
     {
       id: 'u-kanc-a', name: 'Kanceláře A', stage: 1, kind: 'duo40',
-      x0: 30.2, x1: 42.39, z0: 33.0, z1: 37.88,
+      x0: 30.2, x1: 42.39, z0: 28.0, z1: 32.88,
       blocks: ['kanc-a'],
       openings: [
         { side: 's', kind: 'door',   u0: 5.6, u1: 6.6, v0: 0,   v1: 2.05 },  // vstup z návsi
@@ -88,7 +94,7 @@ export const SPEC_VESNICE = {
       // nejkratší trasa přípojek od ulice. Přípojky se v etapě 1 dimenzují
       // a pokládají na CELOU vesničku, kope se jen jednou.
       id: 'u-tech', name: 'Technika', stage: 1, kind: 'solo20',
-      x0: 7.0, x1: 13.06, z0: 43.56, z1: 46.0,
+      x0: 7.0, x1: 13.06, z0: 37.56, z1: 40.0,
       blocks: ['technika'],
       openings: [
         { side: 's', kind: 'door',   u0: 2.5, u1: 3.5, v0: 0,   v1: 2.05 },
@@ -114,12 +120,12 @@ export const SPEC_VESNICE = {
   future: [
     { id: 'u-fitness', name: 'Fitness',     stage: 2, kind: 'duo40',  x0: 45.0,  x1: 57.19, z0: 14.0,  z1: 18.88 },
     { id: 'u-sim',     name: 'Sim racing',  stage: 2, kind: 'solo40', x0: 8.0,   x1: 20.19, z0: 4.5,   z1: 6.94 },
-    { id: 'u-recepce', name: 'Recepce',     stage: 2, kind: 'solo20', x0: 14.0,  x1: 20.06, z0: 25.5,  z1: 27.94 },
-    { id: 'u-kanc-b',  name: 'Kanceláře B', stage: 3, kind: 'duo40',  x0: 16.0,  x1: 28.19, z0: 33.0,  z1: 37.88 },
+    { id: 'u-recepce', name: 'Recepce',     stage: 2, kind: 'solo20', x0: 14.0,  x1: 20.06, z0: 23.5,  z1: 25.94 },
+    { id: 'u-kanc-b',  name: 'Kanceláře B', stage: 3, kind: 'duo40',  x0: 16.0,  x1: 28.19, z0: 28.0,  z1: 32.88 },
     { id: 'u-dilna',   name: 'Dílna',       stage: 3, kind: 'duo40',  x0: 24.0,  x1: 36.19, z0: 4.0,   z1: 8.88 },
-    { id: 'u-sklad-1', name: 'Sklad 1',     stage: 3, kind: 'solo40', x0: 16.0,  x1: 28.19, z0: 43.56, z1: 46.0 },
-    { id: 'u-sklad-2', name: 'Sklad 2',     stage: 3, kind: 'solo40', x0: 28.19, x1: 40.38, z0: 43.56, z1: 46.0 },
-    { id: 'u-sklad-3', name: 'Sklad 3',     stage: 3, kind: 'solo40', x0: 40.38, x1: 52.57, z0: 43.56, z1: 46.0 },
+    { id: 'u-sklad-1', name: 'Sklad 1',     stage: 3, kind: 'solo40', x0: 16.0,  x1: 28.19, z0: 37.56, z1: 40.0 },
+    { id: 'u-sklad-2', name: 'Sklad 2',     stage: 3, kind: 'solo40', x0: 28.19, x1: 40.38, z0: 37.56, z1: 40.0 },
+    { id: 'u-sklad-3', name: 'Sklad 3',     stage: 3, kind: 'solo40', x0: 40.38, x1: 52.57, z0: 37.56, z1: 40.0 },
   ],
 
   // Venkovní plochy. Vjezd od kruháče v SV rohu, parkování hned u něj —
@@ -127,28 +133,28 @@ export const SPEC_VESNICE = {
   // vstupy kanceláří i baru; chodníky spojují parking se všemi vstupy.
   site: {
     paving: [
-      { id: 'vjezd',    mat: 'asphalt', x0: 0,     x1: 13.5,  z0: 37.0, z1: 42.5 },
-      { id: 'ulicka',   mat: 'asphalt', x0: 9.5,   x1: 13.5,  z0: 17.5, z1: 42.5 },
-      { id: 'ch-naves', mat: 'paving',  x0: 13.5,  x1: 20.5,  z0: 24.5, z1: 26.5 },
-      { id: 'naves',    mat: 'paving',  x0: 20.5,  x1: 40.0,  z0: 19.0, z1: 33.0 },
+      { id: 'vjezd',    mat: 'asphalt', x0: 0,     x1: 13.5,  z0: 31.5, z1: 37.0 },
+      { id: 'ulicka',   mat: 'asphalt', x0: 9.5,   x1: 13.5,  z0: 11.5, z1: 36.5 },
+      { id: 'ch-naves', mat: 'paving',  x0: 13.5,  x1: 20.5,  z0: 21.5, z1: 23.5 },
+      { id: 'naves',    mat: 'paving',  x0: 20.5,  x1: 40.0,  z0: 19.0, z1: 28.0 },
       { id: 'ch-jih',   mat: 'paving',  x0: 38.3,  x1: 40.5,  z0: 12.5, z1: 19.0 },  // náves → sanita → jih
       { id: 'ch-byt-1', mat: 'paving',  x0: 38.3,  x1: 44.0,  z0: 10.5, z1: 12.5 },
       { id: 'ch-byt-2', mat: 'paving',  x0: 42.0,  x1: 44.0,  z0: 2.0,  z1: 12.5 },  // ke vstupu bytu
-      { id: 'ch-tech',  mat: 'paving',  x0: 8.5,   x1: 11.5,  z0: 42.5, z1: 43.56 },
+      { id: 'ch-tech',  mat: 'paving',  x0: 8.5,   x1: 11.5,  z0: 37.0, z1: 37.56 },
       { id: 'ch-terasa', mat: 'paving', x0: 44.0,  x1: 46.4,  z0: 2.0,  z1: 4.0 },   // od vstupu k terase
       { id: 'terasa',   mat: 'deck',    x0: 46.4,  x1: 52.4,  z0: 1.0,  z1: 4.0 },   // terasa obýváku
     ],
     // stání kolmo na uličku (x 4,5–9,5), bezbariérové nejblíž vjezdu
     parkX0: 4.5, parkX1: 9.5,
     bays: [
-      { z0: 36.5, z1: 40.0, bf: true },
-      { z0: 34.0, z1: 36.5 }, { z0: 31.5, z1: 34.0 }, { z0: 29.0, z1: 31.5 },
-      { z0: 26.5, z1: 29.0 }, { z0: 24.0, z1: 26.5 }, { z0: 21.5, z1: 24.0 },
-      { z0: 19.0, z1: 21.5 },
+      { z0: 31.0, z1: 34.5, bf: true },
+      { z0: 28.5, z1: 31.0 }, { z0: 26.0, z1: 28.5 }, { z0: 23.5, z1: 26.0 },
+      { z0: 21.0, z1: 23.5 }, { z0: 18.5, z1: 21.0 }, { z0: 16.0, z1: 18.5 },
+      { z0: 13.5, z1: 16.0 },
     ],
     // vjezdová brána = mezera v plotu na východní hranici
-    gate: { z0: 37.0, z1: 42.5 },
-    trees: [[24, 22], [28.5, 29], [36, 21.5], [58, 6], [2.5, 32]],
+    gate: { z0: 31.5, z1: 37.0 },
+    trees: [[24, 22], [33, 25], [36, 20.5], [58, 6], [2.5, 27]],
   },
 
   program: {
@@ -179,13 +185,13 @@ export const SPEC_VESNICE = {
   // Místnosti. U jednoprostorových buněk je blok = celá buňka; byt se dělí
   // na čtyři místnosti, které buňku přesně vyskládají (hlídá test).
   blocks: [
-    { id: 'kanc-a',       name: 'Kanceláře A',    type: 'office', level: 0, x0: 30.2, x1: 42.39, z0: 33.0, z1: 37.88, layout: 'ves-office' },
+    { id: 'kanc-a',       name: 'Kanceláře A',    type: 'office', level: 0, x0: 30.2, x1: 42.39, z0: 28.0, z1: 32.88, layout: 'ves-office' },
     { id: 'bar',          name: 'Bar / komunita', type: 'lobby',  level: 0, x0: 26.0, x1: 38.19, z0: 14.0, z1: 18.88, layout: 'ves-bar' },
     { id: 'byt-predsin',  name: 'Předsíň',        type: 'circ',   level: 0, x0: 44.0, x1: 46.2,  z0: 4.0,  z1: 6.4,  layout: 'ves-predsin' },
     { id: 'byt-koupelna', name: 'Koupelna',       type: 'wet',    level: 0, x0: 44.0, x1: 46.2,  z0: 6.4,  z1: 8.88, layout: 'ves-koupelna' },
     { id: 'byt-obyvak',   name: 'Obývák + KK',    type: 'flat',   level: 0, x0: 46.2, x1: 52.4,  z0: 4.0,  z1: 8.88, layout: 'ves-obyvak' },
     { id: 'byt-loznice',  name: 'Ložnice',        type: 'flat',   level: 0, x0: 52.4, x1: 56.19, z0: 4.0,  z1: 8.88, layout: 'ves-loznice' },
-    { id: 'technika',     name: 'Technika',       type: 'plant',  level: 0, x0: 7.0,  x1: 13.06, z0: 43.56, z1: 46.0, layout: 'ves-tech' },
+    { id: 'technika',     name: 'Technika',       type: 'plant',  level: 0, x0: 7.0,  x1: 13.06, z0: 37.56, z1: 40.0, layout: 'ves-tech' },
     { id: 'sanita',       name: 'Sanita',         type: 'wet',    level: 0, x0: 40.5, x1: 42.94, z0: 13.0, z1: 19.06, layout: 'ves-sanita' },
   ],
 }

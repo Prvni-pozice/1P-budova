@@ -289,8 +289,15 @@ Celkem verze C: 5 jednotek, 917 m² podlahové plochy, výnos jednotek
 ## Verze D — kontejnerová vesnička (zadání 29. 8.)
 
 Úplně jiný přístup: žádná hala 18 × 56 m, ale **samostatné modulární buňky
-z lodních kontejnerů** rozeseté po celém pozemku 2360/110 (~2 850 m²,
-obdélníková aproximace 62 × 46 m). Vjezd v SV rohu od kruhového objezdu.
+z lodních kontejnerů** rozeseté po celém pozemku 2360/110 (~2 850 m²).
+Vjezd v SV rohu od kruhového objezdu.
+
+Tvar pozemku (přeměřeno z katastrální mapy 29. 8., kalibrace přes výměru;
+měřítko ověřené průměrem kruháče ~31 m): **protáhlý lichoběžník** — jih
+~81 m, sever ~65 m včetně oblouku u kruháče, hloubka ~40–45 m, dlouhá osa
+pootočená ~21° od V–Z. Model drží osový obdélník **72 × 40 m** (2 880 m²),
+který sedí poměrem ~1,8; pootočení a zkosené rohy se doladí až nad
+geodetickým zaměřením.
 
 - **Buňka = 2× 40' kontejner podélně vedle sebe**, uvnitř propojený bez
   příčky: 12,19 × 4,88 m ≈ 59 m². K tomu sólo 40' (30 m²) a 20' (15 m²).
