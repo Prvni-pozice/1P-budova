@@ -170,6 +170,11 @@ function applyLayers() {
   }
   g.site.visible = chk.site.checked
   g.stage2.visible = chk.stage2.checked
+  // popisky naznačených etap (sprity v obrysové vrstvě) poslouchají i vypínač
+  // popisků — jinak visely nad modelem, i když byly ostatní popisky vypnuté
+  for (const c of g.stage2.children) {
+    if (c.isSprite) c.visible = chk.labels.checked
+  }
   for (const grp of [g.blocks, g.labels, g.slabs, g.furniture, g.ground]) {
     for (const c of grp.children) {
       const b = c.userData.block
@@ -694,6 +699,8 @@ function syncVariantUI() {
   $('head-sub').textContent = spec.kind === 'village'
     ? `Pozemek 2360/110 · ${spec.stage1} × ${spec.depth} m · kontejnerové buňky`
     : 'Etapa 1 · 18 × 28 m · okap 6 m'
+  $('ly-stage2-label').textContent = spec.kind === 'village'
+    ? 'Etapy 2–3 (obrys)' : 'Etapa 2 (obrys)'
 }
 
 function setVariant(id) {
