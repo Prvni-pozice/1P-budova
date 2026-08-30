@@ -18,7 +18,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { TYPES, area, levelBase, roofY, ridgeY } from './src/spec.js'
-import { openingsFor, partitionsFor } from './src/building.js'
+import { openingsFor, partitionsFor, pvLayout } from './src/building.js'
 import { FURN, fitoutAll } from './src/fitout.js'
 import { VARIANTS, variantFromArgv } from './src/variants.js'
 
@@ -116,6 +116,10 @@ class Dwg {
   .axis{font-size:10px;font-weight:700;fill:#2b2f36}
   .dimt{font-size:9.5px;fill:#2b2f36}
   .warn{font-size:9.5px;fill:#a3453c}
+  .onwall{font-size:9px;fill:#e6eaef}
+  .pvpanel{fill:#3d4a6b;stroke:#8ea0c4;stroke-width:0.7}
+  .portal{fill:none;stroke:#ffffff;stroke-width:1.8}
+  .portallime{fill:none;stroke:#bfe32e;stroke-width:1.6}
 </style>
 <rect class="bg" x="0" y="0" width="${Math.ceil(this.w)}" height="${Math.ceil(this.h)}"/>
 ${this.b.join('\n')}
@@ -133,7 +137,9 @@ function titleBlock(d, { name, note, scaleBar, sc }) {
   d.text(40, y + 57, LOC, 'sub')
   d.text(40, y + 72, `Generováno ze src/spec.js · ${DATE} · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m`, 'sub')
   d.text(40, y + 87, 'NENÍ projektová dokumentace — nástroj na hledání poměrů ploch před zadáním projektantovi.', 'warn')
-  if (note) d.text(d.w - 40, y + 24, note, 'sub', 'text-anchor="end"')
+  // poznámka NAD čáru titulku — na řádku s názvem výkresu se u úzkých
+  // formátů (pohledy) položila přes titulek
+  if (note) d.text(d.w - 40, y - 10, note, 'sub', 'text-anchor="end"')
   if (scaleBar) {
     const bx = d.w - 40 - scaleBar * sc, by = y + 62
     const step = scaleBar / 4
@@ -573,6 +579,197 @@ function sectionB() {
   return '04-rez-B-B.svg'
 }
 
+// ----------------------------------------------------------------- POHLEDY
+
+/**
+ * Pohled na fasádu (ortogonální průmět). Otvory se berou ze stejného
+ * generátoru jako 3D model, takže výkres nemůže lhát o oknech.
+ *
+ * ZRCADLENÍ (spletl jsem to už dvakrát, viz poznámka v paměti): pohled
+ * kreslí to, co divák vidí, když stojí VENKU proti té stěně —
+ *   jih  → vlevo ZÁPAD, vpravo VÝCHOD  → X = (stage1 − x)
+ *   sever→ vlevo VÝCHOD, vpravo ZÁPAD  → X = x
+ *   východ → vlevo JIH,  vpravo SEVER  → X = z
+ *   západ  → vlevo SEVER, vpravo JIH   → X = (depth − z)
+ */
+function elevation(side, file, title) {
+  const long = side === 'south' || side === 'north'
+  const span = long ? S.stage1 : S.depth
+  const SC = 30, ML = 110, MR = 240, MT = 90
+  const HMAX = RIDGE + 1.4
+  const d = new Dwg(span * SC + ML + MR, HMAX * SC + MT + 250)
+  const X = (u) => ML + (side === 'south' ? S.stage1 - u
+    : side === 'west' ? S.depth - u : u) * SC
+  const Y = (y) => MT + (HMAX - y) * SC
+  // obdélník mezi dvěma souřadnicemi v ose fasády (zrcadlení řeší X)
+  const rectU = (u0, u1, y0, y1, cls, extra = '') =>
+    d.rect(Math.min(X(u0), X(u1)), Y(y1), Math.abs(X(u1) - X(u0)), (y1 - y0) * SC, cls, extra)
+
+  const holes = long ? openingsFor(S, side) : []
+  // štítová stěna má nahoře trojúhelník po hřeben; podélná končí u okapu
+  const gableY = (u) => (long ? S.eaves : roofY(S, u))
+
+  // --- plocha stěny ---
+  if (long) {
+    d.rect(X(0) < X(span) ? X(0) : X(span), Y(S.eaves), span * SC, S.eaves * SC, 'wall')
+  } else {
+    d.poly([[X(0), Y(0)], [X(0), Y(S.eaves)], [X(S.depth / 2), Y(RIDGE)],
+      [X(S.depth), Y(S.eaves)], [X(S.depth), Y(0)]],
+      side === 'west' ? 'walltemp' : 'wall')
+  }
+
+  // --- otvory ---
+  for (const h of holes) {
+    const isDoor = h.v0 === 0
+    rectU(h.x0, h.x1, h.v0, h.v1, isDoor ? 'room' : 'glassw',
+      isDoor ? 'fill="#ffffff" stroke="#2b2f36" stroke-width="1.1"' : '')
+    // příčle: dveře mají prahovou čáru, okna svislý střed
+    if (!isDoor && h.x1 - h.x0 > 2.2) {
+      const m = (h.x0 + h.x1) / 2
+      d.line(X(m), Y(h.v0), X(m), Y(h.v1), 'thin')
+    }
+  }
+
+  // Východní průčelí je celoplošně prosklené po okap (sloupky à 1,5 m,
+  // každý třetí zesílený) — otvory se z bloků negenerují, je to jedna výplň.
+  if (side === 'east') {
+    d.poly([[X(0), Y(0)], [X(0), Y(S.eaves)], [X(S.depth), Y(S.eaves)], [X(S.depth), Y(0)]],
+      'glassw')
+    for (let z = 1.5; z < S.depth; z += 1.5) {
+      const heavy = Math.abs(z % 4.5) < 0.01
+      d.line(X(z), Y(0), X(z), Y(S.eaves), 'thin', heavy ? 'stroke-width="1.8"' : '')
+    }
+    d.rect(X(0), Y(S.clearGF + S.slab + 0.25), S.depth * SC, 0.42 * SC, 'part')  // mezipatrový pás
+    for (let z = 0.4; z <= 6.0; z += 0.75) {                                     // dubové slunolamy
+      d.line(X(z), Y(0.1), X(z), Y(S.eaves - 0.1), 'thin', 'stroke="#b0793f" stroke-width="2.4"')
+    }
+    // popisek POD stavbu — nad okapem je tmavý štít a text by v něm zmizel
+    d.line(X(3), Y(0.1), X(3), Y(0) + 26, 'lead')
+    d.text(X(3), Y(0) + 36, 'dubové slunolamy à 0,75 (jižní třetina)', 'lblsm', 'text-anchor="middle"')
+  }
+
+  // --- vstupní portál (bílý rám s limetkovým ostěním) ---
+  const lobbyB = S.blocks.find((b) => b.id === 'lobby')
+  if (side === 'south' && lobbyB) {
+    const cx = (lobbyB.x0 + lobbyB.x1) / 2
+    rectU(cx - 2.05, cx + 2.05, 0, 6.15, 'portal')
+    rectU(cx - 1.67, cx + 1.67, 0, 5.7, 'portallime')
+    d.text(X(cx), Y(6.15) + 14, 'vstupní portál — bílý rám, limetkové ostění', 'onwall', 'text-anchor="middle"')
+  }
+
+  // --- pavlač a venkovní schodiště (varianty B a C) ---
+  const ext = S.exterior
+  if (side === 'south' && ext?.walkway) {
+    const w = ext.walkway
+    const yw = levelBase(S, w.level ?? 1)
+    rectU(w.x0, w.x1, yw - 0.12, yw, 'slab')
+    rectU(w.x0, w.x1, yw + 0.05, yw + 1.15, 'thin', 'fill="none" stroke="#e6eaef" stroke-dasharray="3 2"')
+    d.text(X((w.x0 + w.x1) / 2), Y(yw + 1.15) - 6, 'pavlač — vstupy bytů v patře', 'onwall', 'text-anchor="middle"')
+    const st = ext.stairs
+    if (st) {
+      const LAND = st.landing ?? 0.9
+      d.line(X(st.x1), Y(0), X(st.x0 + LAND), Y(yw), 'thin', 'stroke="#e6eaef" stroke-width="1.8"')
+      d.line(X(st.x1), Y(1.05), X(st.x0 + LAND), Y(yw + 1.05), 'thin', 'stroke="#e6eaef" stroke-dasharray="3 2"')
+      rectU(st.x0, st.x0 + LAND, yw - 0.12, yw, 'slab')
+      d.text(X((st.x0 + st.x1) / 2), Y(yw / 2) + 26, 'venkovní schodiště podél fasády', 'onwall', 'text-anchor="middle"')
+    }
+  }
+
+  // --- střecha ---
+  if (long) {
+    // od okapu nahoru je vidět jen hřeben za rovinou fasády
+    d.rect(Math.min(X(0), X(span)) - 0.4 * SC, Y(S.eaves + 0.18), (span + 0.8) * SC, 0.18 * SC, 'roof')
+    d.line(Math.min(X(0), X(span)) - 0.4 * SC, Y(RIDGE), Math.max(X(0), X(span)) + 0.4 * SC, Y(RIDGE),
+      'thin', 'stroke-dasharray="7 4" stroke="#8b929b"')
+    // popisek doleva — vpravo jsou výškové kóty a text by se přes ně položil
+    d.text(Math.min(X(0), X(span)) - 0.4 * SC - 6, Y(RIDGE) - 5, 'hřeben za fasádou', 'lblsm', 'text-anchor="end"')
+    // střešní okna severní roviny (varianta C) — v pohledu od severu se
+    // promítnou do pásu mezi okapem a hřebenem
+    if (side === 'north') {
+      const sky = items.filter((it) => it.kind === 'skylight')
+      for (const s of sky) {
+        const f = FURN[s.kind]
+        rectU(s.x - f.w / 2, s.x + f.w / 2, S.eaves + 0.2, RIDGE - 0.05, 'glassw', 'stroke-dasharray="3 2"')
+      }
+      if (sky.length) {
+        d.text(Math.min(X(0), X(span)) + 8, Y(RIDGE) - 10,
+          `${sky.length}× střešní okno v severní rovině (ložnice a dětské pokoje) — v průmětu se některá překrývají`,
+          'lblsm')
+      }
+    }
+  } else {
+    const dz = 0.18 / Math.cos((S.pitch * Math.PI) / 180)
+    d.poly([[X(-0.4), Y(roofY(S, -0.4))], [X(S.depth / 2), Y(RIDGE)],
+      [X(S.depth + 0.4), Y(roofY(S, S.depth + 0.4))],
+      [X(S.depth + 0.4), Y(roofY(S, S.depth + 0.4) + dz)], [X(S.depth / 2), Y(RIDGE + dz)],
+      [X(-0.4), Y(roofY(S, -0.4) + dz)]], 'roof')
+  }
+
+  // --- fotovoltaika na jižní fasádě (jen pohled od jihu) ---
+  if (side === 'south' && S.pv?.facadeSouth) {
+    const pvPanels = pvLayout(S, holes).panels.filter((x) => x.kind === 'facade')
+    for (const p of pvPanels) rectU(p.x0, p.x1, p.v0, p.v1, 'pvpanel')
+    if (pvPanels.length) {
+      // popisek pod terén — na plášti se pere s okny i dveřmi
+      const px = (X(pvPanels[0].x0) + X(pvPanels[0].x1)) / 2
+      d.line(px, Y(0.1), px, Y(0) + 16, 'lead')
+      d.text(px, Y(0) + 26, `${pvPanels.length}× pole fasádní FVE`, 'lblsm', 'text-anchor="middle"')
+    }
+  }
+
+  // --- terén, výškové kóty, kóty otvorů ---
+  d.line(Math.min(X(0), X(span)) - 46, Y(0), Math.max(X(0), X(span)) + 46, Y(0), 'ground')
+  const xd = Math.max(X(0), X(span)) + 44
+  const marks = [[0, '± 0,000 — podlaha přízemí']]
+  if (S.blocks.some((b) => b.level === 1)) marks.push([S.clearGF + S.slab, '+ 3,300 — podlaha patra'])
+  marks.push([S.eaves, '+ 6,000 — okap'], [RIDGE, `+ ${num(RIDGE, 3)} — hřeben`])
+  for (const [y, t] of marks) {
+    d.line(Math.max(X(0), X(span)), Y(y), xd - 4, Y(y), 'lead')
+    d.circle(xd, Y(y), 2.4, 'fill="#2b2f36"')
+    d.text(xd + 6, Y(y) + 3.5, t, 'dimt')
+  }
+  // Svislá kóta parapetu a nadpraží typického okna. Bere se okno nejníž
+  // (běžné pásové, ne horní pás) a nejvíc VLEVO — kóta se kreslí doleva od
+  // něj, takže se nikdy nevysype mimo formát.
+  const win = holes.filter((h) => h.v0 > 0.5 && h.v0 < 2)
+    .sort((p, q) => Math.min(X(p.x0), X(p.x1)) - Math.min(X(q.x0), X(q.x1)))[0]
+  if (win) {
+    const wx = Math.min(X(win.x0), X(win.x1)) - 14
+    d.line(wx, Y(win.v0), wx, Y(win.v1), 'dim')
+    d.line(wx - 4, Y(win.v0), wx + 4, Y(win.v0), 'dim')
+    d.line(wx - 4, Y(win.v1), wx + 4, Y(win.v1), 'dim')
+    d.text(wx - 6, (Y(win.v0) + Y(win.v1)) / 2,
+      `parapet ${num(win.v0, 2)} · nadpraží ${num(win.v1, 2)}`, 'dimt', 'text-anchor="end"')
+  }
+
+  // vodorovná kóta po rastru
+  const grid = []
+  for (let u = 0; u <= span + 0.01; u += S.grid) grid.push(u)
+  if (grid[grid.length - 1] < span - 0.01) grid.push(span)
+  dimChain(d, grid, X, Y(0) + 52, true)
+  dimChain(d, [0, span], X, Y(0) + 78, true)
+
+  const ends = side === 'south' ? ['ZÁPAD', 'VÝCHOD'] : side === 'north' ? ['VÝCHOD', 'ZÁPAD']
+    : side === 'east' ? ['JIH', 'SEVER'] : ['SEVER', 'JIH']
+  d.text(Math.min(X(0), X(span)) - 6, MT - 10, ends[0], 'lblsm', 'text-anchor="end"')
+  d.text(Math.max(X(0), X(span)) + 6, MT - 10, ends[1], 'lblsm')
+
+  legend(d, ML, Y(0) + 122, [
+    ['wall', 'antracitový plášť', ''],
+    ['glassw', 'zasklení', ''],
+    ['room', 'dveře / vrata', 'fill="#ffffff" stroke="#2b2f36" stroke-width="1.1"'],
+    ['roof', 'střešní plášť', ''],
+  ])
+  titleBlock(d, {
+    name: title,
+    note: side === 'north' ? 'slepá stěna — hranice pozemku'
+      : side === 'west' ? 'dočasný štít etapy 1 (demontovatelný)' : '',
+    scaleBar: 10, sc: SC,
+  })
+  writeFileSync(`${OUT}/${file}`, d.toString())
+  return file
+}
+
 // ----------------------------------------------------------------- SITUACE
 
 function site() {
@@ -678,6 +875,14 @@ const made = [
   sectionA(),
   sectionB(),
   site(),
+  elevation('south', '06-pohled-jih.svg',
+    // fasádní FVE existuje jen tam, kde na ni mezi otvory zbylo místo (verze A)
+    pvLayout(S, openingsFor(S, 'south')).facadeKwp > 0.1
+      ? 'POHLED JIŽNÍ · vstupy, vrata a fasádní FVE'
+      : 'POHLED JIŽNÍ · vstupy, vrata a pavlač bytů'),
+  elevation('north', '07-pohled-sever.svg', 'POHLED SEVERNÍ · slepá stěna na hranici pozemku'),
+  elevation('east', '08-pohled-vychod.svg', 'POHLED VÝCHODNÍ · prosklené průčelí po okap'),
+  elevation('west', '09-pohled-zapad.svg', 'POHLED ZÁPADNÍ · dočasný štít etapy 1'),
 ]
 console.log(`${VARIANT.label}:`)
 console.log(made.map((f) => `  ${OUT}/${f}`).join('\n'))

@@ -28,7 +28,17 @@ node audit.mjs       # projektantský audit všech verzí: kolize předmětů,
                      # přesahy přes stěny, věci ve vstupech, rozvody
                      # v prostupech (0 nálezů)
 node plans.mjs       # 2D výkresy hal → plans/, plans/byty/, plans/nudle/
+                     # půdorysy, 2 řezy, situace a 4 pohledy (fasády)
                      # (verze D výkresy zatím nemá)
+node export.mjs nudle # ZIP ke stažení → export/budova-1P-nudle-vykresy.zip
+```
+
+Výkresy se před zabalením převádějí na PNG a renderují se k nim 3D pohledy
+(obojí potřebuje headless Chromium, viz `review-tools/`):
+
+```bash
+node svg2png.mjs /data/bot/budova/plans/nudle 2          # SVG → PNG 2×
+node shot-iso-hala.mjs http://…:5186/#nudle .../3d       # izometrie + kolmé pohledy
 ```
 
 Rozcestník verzí je v `src/variants.js`. Generátory (`building.js`, `mep.js`,
@@ -335,6 +345,31 @@ a vnitřní dveře bytu přes `partitionsFor`/`doorsFor`. Postava chodí po
 vesničce (pláště buněk jsou pevné, dveřmi se prochází, hranice pozemku
 drží jako plot). Editace tažením je u verze D vypnutá — buňky se editují
 ve spec.
+
+## Výkresy a export ke stažení
+
+`node plans.mjs <verze>` generuje devět SVG: dva půdorysy, dva řezy, situaci
+a **čtyři pohledy (fasády)**. Pohledy berou otvory ze stejného `openingsFor`
+jako 3D model, takže výkres nemůže lhát o oknech — a kreslí navíc portál
+vstupu, pavlač s venkovním schodištěm, fasádní FVE (kde na ni mezi otvory
+zbylo místo) a střešní okna severní roviny v průmětu.
+
+POZOR NA ZRCADLENÍ (spletl jsem ho už dvakrát): pohled ukazuje to, co divák
+vidí, když stojí venku proti té stěně — jižní má **východ vpravo**, severní
+východ vlevo, východní **jih vlevo**, západní jih vpravo.
+
+`node export.mjs <verze>` sbalí složku výkresů do jednoho ZIPu v `export/`
+včetně `CTI-MNE.txt` (co je co, jak si to otevřít, odkaz na živý model).
+Balí se přes `python3 -m zipfile` — na serveru není `zip`.
+
+Kompletní balíček se dělá ve třech krocích:
+
+```bash
+node plans.mjs nudle                                    # SVG
+node ../review-tools/svg2png.mjs plans/nudle 2          # PNG náhledy
+node ../review-tools/shot-iso-hala.mjs URL#nudle plans/nudle/3d   # 3D pohledy
+node export.mjs nudle                                   # ZIP
+```
 
 ## Co se dopočítává samo
 
