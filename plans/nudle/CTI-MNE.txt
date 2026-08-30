@@ -1,0 +1,38 @@
+BUDOVA 1P — C — nudle 3+kk
+3 byty 84 m² přes celý rozpon patra, střešní okna na severu
+
+Vygenerováno 30. 8. 2026 z modelu (src/spec-*.js). NENÍ projektová dokumentace —
+je to studie poměrů ploch a dispozice před zadáním projektantovi.
+
+Pozemek: ul. Kouřimského, Pelhřimov. Etapa 1 = 18 × 28 m, rastr 7 m,
+okap 6,00 m, hřeben 7,59 m. Podlahová plocha 917 m²
+(přízemí 504, patro 413), koeficient 1.82×.
+
+OBSAH
+  01-pudorys-prizemi   půdorys přízemí (± 0,000)
+  02-pudorys-patro     půdorys patra (+ 3,300)
+  03-rez-A-A           podélný řez, rovina z = 6,00 m, pohled k severu
+  04-rez-B-B           příčný řez, rovina x = 24,50 m, pohled k západu
+  05-situace           situace s obrysem etapy 2
+  06-pohled-jih        jižní fasáda — vstupy, vrata, pavlač bytů
+  07-pohled-sever      severní fasáda — slepá stěna na hranici pozemku
+  08-pohled-vychod     východní průčelí — prosklení po okap
+  09-pohled-zapad      západní štít — dočasný, demontovatelný
+
+  Každý výkres je ve dvou formátech:
+    .svg  vektor — otevře se v prohlížeči, Illustratoru i AutoCADu, dá se
+          tisknout v libovolném měřítku bez ztráty ostrosti
+    .png  rastr 2× — rovnou do prezentace, e-mailu nebo Wordu
+
+  3d/    izometrie a kolmé pohledy z 3D modelu (perspektiva, materiály,
+         stíny) — nejlíp je z nich vidět rytmus a hloubka oken
+         iso-1..4    rohové izometrie (JV, JZ, SZ, SV)
+         iso-5       ptačí nadhled
+         ext-*       kolmé exteriérové pohledy pro porovnání s 2D
+         ext-detail-vstup  detail vstupního portálu
+
+ŽIVÝ MODEL
+  http://116.203.103.27:5186/#nudle
+  Přepínání verzí, řezy obálkou, vrstvy (rozvody, ekonomika) a průchod
+  postavou. Výkresy se generují z téhož specu — když se změní model,
+  přegeneruje se balíček příkazem: node plans.mjs nudle && node export.mjs nudle

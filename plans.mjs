@@ -184,12 +184,20 @@ function roomLabel(d, cx, cy, name, sub, wpx) {
   const rot = wpx < 70 ? `transform="rotate(-90 ${co(cx)} ${co(cy)})"` : ''
   let lines = [name]
   let fs = 11.5
+  // Šířka tučného textu ≈ 0,60 × velikost na znak. Dřív se počítalo 7,0 px
+  // napevno a „Dětský pokoj — byt C" v nudli 4,67 m prošlo o chlup pod
+  // limitem — popisky sousedních bytů se pak v půdorysu patra překrývaly.
+  const width = (s, size) => s.length * size * 0.60
+  const fits = (ls, size) => Math.max(...ls.map((l) => width(l, size))) <= wpx * 0.94
   if (!rot) {
-    if (name.length * 7.0 > wpx) fs = 9.5
-    if (name.length * 5.6 > wpx && name.includes(' — ')) {
-      lines = name.split(' — ')
-      fs = Math.max(...lines.map((l) => l.length)) * 7.0 > wpx ? 9.5 : 11.5
-    } else if (name.length * 5.6 > wpx) fs = 8
+    if (!fits(lines, fs)) {
+      if (name.includes(' — ')) {
+        lines = name.split(' — ')
+        fs = fits(lines, 11.5) ? 11.5 : fits(lines, 9.5) ? 9.5 : 8
+      } else {
+        fs = fits(lines, 9.5) ? 9.5 : 8
+      }
+    }
   }
   const top = cy - 2 - (lines.length - 1) * fs * 0.55
   lines.forEach((l, i) => d.text(cx, top + i * fs * 1.1, l, 'lblrm',
@@ -728,18 +736,15 @@ function elevation(side, file, title) {
     d.circle(xd, Y(y), 2.4, 'fill="#2b2f36"')
     d.text(xd + 6, Y(y) + 3.5, t, 'dimt')
   }
-  // Svislá kóta parapetu a nadpraží typického okna. Bere se okno nejníž
-  // (běžné pásové, ne horní pás) a nejvíc VLEVO — kóta se kreslí doleva od
-  // něj, takže se nikdy nevysype mimo formát.
+  // Parapet a nadpraží typického okna jako POZNÁMKA pod výkresem. Svislá
+  // kóta u okna skončila vždycky na antracitovém plášti, kde je nečitelná —
+  // ať se kreslila vlevo, nebo vpravo od otvoru.
   const win = holes.filter((h) => h.v0 > 0.5 && h.v0 < 2)
-    .sort((p, q) => Math.min(X(p.x0), X(p.x1)) - Math.min(X(q.x0), X(q.x1)))[0]
+    .sort((p, q) => (p.v0 - q.v0) || (q.x1 - q.x0) - (p.x1 - p.x0))[0]
   if (win) {
-    const wx = Math.min(X(win.x0), X(win.x1)) - 14
-    d.line(wx, Y(win.v0), wx, Y(win.v1), 'dim')
-    d.line(wx - 4, Y(win.v0), wx + 4, Y(win.v0), 'dim')
-    d.line(wx - 4, Y(win.v1), wx + 4, Y(win.v1), 'dim')
-    d.text(wx - 6, (Y(win.v0) + Y(win.v1)) / 2,
-      `parapet ${num(win.v0, 2)} · nadpraží ${num(win.v1, 2)}`, 'dimt', 'text-anchor="end"')
+    d.text(Math.max(X(0), X(span)), Y(0) + 24,
+      `typické okno: parapet ${num(win.v0, 2)} · nadpraží ${num(win.v1, 2)}`,
+      'dimt', 'text-anchor="end"')
   }
 
   // vodorovná kóta po rastru

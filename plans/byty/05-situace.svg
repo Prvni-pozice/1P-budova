@@ -31,6 +31,10 @@
   .axis{font-size:10px;font-weight:700;fill:#2b2f36}
   .dimt{font-size:9.5px;fill:#2b2f36}
   .warn{font-size:9.5px;fill:#a3453c}
+  .onwall{font-size:9px;fill:#e6eaef}
+  .pvpanel{fill:#3d4a6b;stroke:#8ea0c4;stroke-width:0.7}
+  .portal{fill:none;stroke:#ffffff;stroke-width:1.8}
+  .portallime{fill:none;stroke:#bfe32e;stroke-width:1.6}
 </style>
 <rect class="bg" x="0" y="0" width="946" height="729"/>
 <rect x="298.5" y="344.5" width="483.0" height="115.0" class="room" fill="#eceef1"/>
@@ -149,7 +153,7 @@
 <text x="40.0" y="689.5" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
 <text x="40.0" y="704.5" class="sub" >Generováno ze src/spec.js · 23. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>
 <text x="40.0" y="719.5" class="warn" >NENÍ projektová dokumentace — nástroj na hledání poměrů ploch před zadáním projektantovi.</text>
-<text x="906.0" y="656.5" class="sub" text-anchor="end">sever nahoře · východ vpravo</text>
+<text x="906.0" y="622.5" class="sub" text-anchor="end">sever nahoře · východ vpravo</text>
 <rect x="676.0" y="694.5" width="57.5" height="6.0" class="frame" />
 <rect x="733.5" y="694.5" width="57.5" height="6.0" class="wall" />
 <rect x="791.0" y="694.5" width="57.5" height="6.0" class="frame" />

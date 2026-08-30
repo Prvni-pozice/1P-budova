@@ -31,6 +31,10 @@
   .axis{font-size:10px;font-weight:700;fill:#2b2f36}
   .dimt{font-size:9.5px;fill:#2b2f36}
   .warn{font-size:9.5px;fill:#a3453c}
+  .onwall{font-size:9px;fill:#e6eaef}
+  .pvpanel{fill:#3d4a6b;stroke:#8ea0c4;stroke-width:0.7}
+  .portal{fill:none;stroke:#ffffff;stroke-width:1.8}
+  .portallime{fill:none;stroke:#bfe32e;stroke-width:1.6}
 </style>
 <rect class="bg" x="0" y="0" width="1017" height="828"/>
 <rect x="663.0" y="491.6" width="189.0" height="86.4" class="room" fill="#fcedd8"/>
@@ -360,8 +364,8 @@
 <path d="M 420.0 565.9 A 24.3 24.3 0 0 0 395.7 541.5" class="door" stroke-dasharray="3 2"/>
 <text x="757.5" y="532.8" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Recepce a vstup</text>
 <text x="757.5" y="544.3" class="lblar" text-anchor="middle" style="font-size:9.5px" >22,4 m²</text>
-<text x="714.3" y="411.3" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Schodiště a výtah</text>
-<text x="714.3" y="420.8" class="lblar" text-anchor="middle" style="font-size:7.5px" >22,0 m²</text>
+<text x="714.3" y="411.3" class="lblrm" text-anchor="middle" style="font-size:8px" >Schodiště a výtah</text>
+<text x="714.3" y="419.3" class="lblar" text-anchor="middle" style="font-size:7.5px" >22,0 m²</text>
 <text x="808.8" y="335.7" class="lblrm" text-anchor="middle" style="font-size:8px" >Komunitní prostor</text>
 <text x="808.8" y="343.7" class="lblar" text-anchor="middle" style="font-size:7.5px" >36,5 m²</text>
 <text x="714.3" y="257.4" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Pracovní zóna</text>
@@ -373,37 +377,37 @@
 <text x="626.5" y="507.6" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Ložnice</text>
 <text x="626.5" y="520.2" class="lblrm" text-anchor="middle" style="font-size:11.5px" >byt 1</text>
 <text x="626.5" y="531.7" class="lblar" text-anchor="middle" style="font-size:9.5px" >12,4 m²</text>
-<text x="626.5" y="414.2" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Koupelna a WC</text>
-<text x="626.5" y="424.6" class="lblrm" text-anchor="middle" style="font-size:9.5px" >byt 1</text>
-<text x="626.5" y="434.1" class="lblar" text-anchor="middle" style="font-size:7.5px" >6,5 m²</text>
+<text x="626.5" y="415.0" class="lblrm" text-anchor="middle" style="font-size:8px" >Koupelna a WC</text>
+<text x="626.5" y="423.8" class="lblrm" text-anchor="middle" style="font-size:8px" >byt 1</text>
+<text x="626.5" y="431.8" class="lblar" text-anchor="middle" style="font-size:7.5px" >6,5 m²</text>
 <text x="571.2" y="481.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" transform="rotate(-90 571.2 483.5)">Předsíň — byt 1</text>
 <text x="571.2" y="493.0" class="lblar" text-anchor="middle" style="font-size:9.5px" transform="rotate(-90 571.2 483.5)">9,8 m²</text>
-<text x="513.1" y="508.7" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Obývací pokoj</text>
-<text x="513.1" y="519.1" class="lblrm" text-anchor="middle" style="font-size:9.5px" >byt 1</text>
-<text x="513.1" y="528.6" class="lblar" text-anchor="middle" style="font-size:7.5px" >13,3 m²</text>
-<text x="513.1" y="414.2" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Kuchyňský kout</text>
-<text x="513.1" y="424.6" class="lblrm" text-anchor="middle" style="font-size:9.5px" >byt 1</text>
-<text x="513.1" y="434.1" class="lblar" text-anchor="middle" style="font-size:7.5px" >7,0 m²</text>
+<text x="513.1" y="509.5" class="lblrm" text-anchor="middle" style="font-size:8px" >Obývací pokoj</text>
+<text x="513.1" y="518.3" class="lblrm" text-anchor="middle" style="font-size:8px" >byt 1</text>
+<text x="513.1" y="526.3" class="lblar" text-anchor="middle" style="font-size:7.5px" >13,3 m²</text>
+<text x="513.1" y="415.0" class="lblrm" text-anchor="middle" style="font-size:8px" >Kuchyňský kout</text>
+<text x="513.1" y="423.8" class="lblrm" text-anchor="middle" style="font-size:8px" >byt 1</text>
+<text x="513.1" y="431.8" class="lblar" text-anchor="middle" style="font-size:7.5px" >7,0 m²</text>
 <text x="321.5" y="507.6" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Ložnice</text>
 <text x="321.5" y="520.2" class="lblrm" text-anchor="middle" style="font-size:11.5px" >byt 2</text>
 <text x="321.5" y="531.7" class="lblar" text-anchor="middle" style="font-size:9.5px" >12,4 m²</text>
-<text x="321.5" y="414.2" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Koupelna a WC</text>
-<text x="321.5" y="424.6" class="lblrm" text-anchor="middle" style="font-size:9.5px" >byt 2</text>
-<text x="321.5" y="434.1" class="lblar" text-anchor="middle" style="font-size:7.5px" >6,5 m²</text>
+<text x="321.5" y="415.0" class="lblrm" text-anchor="middle" style="font-size:8px" >Koupelna a WC</text>
+<text x="321.5" y="423.8" class="lblrm" text-anchor="middle" style="font-size:8px" >byt 2</text>
+<text x="321.5" y="431.8" class="lblar" text-anchor="middle" style="font-size:7.5px" >6,5 m²</text>
 <text x="376.8" y="481.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" transform="rotate(-90 376.8 483.5)">Předsíň — byt 2</text>
 <text x="376.8" y="493.0" class="lblar" text-anchor="middle" style="font-size:9.5px" transform="rotate(-90 376.8 483.5)">9,8 m²</text>
-<text x="434.9" y="508.7" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Obývací pokoj</text>
-<text x="434.9" y="519.1" class="lblrm" text-anchor="middle" style="font-size:9.5px" >byt 2</text>
-<text x="434.9" y="528.6" class="lblar" text-anchor="middle" style="font-size:7.5px" >13,3 m²</text>
-<text x="434.9" y="414.2" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Kuchyňský kout</text>
-<text x="434.9" y="424.6" class="lblrm" text-anchor="middle" style="font-size:9.5px" >byt 2</text>
-<text x="434.9" y="434.1" class="lblar" text-anchor="middle" style="font-size:7.5px" >7,0 m²</text>
+<text x="434.9" y="509.5" class="lblrm" text-anchor="middle" style="font-size:8px" >Obývací pokoj</text>
+<text x="434.9" y="518.3" class="lblrm" text-anchor="middle" style="font-size:8px" >byt 2</text>
+<text x="434.9" y="526.3" class="lblar" text-anchor="middle" style="font-size:7.5px" >13,3 m²</text>
+<text x="434.9" y="415.0" class="lblrm" text-anchor="middle" style="font-size:8px" >Kuchyňský kout</text>
+<text x="434.9" y="423.8" class="lblrm" text-anchor="middle" style="font-size:8px" >byt 2</text>
+<text x="434.9" y="431.8" class="lblar" text-anchor="middle" style="font-size:7.5px" >7,0 m²</text>
 <text x="568.5" y="292.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Fitness</text>
 <text x="568.5" y="304.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >49,0 m²</text>
 <text x="420.0" y="292.5" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Sim racing</text>
 <text x="420.0" y="304.0" class="lblar" text-anchor="middle" style="font-size:9.5px" >28,0 m²</text>
-<text x="325.5" y="292.5" class="lblrm" text-anchor="middle" style="font-size:9.5px" >Rezerva středu</text>
-<text x="325.5" y="302.0" class="lblar" text-anchor="middle" style="font-size:7.5px" >21,0 m² · shell</text>
+<text x="325.5" y="292.5" class="lblrm" text-anchor="middle" style="font-size:8px" >Rezerva středu</text>
+<text x="325.5" y="300.5" class="lblar" text-anchor="middle" style="font-size:7.5px" >21,0 m² · shell</text>
 <text x="609.0" y="144.0" class="lblrm" text-anchor="middle" style="font-size:8px" >Šatna a sprchy sportu</text>
 <text x="609.0" y="152.0" class="lblar" text-anchor="middle" style="font-size:7.5px" >16,0 m²</text>
 <text x="420.0" y="144.0" class="lblrm" text-anchor="middle" style="font-size:11.5px" >Rezerva středu — sever</text>
@@ -465,7 +469,7 @@
 <text x="40.0" y="789.0" class="sub" >Pozemek: ul. Kouřimského, Pelhřimov — nová odbočka mezi Optokonem a Wehou</text>
 <text x="40.0" y="804.0" class="sub" >Generováno ze src/spec.js · 23. 8. 2026 · 18 × 56 m, etapa 1 = 18 × 28 m, rastr 7 m</text>
 <text x="40.0" y="819.0" class="warn" >NENÍ projektová dokumentace — nástroj na hledání poměrů ploch před zadáním projektantovi.</text>
-<text x="977.0" y="756.0" class="sub" text-anchor="end">přízemí 504 m² · světlá výška 3,00 m</text>
+<text x="977.0" y="722.0" class="sub" text-anchor="end">přízemí 504 m² · světlá výška 3,00 m</text>
 <rect x="707.0" y="794.0" width="67.5" height="6.0" class="frame" />
 <rect x="774.5" y="794.0" width="67.5" height="6.0" class="wall" />
 <rect x="842.0" y="794.0" width="67.5" height="6.0" class="frame" />

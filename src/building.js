@@ -662,6 +662,44 @@ export function buildAll(spec, mep) {
   groups.glass.add(east)
   walls.push(east)
 
+  // ZASKLENÍ OKEN v podélných fasádách. Otvory z openingsFor jsou jen díry
+  // ve stěně — v renderu pak fasáda vypadá, že chybí, a okna nejsou vidět
+  // jako okna (našlo se to až na exteriérových pohledech pro export).
+  // Dveře a vrata (v0 = 0) zůstávají otevřené, tudy se prochází.
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x2b2f36, roughness: 0.6, metalness: 0.3 })
+  frameMat.userData.shared = true
+  for (const [side, hs] of [['south', southHoles], ['north', northHoles]]) {
+    const zPane = side === 'south' ? t / 2 : S.depth - t / 2
+    for (const h of hs) {
+      if (h.v0 < 0.05) continue
+      const pane = new THREE.Mesh(
+        new THREE.BoxGeometry(h.x1 - h.x0 - 0.06, h.v1 - h.v0 - 0.06, 0.05), glassMat.clone())
+      pane.position.set((h.x0 + h.x1) / 2, (h.v0 + h.v1) / 2, zPane)
+      pane.userData.outward = new THREE.Vector3(0, 0, side === 'south' ? -1 : 1)
+      pane.userData.baseOpacity = 0.5
+      pane.name = `okno ${side}`
+      groups.glass.add(pane)
+      walls.push(pane)
+      // rám okna = čtyři tenké profily po obvodu otvoru (plný kvádr by
+      // okno zaslepil); díky nim otvor čte jako okno, ne jako výřez
+      const fw = h.x1 - h.x0
+      const fh = h.v1 - h.v0
+      const cxw = (h.x0 + h.x1) / 2
+      const cyw = (h.v0 + h.v1) / 2
+      for (const [bw, bh, ox, oy] of [
+        [fw, 0.06, 0, fh / 2 - 0.03], [fw, 0.06, 0, -fh / 2 + 0.03],
+        [0.06, fh, fw / 2 - 0.03, 0], [0.06, fh, -fw / 2 + 0.03, 0],
+      ]) {
+        const bar = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, 0.08), frameMat)
+        bar.position.set(cxw + ox, cyw + oy, zPane)
+        bar.userData.outward = pane.userData.outward
+        bar.userData.baseOpacity = 1
+        groups.glass.add(bar)
+        walls.push(bar)
+      }
+    }
+  }
+
   // štít v antracitu — patří k plášti, s cutaway mizí jako stěna
   const gableMat = new THREE.MeshStandardMaterial({ color: 0x33373d, roughness: 0.8, side: THREE.DoubleSide })
   addWall('východní štít (antracit)',

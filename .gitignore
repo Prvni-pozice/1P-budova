@@ -11,3 +11,5 @@ research/*.npy
 research/schema.json
 research/manifest.json
 research/.venv/
+# ZIP balíčky se generují z výkresů (node export.mjs <verze>) — do repa nepatří
+export/

@@ -27,6 +27,19 @@ const a = areaTotals(v.spec)
 const files = readdirSync(SRC).filter((f) => /\.(svg|png)$/.test(f)).sort()
 const iso = existsSync(join(SRC, '3d')) ? readdirSync(join(SRC, '3d')).filter((f) => f.endsWith('.png')).sort() : []
 
+// Neúplný balíček je horší než žádný — chybějící PNG nebo 3D pohledy se
+// snadno přehlédnou, když se skript pustí bez předchozích dvou kroků.
+const svgs = files.filter((f) => f.endsWith('.svg'))
+const missingPng = svgs.filter((f) => !files.includes(f.replace(/\.svg$/, '.png')))
+if (missingPng.length) {
+  console.error(`Chybí PNG k: ${missingPng.join(', ')}\n  → node ../review-tools/svg2png.mjs ${SRC} 2`)
+  process.exit(1)
+}
+if (iso.length === 0) {
+  console.error(`Chybí 3D pohledy v ${SRC}/3d\n  → node ../review-tools/shot-iso-hala.mjs URL#${v.id} ${SRC}/3d`)
+  process.exit(1)
+}
+
 const readme = `BUDOVA 1P — ${v.label}
 ${v.sub}
 
