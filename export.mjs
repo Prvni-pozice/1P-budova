@@ -80,6 +80,8 @@ OBSAH
   přegeneruje se balíček příkazem: node plans.mjs ${v.id} && node export.mjs ${v.id}
 `
 writeFileSync(join(SRC, 'CTI-MNE.txt'), readme)
+// README-EN.txt (anglický průvodce pro projekční kancelář) se needituje
+// generátorem — píše se ručně a jen se přibalí, pokud existuje.
 
 mkdirSync('export', { recursive: true })
 const zip = `export/budova-1P-${v.id}-vykresy.zip`

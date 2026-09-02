@@ -346,6 +346,15 @@ vesničce (pláště buněk jsou pevné, dveřmi se prochází, hranice pozemku
 drží jako plot). Editace tažením je u verze D vypnutá — buňky se editují
 ve spec.
 
+## Investiční náklady
+
+Model počítá jen PROVOZ (`spec.economy` — roční tržby a náklady). Investice
+v modelu není. Orientační sazby, ze kterých vycházejí čísla zmiňovaná
+v debatě (vesnička ~13 mil., hala etapa 1 ~22 mil.), jsou sepsané
+v [docs/naklady-odhad.md](docs/naklady-odhad.md) — **jsou to odhady, ne
+nabídky.** Kapex model do specu má smysl přidat až nad reálnými sazbami,
+jinak by dodával falešnou přesnost.
+
 ## Výkresy a export ke stažení
 
 `node plans.mjs <verze>` generuje devět SVG: dva půdorysy, dva řezy, situaci
